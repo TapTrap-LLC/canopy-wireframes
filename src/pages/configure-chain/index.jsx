@@ -27,6 +27,73 @@ export default function ConfigureChain() {
   const [tokenSupply, setTokenSupply] = useState('1000000000')
   const [halvingDays, setHalvingDays] = useState('365')
   const [blockTime, setBlockTime] = useState('10')
+  
+  // Validation errors
+  const [errors, setErrors] = useState({
+    chainName: '',
+    tokenName: '',
+    ticker: '',
+    halvingDays: ''
+  })
+
+  // Validation functions
+  const validateChainName = (value) => {
+    if (!value) return 'Chain name is required'
+    if (value.length < 2) return 'Chain name must be at least 2 characters'
+    if (value.length > 50) return 'Chain name must be less than 50 characters'
+    if (!/^[a-zA-Z0-9\s]+$/.test(value)) return 'Only letters, numbers, and spaces allowed'
+    return ''
+  }
+
+  const validateTokenName = (value) => {
+    if (!value) return 'Token name is required'
+    if (value.length < 2) return 'Token name must be at least 2 characters'
+    if (value.length > 30) return 'Token name must be less than 30 characters'
+    if (!/^[a-zA-Z0-9\s]+$/.test(value)) return 'Only letters, numbers, and spaces allowed'
+    return ''
+  }
+
+  const validateTicker = (value) => {
+    if (!value) return 'Ticker is required'
+    if (value.length < 3) return 'Ticker must be at least 3 characters'
+    if (value.length > 5) return 'Ticker must be 3-5 characters'
+    if (!/^[A-Z0-9]+$/.test(value)) return 'Only uppercase letters and numbers allowed'
+    return ''
+  }
+
+  const validateHalvingDays = (value) => {
+    if (!value) return 'Halving schedule is required'
+    const days = parseInt(value)
+    if (isNaN(days)) return 'Must be a valid number'
+    if (days < 1) return 'Must be at least 1 day'
+    if (days > 10000) return 'Must be less than 10,000 days'
+    return ''
+  }
+
+  // Handle input changes with validation
+  const handleChainNameChange = (e) => {
+    const value = e.target.value
+    setChainName(value)
+    setErrors(prev => ({ ...prev, chainName: validateChainName(value) }))
+  }
+
+  const handleTokenNameChange = (e) => {
+    const value = e.target.value
+    setTokenName(value)
+    setErrors(prev => ({ ...prev, tokenName: validateTokenName(value) }))
+  }
+
+  const handleTickerChange = (e) => {
+    const value = e.target.value.toUpperCase()
+    setTicker(value)
+    setErrors(prev => ({ ...prev, ticker: validateTicker(value) }))
+  }
+
+  const handleHalvingDaysChange = (e) => {
+    const value = e.target.value
+    setHalvingDays(value)
+    setErrors(prev => ({ ...prev, halvingDays: validateHalvingDays(value) }))
+  }
 
   // Calculate tokens minted per year
   const calculateYearlyMinting = () => {
@@ -64,7 +131,8 @@ export default function ConfigureChain() {
     navigate('/')
   }
 
-  const isFormValid = chainName && tokenName && ticker && tokenSupply && halvingDays && blockTime
+  const isFormValid = chainName && tokenName && ticker && tokenSupply && halvingDays && blockTime &&
+    !errors.chainName && !errors.tokenName && !errors.ticker && !errors.halvingDays
 
   return (
     <TooltipProvider>
@@ -119,8 +187,12 @@ export default function ConfigureChain() {
                     id="chainName"
                     placeholder="Enter chain name"
                     value={chainName}
-                    onChange={(e) => setChainName(e.target.value)}
+                    onChange={handleChainNameChange}
+                    className={errors.chainName ? 'border-destructive' : ''}
                   />
+                  {errors.chainName && (
+                    <p className="text-sm text-destructive">{errors.chainName}</p>
+                  )}
                 </div>
 
                 {/* Token Name */}
@@ -141,8 +213,12 @@ export default function ConfigureChain() {
                     id="tokenName"
                     placeholder="Enter your token name"
                     value={tokenName}
-                    onChange={(e) => setTokenName(e.target.value)}
+                    onChange={handleTokenNameChange}
+                    className={errors.tokenName ? 'border-destructive' : ''}
                   />
+                  {errors.tokenName && (
+                    <p className="text-sm text-destructive">{errors.tokenName}</p>
+                  )}
                 </div>
 
                 {/* Ticker */}
@@ -163,9 +239,13 @@ export default function ConfigureChain() {
                     id="ticker"
                     placeholder="Enter your ticker"
                     value={ticker}
-                    onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                    maxLength={10}
+                    onChange={handleTickerChange}
+                    maxLength={5}
+                    className={errors.ticker ? 'border-destructive' : ''}
                   />
+                  {errors.ticker && (
+                    <p className="text-sm text-destructive">{errors.ticker}</p>
+                  )}
                 </div>
               </div>
 
@@ -188,7 +268,7 @@ export default function ConfigureChain() {
                     className="bg-muted opacity-75 cursor-not-allowed"
                   />
                   <p className="text-sm text-muted-foreground">
-                    The total number of tokens that will ever exist. This cannot be changed after launch.
+                    The total number of tokens that will ever exist.
                   </p>
                 </div>
 
@@ -211,11 +291,12 @@ export default function ConfigureChain() {
                     type="number"
                     placeholder="365"
                     value={halvingDays}
-                    onChange={(e) => setHalvingDays(e.target.value)}
+                    onChange={handleHalvingDaysChange}
+                    className={errors.halvingDays ? 'border-destructive' : ''}
                   />
-                  <p className="text-sm text-muted-foreground">
-                    How many days between each halving event
-                  </p>
+                  {errors.halvingDays && (
+                    <p className="text-sm text-destructive">{errors.halvingDays}</p>
+                  )}
                 </div>
 
                 {/* Block Time */}
