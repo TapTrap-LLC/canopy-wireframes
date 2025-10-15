@@ -30,7 +30,7 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [] 
         />
       </SidebarHeader>
       <SidebarContent className="px-4">
-        <SidebarMenu>
+        <SidebarMenu className="gap-3">
           {steps.map((step) => {
             const isActive = step.id === currentStep
             const isCompleted = completedSteps.includes(step.id)
@@ -50,7 +50,7 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [] 
                     <div className={cn(
                       "flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium",
                       isActive && "bg-primary text-primary-foreground",
-                      !isActive && !isCompleted && "border border-muted-foreground",
+                      !isActive && !isCompleted && "text-muted-foreground",
                       isCompleted && !isActive && "bg-primary/20 text-primary"
                     )}>
                       {isCompleted ? (
