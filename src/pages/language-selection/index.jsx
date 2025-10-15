@@ -8,14 +8,14 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 
 const languages = [
-  { id: 'python', name: 'Python', icon: '🐍' },
-  { id: 'java', name: 'Java', icon: '☕' },
-  { id: 'kotlin', name: 'Kotlin', icon: '🎯' },
-  { id: 'go', name: 'Go', icon: '🐹' },
-  { id: 'csharp', name: 'C#', icon: '🔷' },
-  { id: 'ruby', name: 'Ruby', icon: '💎' },
-  { id: 'dart', name: 'Dart', icon: '🎯' },
-  { id: 'javascript', name: 'JavaScript', icon: '🟨' },
+  { id: 'python', name: 'Python', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-plain.svg' },
+  { id: 'java', name: 'Java', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-plain.svg' },
+  { id: 'kotlin', name: 'Kotlin', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-plain.svg' },
+  { id: 'go', name: 'Go', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-plain.svg' },
+  { id: 'csharp', name: 'C#', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-plain.svg' },
+  { id: 'ruby', name: 'Ruby', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ruby/ruby-plain.svg' },
+  { id: 'dart', name: 'Dart', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dart/dart-plain.svg' },
+  { id: 'javascript', name: 'JavaScript', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-plain.svg' },
 ]
 
 export default function LanguageSelection() {
@@ -78,7 +78,11 @@ export default function LanguageSelection() {
                   onClick={() => setSelectedLanguage(lang.id)}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className="text-4xl">{lang.icon}</div>
+                    <img 
+                      src={lang.iconUrl} 
+                      alt={`${lang.name} logo`}
+                      className="w-12 h-12 object-contain brightness-0 invert"
+                    />
                     <span className="font-medium">{lang.name}</span>
                   </div>
                 </Card>
