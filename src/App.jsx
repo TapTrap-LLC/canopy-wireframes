@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import LaunchpadOverview from '@/pages/launchpad-overview'
 import LanguageSelection from '@/pages/language-selection'
 import ConnectRepo from '@/pages/connect-repo'
+import ConfigureChain from '@/pages/configure-chain'
 import { Button } from '@/components/ui/button'
 
 function HomePage() {
@@ -33,7 +34,7 @@ function App() {
         {/* Placeholder routes for future steps */}
         <Route path="/launchpad/language" element={<LanguageSelection />} />
         <Route path="/launchpad/repository" element={<ConnectRepo />} />
-        <Route path="/launchpad/configure" element={<div className="p-8">Step 3: Configure Chain (Coming Soon)</div>} />
+        <Route path="/launchpad/configure" element={<ConfigureChain />} />
         <Route path="/launchpad/branding" element={<div className="p-8">Step 4: Add Branding (Coming Soon)</div>} />
         <Route path="/launchpad/trust" element={<div className="p-8">Step 5: Build Trust (Coming Soon)</div>} />
         <Route path="/launchpad/settings" element={<div className="p-8">Step 6: Launch Settings (Coming Soon)</div>} />
