@@ -323,6 +323,9 @@ export default function Branding() {
                   >
                     <Upload className="w-8 h-8 text-muted-foreground mb-3" />
                     <p className="font-medium">Upload from your device.</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Add up to 10 images or videos. PNG, JPG, and MP4 formats are supported.
+                    </p>
                     <input
                       ref={galleryInputRef}
                       type="file"
@@ -408,6 +411,21 @@ export default function Branding() {
                             <div className="bg-background/80 rounded p-1">
                               <GripVertical className="w-3 h-3 text-muted-foreground" />
                             </div>
+                          </div>
+
+                          {/* Delete button */}
+                          <div className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleGalleryRemove(index)
+                              }}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
                           </div>
 
                           {/* Thumbnail */}
