@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, ArrowRight, X, Upload, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, X, Upload, Trash2, GripVertical } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
@@ -18,6 +18,8 @@ export default function Branding() {
   const [description, setDescription] = useState('')
   const [galleryItems, setGalleryItems] = useState([])
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
+  const [editingNameIndex, setEditingNameIndex] = useState(null)
+  const [draggedIndex, setDraggedIndex] = useState(null)
   const [errors, setErrors] = useState({
     description: ''
   })
@@ -96,6 +98,43 @@ export default function Branding() {
     if (currentGalleryIndex >= galleryItems.length - 1) {
       setCurrentGalleryIndex(Math.max(0, galleryItems.length - 2))
     }
+  }
+
+  // Handle name edit
+  const handleNameEdit = (index, newName) => {
+    setGalleryItems(prev => prev.map((item, i) =>
+      i === index ? { ...item, customName: newName } : item
+    ))
+  }
+
+  const handleNameClick = (index) => {
+    setEditingNameIndex(index)
+  }
+
+  const handleNameBlur = () => {
+    setEditingNameIndex(null)
+  }
+
+  // Handle drag and drop
+  const handleDragStart = (index) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === index) return
+
+    const newItems = [...galleryItems]
+    const draggedItem = newItems[draggedIndex]
+    newItems.splice(draggedIndex, 1)
+    newItems.splice(index, 0, draggedItem)
+
+    setGalleryItems(newItems)
+    setDraggedIndex(index)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
   }
 
   const handleBack = () => {
@@ -289,56 +328,44 @@ export default function Branding() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Carousel */}
+                    {/* Main Preview */}
                     <Card className="p-4">
                       <div className="relative">
                         {galleryItems[currentGalleryIndex].type === 'image' ? (
                           <img
                             src={galleryItems[currentGalleryIndex].preview}
                             alt={`Gallery item ${currentGalleryIndex + 1}`}
-                            className="w-full h-64 object-contain rounded-lg bg-muted"
+                            className="w-full h-80 object-contain rounded-lg bg-muted"
                           />
                         ) : (
                           <video
                             src={galleryItems[currentGalleryIndex].preview}
                             controls
-                            className="w-full h-64 rounded-lg bg-muted"
+                            className="w-full h-80 rounded-lg bg-muted"
                           />
-                        )}
-
-                        {/* Navigation buttons */}
-                        {galleryItems.length > 1 && (
-                          <>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="absolute left-2 top-1/2 -translate-y-1/2"
-                              onClick={() => setCurrentGalleryIndex(prev =>
-                                prev === 0 ? galleryItems.length - 1 : prev - 1
-                              )}
-                            >
-                              <ChevronLeft className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="absolute right-2 top-1/2 -translate-y-1/2"
-                              onClick={() => setCurrentGalleryIndex(prev =>
-                                prev === galleryItems.length - 1 ? 0 : prev + 1
-                              )}
-                            >
-                              <ChevronRight className="w-4 h-4" />
-                            </Button>
-                          </>
                         )}
                       </div>
 
-                      {/* Gallery info */}
+                      {/* Current item info with editable name */}
                       <div className="flex items-center justify-between mt-4">
-                        <div>
-                          <p className="font-medium">
-                            {galleryItems[currentGalleryIndex].file.name}
-                          </p>
+                        <div className="flex-1 min-w-0 mr-4">
+                          {editingNameIndex === currentGalleryIndex ? (
+                            <Input
+                              value={galleryItems[currentGalleryIndex].customName || galleryItems[currentGalleryIndex].file.name}
+                              onChange={(e) => handleNameEdit(currentGalleryIndex, e.target.value)}
+                              onBlur={handleNameBlur}
+                              autoFocus
+                              className="font-medium"
+                            />
+                          ) : (
+                            <p
+                              className="font-medium cursor-pointer hover:text-primary transition-colors truncate"
+                              onClick={() => handleNameClick(currentGalleryIndex)}
+                              title="Click to edit name"
+                            >
+                              {galleryItems[currentGalleryIndex].customName || galleryItems[currentGalleryIndex].file.name}
+                            </p>
+                          )}
                           <p className="text-sm text-muted-foreground">
                             {currentGalleryIndex + 1} of {galleryItems.length}
                           </p>
@@ -352,6 +379,58 @@ export default function Branding() {
                         </Button>
                       </div>
                     </Card>
+
+                    {/* Thumbnail Grid with Drag & Drop */}
+                    <div className="grid grid-cols-4 gap-3">
+                      {galleryItems.map((item, index) => (
+                        <Card
+                          key={index}
+                          draggable
+                          onDragStart={() => handleDragStart(index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDragEnd={handleDragEnd}
+                          onClick={() => setCurrentGalleryIndex(index)}
+                          className={`relative cursor-pointer overflow-hidden group ${
+                            currentGalleryIndex === index
+                              ? 'ring-2 ring-primary'
+                              : 'hover:ring-2 hover:ring-primary/50'
+                          } ${draggedIndex === index ? 'opacity-50' : ''}`}
+                        >
+                          {/* Drag handle */}
+                          <div className="absolute top-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-background/80 rounded p-1">
+                              <GripVertical className="w-3 h-3 text-muted-foreground" />
+                            </div>
+                          </div>
+
+                          {/* Thumbnail */}
+                          {item.type === 'image' ? (
+                            <img
+                              src={item.preview}
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-full h-24 object-cover"
+                            />
+                          ) : (
+                            <div className="relative w-full h-24 bg-muted flex items-center justify-center">
+                              <video
+                                src={item.preview}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xs font-medium">
+                                VIDEO
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Order number */}
+                          <div className="absolute bottom-1 right-1">
+                            <div className="bg-background/80 rounded px-1.5 py-0.5 text-xs font-medium">
+                              {index + 1}
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
 
                     {/* Add more button */}
                     <Button
