@@ -97,13 +97,41 @@ export default function ConfigureChain() {
 
   // Calculate tokens minted per year
   const calculateYearlyMinting = () => {
-    if (!tokenSupply || !blockTime) return 0
-    
-    const blocksPerYear = (365 * 24 * 60 * 60) / parseInt(blockTime)
-    const initialReward = parseInt(tokenSupply) / (blocksPerYear * 4) // Simplified calculation
-    const yearlyMinting = initialReward * blocksPerYear
-    
-    return Math.floor(yearlyMinting).toLocaleString()
+    if (!tokenSupply || !blockTime || !halvingDays) return 0
+
+    const supply = parseInt(tokenSupply)
+    const blockTimeSec = parseInt(blockTime)
+    const halvingInterval = parseInt(halvingDays)
+
+    // Calculate blocks per year and blocks per halving interval
+    const blocksPerYear = (365 * 24 * 60 * 60) / blockTimeSec
+    const blocksPerHalving = (halvingInterval * 24 * 60 * 60) / blockTimeSec
+
+    // Using Bitcoin's approach: geometric series where each halving period has half the rewards
+    // Sum of series: total_supply = initial_subsidy * blocks_per_halving * (1 + 1/2 + 1/4 + 1/8 + ...)
+    // The series converges to 2, so: total_supply = initial_subsidy * blocks_per_halving * 2
+    // Therefore: initial_subsidy = total_supply / (blocks_per_halving * 2)
+
+    const initialBlockSubsidy = supply / (blocksPerHalving * 2)
+
+    // For Year 1, check if it spans the first halving
+    if (365 <= halvingInterval) {
+      // Year 1 is entirely within first halving period - use full initial subsidy
+      const yearlyMinting = initialBlockSubsidy * blocksPerYear
+      return Math.floor(yearlyMinting).toLocaleString()
+    } else {
+      // Year 1 spans multiple halvings - need to calculate pro-rata
+      const daysInFirstPeriod = halvingInterval
+      const blocksInFirstPeriod = (daysInFirstPeriod * 24 * 60 * 60) / blockTimeSec
+      const tokensFromFirstPeriod = initialBlockSubsidy * blocksInFirstPeriod
+
+      const daysRemaining = 365 - halvingInterval
+      const blocksRemaining = (daysRemaining * 24 * 60 * 60) / blockTimeSec
+      const tokensFromSecondPeriod = (initialBlockSubsidy / 2) * blocksRemaining
+
+      const yearlyMinting = tokensFromFirstPeriod + tokensFromSecondPeriod
+      return Math.floor(yearlyMinting).toLocaleString()
+    }
   }
 
   const handleBack = () => {
