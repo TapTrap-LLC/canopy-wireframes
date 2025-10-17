@@ -34,6 +34,12 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Optional whitepapers section with unified list
   - File upload (PDF, DOC, DOCX) and URL support
   - Metadata fetching for whitepaper URLs
+- **Launch Settings**:
+  - Fixed graduation threshold display ($50,000)
+  - Virtual chain to real chain graduation explanation
+  - Optional initial purchase in CNPY tokens
+  - "Why should I buy?" expandable information section
+  - Tooltip explaining CNPY usage for initial purchase
 - **Form Validation**: Inline error messages and validation for all inputs
 - **Dark Mode First**: Modern, clean interface optimized for dark mode
 - **Step-by-Step Guidance**: Clear workflow with progress tracking in sidebar
@@ -83,8 +89,10 @@ src/
 │   │   └── components/
 │   │       ├── logo-upload.jsx
 │   │       └── gallery-carousel.jsx
-│   └── links/
-│       └── index.jsx       # Step 5: Links & documentation
+│   ├── links/
+│   │   └── index.jsx       # Step 5: Links & documentation
+│   └── launch-settings/
+│       └── index.jsx       # Step 6: Launch settings
 │
 ├── lib/
 │   └── utils.js            # Utility functions
@@ -152,7 +160,7 @@ The launcher guides users through these steps:
 4. **Chain Configuration** ✅ - Set chain name, token details, halving schedule, and block time
 5. **Branding & Media** ✅ - Add logo, brand color, description, and gallery (images/videos)
 6. **Links & Documentation** ✅ - Add social links and whitepapers (files or URLs)
-7. **Launch Settings** 🚧 - Configure launch parameters (Coming Soon)
+7. **Launch Settings** ✅ - Configure graduation threshold and optional initial purchase
 8. **Review & Payment** 🚧 - Final review and payment (Coming Soon)
 
 ## 🧪 Scripts

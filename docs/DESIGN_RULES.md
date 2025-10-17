@@ -102,6 +102,16 @@
 - Group related fields with proper spacing
 - Clear labels and helpful descriptions
 - Inline validation messages
+- Use Tooltip component with HelpCircle icon for contextual help
+  - Place HelpCircle icon next to labels: `className="flex items-center gap-2"`
+  - Icon size: `w-3.5 h-3.5` with `text-muted-foreground`
+  - Wrap entire app/page with `<TooltipProvider>` at root level
+
+### 11. Information Display
+- Use Card components with muted backgrounds for informational sections
+- Expandable sections for optional/detailed information
+- Icons to visually identify different sections (Target, Coins, Info, etc.)
+- Keep explanatory text concise and scannable
 
 ## Example Implementation
 
@@ -109,37 +119,52 @@
 // Good - Following design rules
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { HelpCircle } from "lucide-react"
 
 function Component() {
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Welcome to Launchpad</h1>
-          <p className="text-muted-foreground">
-            Launch your blockchain in minutes
-          </p>
+    <TooltipProvider>
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Welcome to Launchpad</h1>
+            <p className="text-muted-foreground">
+              Launch your blockchain in minutes
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Get Started</CardTitle>
+              <CardDescription>
+                Follow these steps to launch your chain
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="chain-name" className="flex items-center gap-2 text-sm font-medium">
+                  Chain Name
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>The name of your blockchain network</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Example: "Ethereum", "Solana"</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <Input id="chain-name" placeholder="Enter chain name" />
+              </div>
+              <Button>Continue</Button>
+            </CardContent>
+          </Card>
         </div>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Get Started</CardTitle>
-            <CardDescription>
-              Follow these steps to launch your chain
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="font-medium">Step 1</h3>
-              <p className="text-sm text-muted-foreground">
-                Choose your template
-              </p>
-            </div>
-            <Button>Continue</Button>
-          </CardContent>
-        </Card>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }
 ```
