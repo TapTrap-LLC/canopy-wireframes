@@ -10,6 +10,7 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
 
 ### Implemented Features ✅
 
+#### Launch Chain Workflow
 - **Template-Based Chain Creation**: Pre-configured templates for Python, Go, Rust, and TypeScript
 - **GitHub Integration**: Direct repository connection and forking workflow
 - **Language Selection**: Visual language picker with devicon library icons
@@ -51,10 +52,29 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Payment summary with lighter card background
   - Important launch notice with key information
   - Placeholder data for demonstration ($GAME, MyGameChain, etc.)
+
+#### Chain Detail Page
+- **Main Sidebar**: Sticky navigation with search, "Create L1 chain" button, and connect wallet
+- **Chain Header**: Compact display with logo, name, ticker, and action buttons (share, favorite)
+- **Price Chart & Analytics**:
+  - Market cap display with 24h change
+  - Graduation progress tracker
+  - Interactive price chart with time period selection (1H, 1D, 1W, 1M, 1Y, ALL)
+  - Live statistics: Volume, MCap, Virtual Liquidity, Holders
+- **Tabbed Interface**:
+  - **Overview**: Social links with counters (GitHub stars), description, image gallery
+  - **Holders**: Holder list (coming soon)
+  - **Code**: Repository information and language details
+  - **Block Explorer**: Blockchain explorer integration (coming soon)
+- **Trading Panel**: CNPY token swap interface with connect wallet integration
+- **Modular Architecture**: Component-based structure for maintainability
+
+#### General Features
 - **Form Validation**: Inline error messages and validation for all inputs
 - **Dark Mode First**: Modern, clean interface optimized for dark mode
 - **Step-by-Step Guidance**: Clear workflow with progress tracking in sidebar
 - **Tooltips**: Helpful explanations with crypto context and examples
+- **Recharts Integration**: Beautiful, responsive charts for price visualization
 
 ## 🛠 Tech Stack
 
@@ -65,13 +85,14 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **Lucide React** - Icon library
 - **Devicon** - Programming language icons
+- **Recharts** - Composable charting library for price visualization
 
 ## 📁 Project Structure
 
 ```
 src/
-├── components/               # Shared/reusable components
-│   ├── ui/                  # shadcn/ui components
+├── components/                    # Shared/reusable components
+│   ├── ui/                       # shadcn/ui components
 │   │   ├── button.jsx
 │   │   ├── card.jsx
 │   │   ├── dialog.jsx
@@ -82,37 +103,47 @@ src/
 │   │   ├── textarea.jsx
 │   │   ├── tooltip.jsx
 │   │   └── ...
-│   └── launchpad-sidebar.jsx # Main navigation sidebar
+│   ├── launchpad-sidebar.jsx     # Launch workflow navigation
+│   └── main-sidebar.jsx          # Main app navigation
 │
-├── pages/                   # Page components (views)
-│   ├── launchpad-overview/
-│   │   └── index.jsx       # Welcome/overview screen
-│   ├── language-selection/
-│   │   └── index.jsx       # Step 1: Choose language
-│   ├── connect-repo/
-│   │   ├── index.jsx       # Step 2: Connect GitHub
-│   │   └── components/
-│   │       └── github-connect-dialog.jsx
-│   ├── configure-chain/
-│   │   └── index.jsx       # Step 3: Configure chain & token
-│   ├── branding/
-│   │   ├── index.jsx       # Step 4: Add branding
-│   │   └── components/
-│   │       ├── logo-upload.jsx
-│   │       └── gallery-carousel.jsx
-│   ├── links/
-│   │   └── index.jsx       # Step 5: Links & documentation
-│   ├── launch-settings/
-│   │   └── index.jsx       # Step 6: Launch settings
-│   └── review/
-│       └── index.jsx       # Step 7: Review & payment
+├── pages/                        # Page components (views)
+│   ├── launch-chain/             # Launch workflow pages
+│   │   ├── launchpad-overview/
+│   │   │   └── index.jsx        # Welcome/overview screen
+│   │   ├── language-selection/
+│   │   │   └── index.jsx        # Step 1: Choose language
+│   │   ├── connect-repo/
+│   │   │   ├── index.jsx        # Step 2: Connect GitHub
+│   │   │   └── components/
+│   │   │       └── github-connect-dialog.jsx
+│   │   ├── configure-chain/
+│   │   │   └── index.jsx        # Step 3: Configure chain & token
+│   │   ├── branding/
+│   │   │   ├── index.jsx        # Step 4: Add branding
+│   │   │   └── components/
+│   │   │       ├── logo-upload.jsx
+│   │   │       └── gallery-carousel.jsx
+│   │   ├── links/
+│   │   │   └── index.jsx        # Step 5: Links & documentation
+│   │   ├── launch-settings/
+│   │   │   └── index.jsx        # Step 6: Launch settings
+│   │   └── review/
+│   │       └── index.jsx        # Step 7: Review & payment
+│   │
+│   └── launch-page/              # Chain detail page
+│       ├── index.jsx             # Main page component
+│       └── components/           # Page-specific components
+│           ├── chain-header.jsx  # Chain logo, name, actions
+│           ├── price-chart.jsx   # Chart with graduation tracker
+│           ├── overview-tab.jsx  # Overview content with gallery
+│           └── trading-panel.jsx # Token swap interface
 │
 ├── lib/
-│   └── utils.js            # Utility functions
+│   └── utils.js                 # Utility functions
 │
-├── App.jsx                 # Main app with routing
-├── main.jsx               # Entry point
-└── index.css              # Global styles
+├── App.jsx                      # Main app with routing
+├── main.jsx                    # Entry point
+└── index.css                   # Global styles
 ```
 
 ## 🚦 Getting Started
