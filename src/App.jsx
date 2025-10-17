@@ -6,6 +6,7 @@ import ConfigureChain from '@/pages/configure-chain'
 import Branding from '@/pages/branding'
 import Links from '@/pages/links'
 import LaunchSettings from '@/pages/launch-settings'
+import Review from '@/pages/review'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
@@ -45,7 +46,7 @@ function App() {
         <Route path="/launchpad/branding" element={<Branding />} />
         <Route path="/launchpad/links" element={<Links />} />
         <Route path="/launchpad/settings" element={<LaunchSettings />} />
-        <Route path="/launchpad/review" element={<div className="p-8">Step 7: Review & Payment (Coming Soon)</div>} />
+        <Route path="/launchpad/review" element={<Review />} />
         <Route path="/launchpad/success" element={<div className="p-8">Launch Complete! (Coming Soon)</div>} />
       </Routes>
     </Router>
