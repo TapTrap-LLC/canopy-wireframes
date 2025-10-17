@@ -149,6 +149,15 @@ export default function LaunchSettings() {
                       placeholder="0000"
                       className="text-lg"
                     />
+                    {initialPurchase && parseFloat(initialPurchase) > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        You will receive{' '}
+                        <span className="font-semibold text-foreground">
+                          {parseFloat(initialPurchase).toLocaleString()} $GAME
+                        </span>
+                        {' '}tokens (1:1 ratio)
+                      </p>
+                    )}
                   </div>
                 </div>
 
