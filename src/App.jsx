@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import LaunchpadOverview from '@/pages/launchpad-overview'
-import LanguageSelection from '@/pages/language-selection'
-import ConnectRepo from '@/pages/connect-repo'
-import ConfigureChain from '@/pages/configure-chain'
-import Branding from '@/pages/branding'
-import Links from '@/pages/links'
-import LaunchSettings from '@/pages/launch-settings'
-import Review from '@/pages/review'
+import LaunchpadOverview from '@/pages/launch-chain/launchpad-overview'
+import LanguageSelection from '@/pages/launch-chain/language-selection'
+import ConnectRepo from '@/pages/launch-chain/connect-repo'
+import ConfigureChain from '@/pages/launch-chain/configure-chain'
+import Branding from '@/pages/launch-chain/branding'
+import Links from '@/pages/launch-chain/links'
+import LaunchSettings from '@/pages/launch-chain/launch-settings'
+import Review from '@/pages/launch-chain/review'
+import LaunchPage from '@/pages/launch-page'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
@@ -38,6 +39,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/launch" element={<LaunchPage />} />
         <Route path="/launchpad" element={<LaunchpadOverview />} />
         {/* Placeholder routes for future steps */}
         <Route path="/launchpad/language" element={<LanguageSelection />} />
