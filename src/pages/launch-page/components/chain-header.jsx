@@ -8,8 +8,8 @@ export default function ChainHeader({ chainData }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* Logo Placeholder */}
-          <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-bold text-white">
+          <div className="w-8 h-8 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-bold text-black">
               {chainData.ticker[0]}
             </span>
           </div>

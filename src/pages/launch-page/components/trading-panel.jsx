@@ -24,8 +24,8 @@ export default function TradingPanel({ chainData }) {
         </div>
 
         <Button variant="outline" className="w-full justify-start gap-2">
-          <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-white">{chainData.ticker[0]}</span>
+          <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-bold text-black">{chainData.ticker[0]}</span>
           </div>
           <span className="flex-1 text-left">{chainData.name}</span>
           <span className="text-muted-foreground">D</span>

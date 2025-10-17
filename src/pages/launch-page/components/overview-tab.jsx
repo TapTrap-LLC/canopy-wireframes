@@ -103,7 +103,7 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
             </div>
 
             {/* Thumbnails */}
-            <div className="flex gap-3 overflow-x-auto">
+            <div className="flex gap-3 p-1 overflow-x-auto">
               {chainData.gallery.map((_, idx) => (
                 <button
                   key={idx}
