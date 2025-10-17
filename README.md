@@ -8,11 +8,27 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
 
 ## ✨ Features
 
-- **Template-Based Chain Creation**: Pre-configured templates for multiple programming languages
-- **GitHub Integration**: Direct repository connection for code customization
+### Implemented Features ✅
+
+- **Template-Based Chain Creation**: Pre-configured templates for Python, Go, Rust, and TypeScript
+- **GitHub Integration**: Direct repository connection and forking workflow
+- **Language Selection**: Visual language picker with devicon library icons
+- **Chain Configuration**:
+  - Token name, ticker (3-5 chars), and chain name
+  - Token supply (1B fixed)
+  - Halving schedule (customizable in days)
+  - Block time selection (5s to 5min)
+  - Real-time calculation of yearly token emission
+- **Branding & Media**:
+  - Logo upload (PNG/JPG, 1000×1000px recommended)
+  - Brand color picker with hex input
+  - Description textarea (20-500 chars, mandatory)
+  - Gallery upload supporting images and videos
+  - Carousel navigation for gallery items
+- **Form Validation**: Inline error messages and validation for all inputs
 - **Dark Mode First**: Modern, clean interface optimized for dark mode
-- **Step-by-Step Guidance**: Clear workflow with progress tracking
-- **Minimal Technical Barriers**: Launch a blockchain without deep technical knowledge
+- **Step-by-Step Guidance**: Clear workflow with progress tracking in sidebar
+- **Tooltips**: Helpful explanations with crypto context and examples
 
 ## 🛠 Tech Stack
 
@@ -33,7 +49,12 @@ src/
 │   │   ├── button.jsx
 │   │   ├── card.jsx
 │   │   ├── dialog.jsx
+│   │   ├── input.jsx
+│   │   ├── label.jsx
+│   │   ├── select.jsx
 │   │   ├── sidebar.jsx
+│   │   ├── textarea.jsx
+│   │   ├── tooltip.jsx
 │   │   └── ...
 │   └── launchpad-sidebar.jsx # Main navigation sidebar
 │
@@ -42,10 +63,14 @@ src/
 │   │   └── index.jsx       # Welcome/overview screen
 │   ├── language-selection/
 │   │   └── index.jsx       # Step 1: Choose language
-│   └── connect-repo/
-│       ├── index.jsx       # Step 2: Connect GitHub
-│       └── components/
-│           └── github-connect-dialog.jsx
+│   ├── connect-repo/
+│   │   ├── index.jsx       # Step 2: Connect GitHub
+│   │   └── components/
+│   │       └── github-connect-dialog.jsx
+│   ├── configure-chain/
+│   │   └── index.jsx       # Step 3: Configure chain & token
+│   └── branding/
+│       └── index.jsx       # Step 4: Add branding
 │
 ├── lib/
 │   └── utils.js            # Utility functions
@@ -107,14 +132,14 @@ The application will be available at `http://localhost:5173`
 
 The launcher guides users through these steps:
 
-1. **Overview** - Introduction and requirements
-2. **Language Selection** - Choose programming language template
-3. **Repository Connection** - Fork template and connect GitHub
-4. **Chain Configuration** - Set chain name, token details
-5. **Branding & Media** - Add logos and visual identity
-6. **Links & Documentation** - Add social links and docs
-7. **Launch Settings** - Configure launch parameters
-8. **Review & Payment** - Final review and payment
+1. **Overview** ✅ - Introduction and requirements
+2. **Language Selection** ✅ - Choose programming language template (Python, Go, Rust, TypeScript)
+3. **Repository Connection** ✅ - Fork template and connect GitHub repository
+4. **Chain Configuration** ✅ - Set chain name, token details, halving schedule, and block time
+5. **Branding & Media** ✅ - Add logo, brand color, description, and gallery (images/videos)
+6. **Links & Documentation** 🚧 - Add social links and docs (Coming Soon)
+7. **Launch Settings** 🚧 - Configure launch parameters (Coming Soon)
+8. **Review & Payment** 🚧 - Final review and payment (Coming Soon)
 
 ## 🧪 Scripts
 
