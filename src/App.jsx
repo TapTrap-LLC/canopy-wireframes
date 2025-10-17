@@ -6,8 +6,14 @@ import ConfigureChain from '@/pages/configure-chain'
 import Branding from '@/pages/branding'
 import Links from '@/pages/links'
 import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 
 function HomePage() {
+  const navigate = useNavigate()
+
+  const handleGetStarted = () => {
+    navigate('/launchpad/')
+  }
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-6">
@@ -17,10 +23,8 @@ function HomePage() {
             Launch your blockchain network in minutes
           </p>
         </div>
-        <Button asChild size="lg">
-          <a href="/launchpad">
+        <Button onClick={handleGetStarted} size="lg">
             Start Launching
-          </a>
         </Button>
       </div>
     </div>
