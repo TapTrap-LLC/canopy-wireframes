@@ -1,5 +1,5 @@
 import { Separator } from '@/components/ui/separator'
-import { Search, Plus, Zap, BarChart3, Activity, TrendingUp } from 'lucide-react'
+import { Search, Plus, Zap, BarChart3, Activity, TrendingUp, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function MainSidebar() {
@@ -61,11 +61,16 @@ export default function MainSidebar() {
             <TrendingUp className="w-4 h-4" />
             <span>Trade</span>
           </button>
+          <button className="w-full h-9 flex items-center gap-3 px-4 rounded-xl text-sm font-medium text-white hover:bg-white/5 transition-colors">
+            <User className="w-4 h-4" />
+            <span>Profile</span>
+          </button>
         </nav>
       </div>
 
-      {/* Connect Wallet */}
-      <div className="px-4">
+      {/* Bottom Section */}
+      <div className="px-4 space-y-3">
+        {/* Connect Wallet */}
         <button className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80">
           Connect wallet
         </button>
