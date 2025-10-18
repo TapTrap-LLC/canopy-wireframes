@@ -8,6 +8,7 @@ import PriceChart from './components/price-chart'
 import OverviewTab from './components/overview-tab'
 import CodeTab from './components/code-tab'
 import HoldersTab from './components/holders-tab'
+import BlockExplorerTab from './components/block-explorer-tab'
 import TradingPanel from './components/trading-panel'
 import { Globe, Github } from 'lucide-react'
 
@@ -116,7 +117,107 @@ const mockChainData = {
     { time: '16:00', price: 0.0118 },
     { time: '18:00', price: 0.0116 },
     { time: '20:00', price: 0.011647 }
-  ]
+  ],
+
+  // Block Explorer data
+  explorer: {
+    currentBlock: 245789,
+    totalTransactions: 1523847,
+    recentBlocks: [
+      { number: 245789, hash: '0x8f5c7d9a2b1e4f3c6a8d9e2f1b4c7a5d9e2f1b4c7a5d9e2f1b4c', transactions: 156, timestamp: 15 },
+      { number: 245788, hash: '0x7e4b6c8a1d2f5e3c7b9a2d1f4e6c8a1d2f5e3c7b9a2d1f4e6c8a', transactions: 142, timestamp: 25 },
+      { number: 245787, hash: '0x6d3a5b7c9e1f4d2c6a8b9e1d3f5c7a9e1d3f5c7a9e1d3f5c7a9e', transactions: 189, timestamp: 35 },
+      { number: 245786, hash: '0x5c2b4a6d8e0f3c1b5a7d9e0c2f4b6d8e0c2f4b6d8e0c2f4b6d8e', transactions: 201, timestamp: 45 },
+      { number: 245785, hash: '0x4b1a3c5d7e9f2b0c4a6d8e9c1f3b5d7e9c1f3b5d7e9c1f3b5d7e', transactions: 178, timestamp: 55 },
+      { number: 245784, hash: '0x3a0b2c4d6e8f1a9c3b5d7e8c0f2b4d6e8c0f2b4d6e8c0f2b4d6e', transactions: 165, timestamp: 65 },
+      { number: 245783, hash: '0x2c1a3b5d7e9f0c8a2b4d6e7c9f1b3d5e7c9f1b3d5e7c9f1b3d5e', transactions: 193, timestamp: 75 },
+      { number: 245782, hash: '0x1b0a2c4d6e8f9b7c1a3d5e6c8f0b2d4e6c8f0b2d4e6c8f0b2d4e', transactions: 147, timestamp: 85 },
+      { number: 245781, hash: '0x0a9b1c3d5e7f8a6b0c2d4e5c7f9b1d3e5c7f9b1d3e5c7f9b1d3e', transactions: 182, timestamp: 95 },
+      { number: 245780, hash: '0x9a8b0c2d4e6f7a5b9c1d3e4c6f8b0d2e4c6f8b0d2e4c6f8b0d2e', transactions: 159, timestamp: 105 }
+    ],
+    recentTransactions: [
+      {
+        hash: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1a9d2f4e6c8a0b2d4e6c8a0b2',
+        from: '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
+        to: '0xdD2FD4581271e230360230F9337D5c0430Bf44C0',
+        amount: 2500,
+        status: 'success',
+        timestamp: 8
+      },
+      {
+        hash: '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199b8d1f3e5c7a9b1d3f5e7c9a1',
+        from: '0xbDA5747bFD65F08deb54cb465eB87D40e51B197E',
+        to: '0x2546BcD3c84621e976D8185a91A922aE77ECEc30',
+        amount: 15000,
+        status: 'success',
+        timestamp: 18
+      },
+      {
+        hash: '0xdD2FD4581271e230360230F9337D5c0430Bf44C0c7a0e2f4b6d8a0e2f4b6d8a0',
+        from: '0x95cED938F7991cd0dFcb48F0a06a40FA1aF46EBC',
+        to: '0x3E5e9111Ae8eB78Fe1CC3bb8915d5D461F3Ef9A9',
+        amount: 8750,
+        status: 'pending',
+        timestamp: 28
+      },
+      {
+        hash: '0xbDA5747bFD65F08deb54cb465eB87D40e51B197Ed6b9f1e3c5a7d9f1e3c5a7d9',
+        from: '0x28a8746e75304c0780E39d3a14F80f7E4fe3951C',
+        to: '0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E',
+        amount: 5200,
+        status: 'success',
+        timestamp: 38
+      },
+      {
+        hash: '0x2546BcD3c84621e976D8185a91A922aE77ECEc30e5a8d0f2b4c6e8d0f2b4c6e8',
+        from: '0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e',
+        to: '0x610B717796ad172B316836AC95a2ffad065CeaB4',
+        amount: 12000,
+        status: 'success',
+        timestamp: 48
+      },
+      {
+        hash: '0x95cED938F7991cd0dFcb48F0a06a40FA1aF46EBCf4b7c9e1a3d5f7c9e1a3d5f7',
+        from: '0x178169B423a011fff22B9e3F3abeA13414dDD0F1',
+        to: '0xF7eB46Fa95CCfB7642fA4a2E3f3C9748F0a4a8D9',
+        amount: 3300,
+        status: 'failed',
+        timestamp: 58
+      },
+      {
+        hash: '0x3E5e9111Ae8eB78Fe1CC3bb8915d5D461F3Ef9A9a3c6d8f0b2e4a6c8f0b2e4a6',
+        from: '0x07687e702b410Fa43f4cB4Af7fA097918ffD2730',
+        to: '0x4E9ce36E442e55EcD9025B9a6E0D88485d628A67',
+        amount: 6800,
+        status: 'success',
+        timestamp: 68
+      },
+      {
+        hash: '0x28a8746e75304c0780E39d3a14F80f7E4fe3951Cb2e5d7f9a1c3e5d7f9a1c3e5',
+        from: '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+        to: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        amount: 9500,
+        status: 'success',
+        timestamp: 78
+      },
+      {
+        hash: '0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6Ed1f4c6a8e0b2d4f6a8e0b2d4',
+        from: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        to: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        amount: 18500,
+        status: 'pending',
+        timestamp: 88
+      },
+      {
+        hash: '0x1dF62f291b2E969fB0849d99D9Ce41e2F137006ee0c3f5b7d9a1e3f5b7d9a1e3',
+        from: '0x514910771AF9Ca656af840dff83E8264EcF986CA',
+        to: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+        amount: 4100,
+        status: 'success',
+        timestamp: 98
+      }
+    ]
+  }
 }
 
 export default function LaunchPage() {
@@ -173,10 +274,8 @@ export default function LaunchPage() {
                   <CodeTab chainData={mockChainData} />
                 </TabsContent>
 
-                <TabsContent value="block-explorer" className="mt-4">
-                  <Card className="p-6">
-                    <p className="text-sm text-muted-foreground">Block explorer coming soon...</p>
-                  </Card>
+                <TabsContent value="block-explorer">
+                  <BlockExplorerTab chainData={mockChainData} />
                 </TabsContent>
               </Tabs>
             </div>
