@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { ChevronLeft, ChevronRight, Globe, Github } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen } from 'lucide-react'
 
 // Custom social icons
 const TwitterIcon = () => (
@@ -120,11 +120,102 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
         </div>
       </Card>
 
-      {/* Notes Section */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Notes</h3>
-        <p className="text-sm text-muted-foreground">No notes yet...</p>
-      </Card>
+      {/* Tokenomics Section */}
+      {chainData.tokenomics && (
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Coins className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Tokenomics</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Total Supply</p>
+                <p className="text-lg font-semibold">
+                  {parseInt(chainData.tokenomics.totalSupply).toLocaleString()} {chainData.ticker}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Block Time</p>
+                <p className="text-lg font-semibold">
+                  {chainData.tokenomics.blockTime >= 60
+                    ? `${chainData.tokenomics.blockTime / 60} min`
+                    : `${chainData.tokenomics.blockTime} sec`}
+                </p>
+              </div>
+            </div>
+
+            <div className="h-px bg-border" />
+
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Halving Schedule</p>
+              <p className="text-lg font-semibold">
+                Every {chainData.tokenomics.halvingDays} days
+              </p>
+            </div>
+
+            <div className="h-px bg-border" />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Blocks per Day</p>
+                <p className="text-lg font-semibold">
+                  {Math.floor((24 * 60 * 60) / chainData.tokenomics.blockTime).toLocaleString()}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Est. Year 1 Emission</p>
+                <p className="text-lg font-semibold">
+                  ~{chainData.tokenomics.yearOneEmission.toLocaleString()} {chainData.ticker}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Whitepapers Section */}
+      {chainData.whitepapers && chainData.whitepapers.length > 0 && (
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Whitepapers & Documentation</h3>
+          </div>
+          <div className="space-y-3">
+            {chainData.whitepapers.map((item, idx) => (
+              <a
+                key={idx}
+                href={item.type === 'url' ? item.url : '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors group"
+              >
+                <div className="p-2 bg-background rounded-md">
+                  {item.type === 'file' ? (
+                    <FileText className="w-5 h-5 text-primary" />
+                  ) : (
+                    <LinkIcon className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate group-hover:text-primary transition-colors">
+                    {item.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.type === 'file'
+                      ? `${(item.size / 1024).toFixed(2)} KB`
+                      : item.description || 'External link'
+                    }
+                  </p>
+                </div>
+                {item.type === 'url' && (
+                  <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                )}
+              </a>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

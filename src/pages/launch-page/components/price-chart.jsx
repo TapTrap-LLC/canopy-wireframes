@@ -91,7 +91,7 @@ export default function PriceChart({ chainData }) {
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xs text-muted-foreground">HOLD</span>
-                <span className="font-medium">{chainData.holders}</span>
+                <span className="font-medium">{chainData.holderCount}</span>
               </div>
             </div>
           </div>
