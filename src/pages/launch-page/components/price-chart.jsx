@@ -1,12 +1,72 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function PriceChart({ chainData }) {
+  const [selectedPeriod, setSelectedPeriod] = useState('1D')
+
   const graduationProgress = chainData.isGraduated
     ? 100
     : (chainData.marketCap / chainData.graduationThreshold) * 100
+
+  // Generate chart data based on selected period
+  const getChartData = () => {
+    const basePrice = chainData.currentPrice
+    const variation = basePrice * 0.15 // 15% variation
+
+    switch (selectedPeriod) {
+      case '1H':
+        // Hourly data - every 5 minutes
+        return Array.from({ length: 12 }, (_, i) => ({
+          time: `${Math.floor(i * 5 / 60)}:${(i * 5 % 60).toString().padStart(2, '0')}`,
+          price: basePrice + (Math.random() - 0.5) * variation
+        }))
+
+      case '1D':
+        // Daily data - every 2 hours
+        return chainData.priceHistory || Array.from({ length: 12 }, (_, i) => ({
+          time: `${i * 2}:00`,
+          price: basePrice + (Math.random() - 0.5) * variation
+        }))
+
+      case '1W':
+        // Weekly data - daily
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        return days.map(day => ({
+          time: day,
+          price: basePrice + (Math.random() - 0.5) * variation
+        }))
+
+      case '1M':
+        // Monthly data - every 3 days
+        return Array.from({ length: 10 }, (_, i) => ({
+          time: `${(i * 3) + 1}`,
+          price: basePrice + (Math.random() - 0.5) * variation
+        }))
+
+      case '1Y':
+        // Yearly data - monthly
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return months.map(month => ({
+          time: month,
+          price: basePrice + (Math.random() - 0.5) * variation
+        }))
+
+      case 'ALL':
+        // All time - quarterly or major milestones
+        return Array.from({ length: 8 }, (_, i) => ({
+          time: `Q${(i % 4) + 1} '${23 + Math.floor(i / 4)}`,
+          price: basePrice * (0.3 + (i * 0.1)) // Show growth over time
+        }))
+
+      default:
+        return chainData.priceHistory
+    }
+  }
+
+  const chartData = getChartData()
 
   return (
     <Card className="p-1">
@@ -40,24 +100,67 @@ export default function PriceChart({ chainData }) {
         <Card className="relative h-[272px] bg-muted/40">
           {/* Time Period Buttons */}
           <div className="absolute left-4 top-2.5 z-10 flex gap-0.5 p-0.5 bg-muted/50 rounded-lg">
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-3">1H</Button>
-            <Button variant="secondary" size="sm" className="h-8 text-xs px-3">1D</Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-3">1W</Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-3">1M</Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-3">1Y</Button>
-            <Button variant="ghost" size="sm" className="h-8 text-xs px-3">ALL</Button>
+            <Button
+              variant={selectedPeriod === '1H' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs px-3"
+              onClick={() => setSelectedPeriod('1H')}
+            >
+              1H
+            </Button>
+            <Button
+              variant={selectedPeriod === '1D' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs px-3"
+              onClick={() => setSelectedPeriod('1D')}
+            >
+              1D
+            </Button>
+            <Button
+              variant={selectedPeriod === '1W' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs px-3"
+              onClick={() => setSelectedPeriod('1W')}
+            >
+              1W
+            </Button>
+            <Button
+              variant={selectedPeriod === '1M' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs px-3"
+              onClick={() => setSelectedPeriod('1M')}
+            >
+              1M
+            </Button>
+            <Button
+              variant={selectedPeriod === '1Y' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs px-3"
+              onClick={() => setSelectedPeriod('1Y')}
+            >
+              1Y
+            </Button>
+            <Button
+              variant={selectedPeriod === 'ALL' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8 text-xs px-3"
+              onClick={() => setSelectedPeriod('ALL')}
+            >
+              ALL
+            </Button>
           </div>
 
           {/* Chart */}
-          <div className="h-full pt-12">
+          <div className="h-full pt-12 px-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chainData.priceHistory}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
                 <XAxis
                   dataKey="time"
                   tick={{ fill: '#71717a', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
+                  padding={{ left: 20, right: 20 }}
                 />
                 <YAxis hide />
                 <Tooltip
