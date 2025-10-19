@@ -62,10 +62,49 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Interactive price chart with time period selection (1H, 1D, 1W, 1M, 1Y, ALL)
   - Live statistics: Volume, MCap, Virtual Liquidity, Holders
 - **Tabbed Interface**:
-  - **Overview**: Social links with counters, description, image gallery, tokenomics section, whitepapers & documentation
-  - **Holders**: Token holder rankings with truncated addresses, colorful avatars, balance and percentage of supply
-  - **Code**: Repository information with GitHub stats (stars, forks), language details, license, topics/tags
-  - **Block Explorer**: Network statistics, recent blocks and transactions, search functionality, status badges
+  - **Overview**:
+    - Social links with platform-specific icons (GitHub with star count)
+    - Project description
+    - Image gallery with navigation arrows and thumbnails
+    - Tokenomics section with icons (Total Supply, Block Time, Halving Schedule, Blocks per Day, Year 1 Emission)
+    - Whitepapers & documentation with file/URL type indicators and metadata
+  - **Holders**:
+    - Token holder rankings sorted by balance
+    - Truncated crypto addresses (0x742d...bEb1 format)
+    - Deterministic colorful avatars based on address hash
+    - Balance amounts and percentage of total supply
+    - Bottom border separators between holders
+  - **Code**:
+    - Repository name with GitHub icon
+    - GitHub statistics (stars, forks) below repository name
+    - Primary language with color indicator
+    - License information (MIT)
+    - Repository description
+    - Topic tags (blockchain, language, smart-contracts, decentralized)
+  - **Block Explorer**:
+    - Network statistics dashboard (Block Height, Avg Block Time, Total Transactions, Network Status)
+    - Search bar for addresses, transaction hashes, and block numbers
+    - Recent Blocks section with:
+      - Inline search functionality (icon inside input)
+      - Block number, timestamp, transaction count, block reward, hash
+      - Clickable blocks opening detail sheets
+      - Empty state with search icon when no results
+      - "Show More" button with loading state (hidden during search)
+    - Recent Transactions section with:
+      - Inline search functionality for hash/addresses
+      - Transaction hash, from/to addresses, amount, status badges (Success/Pending/Failed)
+      - Clickable transactions opening detail sheets
+      - Empty state when no search results
+      - "Show More" button with loading state (hidden during search)
+    - Transaction Detail Sheet:
+      - Transaction hash with copy-to-clipboard
+      - Status badge and timestamp
+      - Clickable block number linking to block details
+      - From/To addresses with copy buttons
+      - Amount and transaction fee
+    - Block Detail Sheet with tabs:
+      - Overview tab: Block number, timestamp, transaction count, block reward, block hash, previous block hash (all with copy buttons)
+      - Transactions tab: List of all transactions in block (clickable), dynamic counter showing actual transaction count
 - **Trading Panel**: CNPY token swap interface with connect wallet integration
 - **Modular Architecture**: Component-based structure for maintainability
 
@@ -133,13 +172,15 @@ src/
 │   └── launch-page/              # Chain detail page
 │       ├── index.jsx             # Main page component
 │       └── components/           # Page-specific components
-│           ├── chain-header.jsx       # Chain logo, name, actions
-│           ├── price-chart.jsx        # Chart with graduation tracker
-│           ├── overview-tab.jsx       # Overview with tokenomics & whitepapers
-│           ├── holders-tab.jsx        # Token holder rankings
-│           ├── code-tab.jsx           # Repository & language details
-│           ├── block-explorer-tab.jsx # Blockchain explorer
-│           └── trading-panel.jsx      # Token swap interface
+│           ├── chain-header.jsx            # Chain logo, name, actions
+│           ├── price-chart.jsx             # Chart with graduation tracker
+│           ├── overview-tab.jsx            # Overview with tokenomics & whitepapers
+│           ├── holders-tab.jsx             # Token holder rankings
+│           ├── code-tab.jsx                # Repository & language details
+│           ├── block-explorer-tab.jsx      # Blockchain explorer with search
+│           ├── transaction-detail-sheet.jsx # Transaction detail side sheet
+│           ├── block-detail-sheet.jsx      # Block detail side sheet with tabs
+│           └── trading-panel.jsx           # Token swap interface
 │
 ├── lib/
 │   └── utils.js                 # Utility functions

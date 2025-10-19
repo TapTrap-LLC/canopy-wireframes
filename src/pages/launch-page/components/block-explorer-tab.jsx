@@ -14,6 +14,10 @@ export default function BlockExplorerTab({ chainData }) {
   const [blockSheetOpen, setBlockSheetOpen] = useState(false)
   const [loadingMoreBlocks, setLoadingMoreBlocks] = useState(false)
   const [loadingMoreTransactions, setLoadingMoreTransactions] = useState(false)
+  const [searchBlocksOpen, setSearchBlocksOpen] = useState(false)
+  const [searchTransactionsOpen, setSearchTransactionsOpen] = useState(false)
+  const [blockSearchQuery, setBlockSearchQuery] = useState('')
+  const [transactionSearchQuery, setTransactionSearchQuery] = useState('')
 
   const handleTransactionClick = (tx) => {
     setSelectedTransaction({ ...tx, blockNumber: chainData.explorer?.currentBlock || 245789 })
@@ -48,6 +52,27 @@ export default function BlockExplorerTab({ chainData }) {
       setLoadingMoreTransactions(false)
     }, 1500)
   }
+
+  // Search filter functions
+  const filteredBlocks = (chainData.explorer?.recentBlocks || []).filter(block => {
+    if (!blockSearchQuery) return true
+    const query = blockSearchQuery.toLowerCase()
+    return (
+      block.number.toString().includes(query) ||
+      block.hash.toLowerCase().includes(query)
+    )
+  })
+
+  const filteredTransactions = (chainData.explorer?.recentTransactions || []).filter(tx => {
+    if (!transactionSearchQuery) return true
+    const query = transactionSearchQuery.toLowerCase()
+    return (
+      tx.hash.toLowerCase().includes(query) ||
+      tx.from.toLowerCase().includes(query) ||
+      tx.to.toLowerCase().includes(query)
+    )
+  })
+
   // Truncate hash/address to crypto standard format
   const truncateHash = (hash) => {
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`
@@ -150,149 +175,238 @@ export default function BlockExplorerTab({ chainData }) {
         </div>
       </Card>
 
-      {/* Search Bar */}
-      <Card className="p-4">
-        <div className="flex items-center gap-2">
-          <Search className="w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Search by address, tx hash, or block number..."
-            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-        </div>
-      </Card>
-
       {/* Recent Blocks */}
       <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Box className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold">Recent Blocks</h3>
+        <div className="flex items-center justify-between mb-4">
+          {searchBlocksOpen ? (
+            <div className="flex-1 flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by block number or hash..."
+                  value={blockSearchQuery}
+                  onChange={(e) => setBlockSearchQuery(e.target.value)}
+                  className="pl-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  autoFocus
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setSearchBlocksOpen(false)
+                  setBlockSearchQuery('')
+                }}
+              >
+                <XCircle className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <Box className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-semibold">Recent Blocks</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchBlocksOpen(true)}
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="overflow-x-auto">
           <div>
-            {(chainData.explorer?.recentBlocks || []).map((block, idx) => (
-              <button
-                key={block.number}
-                onClick={() => handleBlockClick(block)}
-                className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer text-left"
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
-                    <Box className="w-5 h-5 text-primary" />
+            {filteredBlocks.length > 0 ? (
+              filteredBlocks.map((block, idx) => (
+                <button
+                  key={block.number}
+                  onClick={() => handleBlockClick(block)}
+                  className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+                      <Box className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Block #{block.number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatTimeAgo(block.timestamp)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold">Block #{block.number}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatTimeAgo(block.timestamp)}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-8 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Txns: </span>
-                    <span className="font-medium">{block.transactions}</span>
+                  <div className="flex items-center gap-8 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Txns: </span>
+                      <span className="font-medium">{block.transactions}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Reward: </span>
+                      <span className="font-medium">
+                        {calculateBlockReward(block.number)} {chainData.ticker}
+                      </span>
+                    </div>
+                    <div className="font-mono text-xs text-muted-foreground">
+                      {truncateHash(block.hash)}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Reward: </span>
-                    <span className="font-medium">
-                      {calculateBlockReward(block.number)} {chainData.ticker}
-                    </span>
-                  </div>
-                  <div className="font-mono text-xs text-muted-foreground">
-                    {truncateHash(block.hash)}
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-muted rounded-full">
+                    <Search className="w-6 h-6 text-muted-foreground" />
                   </div>
                 </div>
-              </button>
-            ))}
+                <p className="text-sm font-medium text-muted-foreground mb-1">No blocks found</p>
+                <p className="text-xs text-muted-foreground">Try searching with a different block number or hash</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Show More Button */}
-        <div className="mt-4">
-          {loadingMoreBlocks ? (
-            <div className="flex items-center justify-center py-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-              <span className="ml-2 text-sm text-muted-foreground">Loading more blocks...</span>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleLoadMoreBlocks}
-            >
-              Show More
-            </Button>
-          )}
-        </div>
+        {filteredBlocks.length > 0 && !blockSearchQuery && (
+          <div className="mt-4">
+            {loadingMoreBlocks ? (
+              <div className="flex items-center justify-center py-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                <span className="ml-2 text-sm text-muted-foreground">Loading more blocks...</span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleLoadMoreBlocks}
+              >
+                Show More
+              </Button>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Recent Transactions */}
       <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <ArrowRightLeft className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold">Recent Transactions</h3>
+        <div className="flex items-center justify-between mb-4">
+          {searchTransactionsOpen ? (
+            <div className="flex-1 flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by hash, from address, or to address..."
+                  value={transactionSearchQuery}
+                  onChange={(e) => setTransactionSearchQuery(e.target.value)}
+                  className="pl-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  autoFocus
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setSearchTransactionsOpen(false)
+                  setTransactionSearchQuery('')
+                }}
+              >
+                <XCircle className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <ArrowRightLeft className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-semibold">Recent Transactions</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchTransactionsOpen(true)}
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="overflow-x-auto">
           <div>
-            {(chainData.explorer?.recentTransactions || []).map((tx, idx) => (
-              <button
-                key={tx.hash}
-                onClick={() => handleTransactionClick(tx)}
-                className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer text-left"
-              >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg flex-shrink-0">
-                    <ArrowRightLeft className="w-5 h-5 text-primary" />
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map((tx, idx) => (
+                <button
+                  key={tx.hash}
+                  onClick={() => handleTransactionClick(tx)}
+                  className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg flex-shrink-0">
+                      <ArrowRightLeft className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-sm font-medium truncate">
+                        {truncateHash(tx.hash)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatTimeAgo(tx.timestamp)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-mono text-sm font-medium truncate">
-                      {truncateHash(tx.hash)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatTimeAgo(tx.timestamp)}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">From:</span>
-                    <span className="font-mono text-xs">{truncateHash(tx.from)}</span>
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">From:</span>
+                      <span className="font-mono text-xs">{truncateHash(tx.from)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">To:</span>
+                      <span className="font-mono text-xs">{truncateHash(tx.to)}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold">{tx.amount.toLocaleString()}</span>
+                      <span className="text-xs text-muted-foreground ml-1">{chainData.ticker}</span>
+                    </div>
+                    {getStatusBadge(tx.status)}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">To:</span>
-                    <span className="font-mono text-xs">{truncateHash(tx.to)}</span>
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-muted rounded-full">
+                    <Search className="w-6 h-6 text-muted-foreground" />
                   </div>
-                  <div>
-                    <span className="font-semibold">{tx.amount.toLocaleString()}</span>
-                    <span className="text-xs text-muted-foreground ml-1">{chainData.ticker}</span>
-                  </div>
-                  {getStatusBadge(tx.status)}
                 </div>
-              </button>
-            ))}
+                <p className="text-sm font-medium text-muted-foreground mb-1">No transactions found</p>
+                <p className="text-xs text-muted-foreground">Try searching with a different hash or address</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Show More Button */}
-        <div className="mt-4">
-          {loadingMoreTransactions ? (
-            <div className="flex items-center justify-center py-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-              <span className="ml-2 text-sm text-muted-foreground">Loading more transactions...</span>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleLoadMoreTransactions}
-            >
-              Show More
-            </Button>
-          )}
-        </div>
+        {filteredTransactions.length > 0 && !transactionSearchQuery && (
+          <div className="mt-4">
+            {loadingMoreTransactions ? (
+              <div className="flex items-center justify-center py-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                <span className="ml-2 text-sm text-muted-foreground">Loading more transactions...</span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleLoadMoreTransactions}
+              >
+                Show More
+              </Button>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Detail Sheets */}
