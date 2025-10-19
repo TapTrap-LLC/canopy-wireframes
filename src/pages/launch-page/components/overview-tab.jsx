@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp } from 'lucide-react'
+import { Avatar } from '@/components/ui/avatar'
+import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight } from 'lucide-react'
 
 // Custom social icons
 const TwitterIcon = () => (
@@ -16,7 +17,7 @@ const DiscordIcon = () => (
   </svg>
 )
 
-export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex }) {
+export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex, onNavigateToTab }) {
   const getSocialIcon = (platform) => {
     switch(platform) {
       case 'twitter': return <TwitterIcon />
@@ -33,6 +34,22 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
     } else {
       setCurrentGalleryIndex(prev => prev === chainData.gallery.length - 1 ? 0 : prev + 1)
     }
+  }
+
+  // Helper function to get avatar color
+  const getAvatarColor = (address) => {
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-yellow-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-red-500',
+      'bg-orange-500'
+    ]
+    const hash = address.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return colors[hash % colors.length]
   }
 
   return (
@@ -119,6 +136,120 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
           </div>
         </div>
       </Card>
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Holders Summary */}
+        <Card className="flex flex-col">
+          <div className="flex items-start gap-3 p-5">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Holders</p>
+              <p className="text-2xl font-bold">{chainData.holderCount?.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-5 pt-0">
+            <div className="flex -space-x-2">
+              {chainData.holders?.slice(0, 5).map((holder, idx) => (
+                <div
+                  key={idx}
+                  className={`w-8 h-8 rounded-full border-2 border-card flex items-center justify-center text-xs font-semibold text-white ${getAvatarColor(holder.address)}`}
+                >
+                  {holder.address.slice(2, 4).toUpperCase()}
+                </div>
+              ))}
+            </div>
+            {chainData.holders?.length > 5 && (
+              <span className="text-xs text-muted-foreground">+{chainData.holders.length - 5} more</span>
+            )}
+          </div>
+          <div className="px-3 pb-3 flex-1 flex items-end">
+            <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between group"
+                onClick={() => onNavigateToTab('holders')}
+            >
+              View All Holders
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </Card>
+
+        {/* Code Summary */}
+        <Card className="flex flex-col">
+          <div className="flex items-start gap-3 p-5">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Code2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Repository</p>
+              <p className="text-xl font-bold">{chainData.language}</p>
+            </div>
+          </div>
+          <div className="space-y-2 p-5 pt-0">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Stars</span>
+              <span className="font-medium">23</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Forks</span>
+              <span className="font-medium">8</span>
+            </div>
+          </div>
+          <div className="px-3 pb-3 flex-1 flex items-end">
+            <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between group"
+                onClick={() => onNavigateToTab('code')}
+            >
+              View Repository
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </Card>
+
+        {/* Block Explorer Summary */}
+        <Card className="flex flex-col">
+          <div className="flex items-start gap-3 p-5">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Activity className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Block Height</p>
+              <p className="text-2xl font-bold">{chainData.explorer?.currentBlock?.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="space-y-2 p-5 pt-0">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Total Transactions</span>
+              <span className="font-medium">{chainData.explorer?.totalTransactions?.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Avg Block Time</span>
+              <span className="font-medium">
+                {chainData.tokenomics?.blockTime >= 60
+                  ? `${chainData.tokenomics.blockTime / 60}m`
+                  : `${chainData.tokenomics?.blockTime || 0}s`}
+              </span>
+            </div>
+          </div>
+          <div className="px-3 pb-3 flex-1 flex items-end">
+            <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between group"
+                onClick={() => onNavigateToTab('block-explorer')}
+            >
+              View Explorer
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </Card>
+      </div>
 
       {/* Tokenomics Section */}
       {chainData.tokenomics && (

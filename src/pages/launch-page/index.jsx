@@ -233,6 +233,7 @@ const mockChainData = {
 export default function LaunchPage() {
   const navigate = useNavigate()
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
+  const [activeTab, setActiveTab] = useState('overview')
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -260,7 +261,7 @@ export default function LaunchPage() {
               <PriceChart chainData={mockChainData} />
 
               {/* Tabs Section */}
-              <Tabs defaultValue="overview" className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="w-full justify-start">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="holders">Holders (21)</TabsTrigger>
@@ -273,6 +274,7 @@ export default function LaunchPage() {
                     chainData={mockChainData}
                     currentGalleryIndex={currentGalleryIndex}
                     setCurrentGalleryIndex={setCurrentGalleryIndex}
+                    onNavigateToTab={setActiveTab}
                   />
                 </TabsContent>
 
