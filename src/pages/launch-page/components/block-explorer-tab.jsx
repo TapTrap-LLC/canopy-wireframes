@@ -12,6 +12,8 @@ export default function BlockExplorerTab({ chainData }) {
   const [selectedBlock, setSelectedBlock] = useState(null)
   const [transactionSheetOpen, setTransactionSheetOpen] = useState(false)
   const [blockSheetOpen, setBlockSheetOpen] = useState(false)
+  const [loadingMoreBlocks, setLoadingMoreBlocks] = useState(false)
+  const [loadingMoreTransactions, setLoadingMoreTransactions] = useState(false)
 
   const handleTransactionClick = (tx) => {
     setSelectedTransaction({ ...tx, blockNumber: chainData.explorer?.currentBlock || 245789 })
@@ -29,6 +31,22 @@ export default function BlockExplorerTab({ chainData }) {
       setSelectedBlock(block)
       setBlockSheetOpen(true)
     }
+  }
+
+  const handleLoadMoreBlocks = () => {
+    setLoadingMoreBlocks(true)
+    // Simulate loading - in real app this would fetch more data
+    setTimeout(() => {
+      setLoadingMoreBlocks(false)
+    }, 1500)
+  }
+
+  const handleLoadMoreTransactions = () => {
+    setLoadingMoreTransactions(true)
+    // Simulate loading - in real app this would fetch more data
+    setTimeout(() => {
+      setLoadingMoreTransactions(false)
+    }, 1500)
   }
   // Truncate hash/address to crypto standard format
   const truncateHash = (hash) => {
@@ -145,15 +163,9 @@ export default function BlockExplorerTab({ chainData }) {
 
       {/* Recent Blocks */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Box className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold">Recent Blocks</h3>
-          </div>
-          <Button variant="ghost" size="sm" className="gap-2">
-            View All
-            <ExternalLink className="w-4 h-4" />
-          </Button>
+        <div className="flex items-center gap-2 mb-4">
+          <Box className="w-5 h-5 text-primary" />
+          <h3 className="text-lg font-semibold">Recent Blocks</h3>
         </div>
 
         <div className="overflow-x-auto">
@@ -195,19 +207,31 @@ export default function BlockExplorerTab({ chainData }) {
             ))}
           </div>
         </div>
+
+        {/* Show More Button */}
+        <div className="mt-4">
+          {loadingMoreBlocks ? (
+            <div className="flex items-center justify-center py-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Loading more blocks...</span>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleLoadMoreBlocks}
+            >
+              Show More
+            </Button>
+          )}
+        </div>
       </Card>
 
       {/* Recent Transactions */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold">Recent Transactions</h3>
-          </div>
-          <Button variant="ghost" size="sm" className="gap-2">
-            View All
-            <ExternalLink className="w-4 h-4" />
-          </Button>
+        <div className="flex items-center gap-2 mb-4">
+          <ArrowRightLeft className="w-5 h-5 text-primary" />
+          <h3 className="text-lg font-semibold">Recent Transactions</h3>
         </div>
 
         <div className="overflow-x-auto">
@@ -250,6 +274,24 @@ export default function BlockExplorerTab({ chainData }) {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Show More Button */}
+        <div className="mt-4">
+          {loadingMoreTransactions ? (
+            <div className="flex items-center justify-center py-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Loading more transactions...</span>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleLoadMoreTransactions}
+            >
+              Show More
+            </Button>
+          )}
         </div>
       </Card>
 
