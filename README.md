@@ -55,23 +55,31 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
 
 #### Chain Detail Page
 - **Main Sidebar**: Sticky navigation with search, "Create L1 chain" button, and connect wallet
-- **Chain Header**: Compact display with logo, name, ticker, and share button
+- **Chain Header**:
+  - Compact display with logo, name, ticker
+  - Favorite button (star icon, toggles filled yellow when favorited)
+  - Share button (hidden for draft chains)
+  - Creation/edit timestamp (shows "edited" for drafts, "created" for published chains)
 - **Price Chart & Analytics**:
   - Market cap display with 24h change
-  - Graduation progress tracker
+  - Graduation progress tracker (shows "$50k graduated" with 100% bar for graduated chains)
   - Interactive price chart with time period selection (1H, 1D, 1W, 1M, 1Y, ALL)
+  - Dynamic chart data based on selected period
   - Live statistics: Volume, MCap, Virtual Liquidity, Holders
 - **Tabbed Interface**:
   - **Overview**:
     - Social links with platform-specific icons (GitHub with star count)
+    - For draft chains: Dimmed social link placeholders with dotted borders and tooltips
     - Project title with chain-specific tagline
     - Project description
     - Image gallery with navigation arrows and thumbnails
-    - Quick Stats Grid (summary cards for Holders, Code, Block Explorer with navigation)
+    - Quick Stats Grid (summary cards for Holders, Code, Block Explorer with navigation, hidden for drafts)
     - Tokenomics section with icons (Total Supply, Block Time, Halving Schedule, Blocks per Day, Year 1 Emission)
     - Whitepapers & documentation with file/URL type indicators and metadata
   - **Holders**:
-    - Token holder rankings sorted by balance
+    - Title: "Top Holders" (shows total count, e.g., "5,021 holders")
+    - Token holder rankings sorted by balance (top 21 displayed)
+    - "Among X others" divider at bottom when total holders > displayed holders
     - Truncated crypto addresses (0x742d...bEb1 format)
     - Deterministic colorful avatars based on address hash
     - Balance amounts and percentage of total supply
@@ -117,7 +125,24 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Toast notifications for success/error feedback
   - Consistent form styling with launcher workflow
 - **Modular Architecture**: Component-based structure for maintainability
-- **Owner View Variant**: Separate page showing newly launched chain with minimal activity (1 holder, flat price chart, "Virtual" badge)
+- **Page Variants**:
+  - **Owner View** (`/chain/my-chain`): Newly launched chain with minimal activity (1 holder, flat price chart, "Virtual" badge)
+  - **Draft View** (`/chain/draft-chain`):
+    - Chain still in configuration (step 4 of 7)
+    - Orange "Draft" badge
+    - Progress panel instead of trading panel showing launch completion status
+    - Empty states for Holders and Block Explorer tabs
+    - No Quick Stats Grid in overview
+    - Social media links shown as dimmed placeholders with tooltips
+    - Share and favorite buttons hidden
+    - "edited X ago" timestamp instead of "created"
+    - More menu (⋮) in top-right with "Delete draft chain" option and confirmation dialog
+  - **Graduated View** (`/chain/graduated-chain`):
+    - Green "Graduated" badge
+    - Progress bar at 100% showing "$50k graduated"
+    - Higher transaction counts and holder numbers (5,021 holders showing top 21)
+    - "Among X others" separator in holders list
+    - Market cap above $50k threshold
 
 #### General Features
 - **Form Validation**: Inline error messages and validation for all inputs
@@ -180,18 +205,33 @@ src/
 │   │   └── review/
 │   │       └── index.jsx        # Step 7: Review & payment
 │   │
-│   └── launch-page/              # Chain detail page
-│       ├── index.jsx             # Main page component
-│       └── components/           # Page-specific components
-│           ├── chain-header.jsx            # Chain logo, name, actions
-│           ├── price-chart.jsx             # Chart with graduation tracker
-│           ├── overview-tab.jsx            # Overview with tokenomics & whitepapers
-│           ├── holders-tab.jsx             # Token holder rankings
-│           ├── code-tab.jsx                # Repository & language details
-│           ├── block-explorer-tab.jsx      # Blockchain explorer with search
-│           ├── transaction-detail-sheet.jsx # Transaction detail side sheet
-│           ├── block-detail-sheet.jsx      # Block detail side sheet with tabs
-│           └── trading-panel.jsx           # Token swap interface
+│   ├── launch-page/              # Chain detail page (regular view)
+│   │   ├── index.jsx             # Main page component
+│   │   └── components/           # Shared components
+│   │       ├── chain-header.jsx            # Chain logo, name, favorite, share
+│   │       ├── price-chart.jsx             # Chart with graduation tracker
+│   │       ├── overview-tab.jsx            # Overview (supports draft mode)
+│   │       ├── holders-tab.jsx             # Token holder rankings (top N)
+│   │       ├── code-tab.jsx                # Repository & language details
+│   │       ├── block-explorer-tab.jsx      # Blockchain explorer with search
+│   │       ├── transaction-detail-sheet.jsx # Transaction detail side sheet
+│   │       ├── block-detail-sheet.jsx      # Block detail side sheet with tabs
+│   │       ├── trading-panel.jsx           # Token swap interface
+│   │       ├── report-problem-button.jsx   # Report button
+│   │       └── report-problem-dialog.jsx   # Report dialog with 3-step flow
+│   │
+│   ├── launch-page-owner/        # Owner view variant
+│   │   └── index.jsx             # Newly launched chain (minimal activity)
+│   │
+│   ├── launch-page-draft/        # Draft view variant
+│   │   ├── index.jsx             # Draft chain page with progress panel
+│   │   └── components/
+│   │       ├── draft-holders-tab.jsx       # Empty state for holders
+│   │       ├── draft-block-explorer-tab.jsx # Empty state for explorer
+│   │       └── draft-progress-panel.jsx    # Launch progress tracker
+│   │
+│   └── launch-page-graduated/    # Graduated view variant
+│       └── index.jsx             # Graduated chain (100% progress, high activity)
 │
 ├── lib/
 │   └── utils.js                 # Utility functions
