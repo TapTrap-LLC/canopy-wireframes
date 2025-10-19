@@ -17,17 +17,19 @@ export default function ChainHeader({ chainData }) {
           <div className="space-y-1">
             <h2 className="text-base font-medium">{chainData.name}</h2>
             <p className="text-xs text-gray-400">
-              ${chainData.ticker} on {chainData.name} • created 13m ago
+              ${chainData.ticker} on {chainData.name} • {chainData.isDraft ? 'edited' : 'created'} 13m ago
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Share Button */}
-          <Button variant="outline" size="icon" className="h-[30px] w-[30px] rounded-lg">
-            <Upload className="w-4 h-4" />
-          </Button>
-        </div>
+        {!chainData.isDraft && (
+          <div className="flex items-center gap-3">
+            {/* Share Button */}
+            <Button variant="outline" size="icon" className="h-[30px] w-[30px] rounded-lg">
+              <Upload className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   )

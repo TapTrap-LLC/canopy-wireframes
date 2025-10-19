@@ -17,7 +17,9 @@ const DiscordIcon = () => (
   </svg>
 )
 
-export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex, onNavigateToTab }) {
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+
+export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex, onNavigateToTab, isDraft = false }) {
   const getSocialIcon = (platform) => {
     switch(platform) {
       case 'twitter': return <TwitterIcon />
@@ -59,26 +61,45 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
         <div className="space-y-6">
           {/* About Section */}
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              {chainData.socialLinks.slice(0, 4).map((link, idx) => {
-                const isGithub = link.platform === 'github'
+            <TooltipProvider>
+              <div className="flex items-center gap-2">
+                {isDraft ? (
+                  // Dimmed placeholders for draft chains
+                  ['website', 'twitter', 'discord', 'github'].map(platform => (
+                    <Tooltip key={platform}>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-full border border-dashed border-muted-foreground/30 opacity-50 cursor-help">
+                          {getSocialIcon(platform)}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        This is where your social media links will appear
+                      </TooltipContent>
+                    </Tooltip>
+                  ))
+                ) : (
+                  // Active social links
+                  chainData.socialLinks.slice(0, 4).map((link, idx) => {
+                    const isGithub = link.platform === 'github'
 
-                return (
-                  <a
-                    key={idx}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors"
-                  >
-                    {getSocialIcon(link.platform)}
-                    {isGithub && (
-                      <span className="text-xs text-white">23 stars</span>
-                    )}
-                  </a>
-                )
-              })}
-            </div>
+                    return (
+                      <a
+                        key={idx}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors"
+                      >
+                        {getSocialIcon(link.platform)}
+                        {isGithub && (
+                          <span className="text-xs text-white">23 stars</span>
+                        )}
+                      </a>
+                    )
+                  })
+                )}
+              </div>
+            </TooltipProvider>
             <h3 className="text-lg font-semibold">
               {chainData.title}
             </h3>
@@ -138,6 +159,7 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
       </Card>
 
       {/* Quick Stats Grid */}
+      {!isDraft && (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Holders Summary */}
         <Card className="flex flex-col">
@@ -192,11 +214,11 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
           <div className="space-y-2 p-5 pt-0">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Stars</span>
-              <span className="font-medium">23</span>
+              <span className="font-medium">{isDraft ? 0 : 23}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Forks</span>
-              <span className="font-medium">8</span>
+              <span className="font-medium">{isDraft ? 0 : 8}</span>
             </div>
           </div>
           <div className="px-3 pb-3 flex-1 flex items-end">
@@ -250,6 +272,7 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
           </div>
         </Card>
       </div>
+      )}
 
       {/* Tokenomics Section */}
       {chainData.tokenomics && (

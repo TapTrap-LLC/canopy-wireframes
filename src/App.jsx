@@ -9,6 +9,7 @@ import LaunchSettings from '@/pages/launch-chain/launch-settings'
 import Review from '@/pages/launch-chain/review'
 import LaunchPage from '@/pages/launch-page'
 import LaunchPageOwner from '@/pages/launch-page-owner'
+import LaunchPageDraft from '@/pages/launch-page-draft'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useNavigate } from 'react-router-dom'
@@ -43,6 +44,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/chain/someone-else-chain" element={<LaunchPage />} />
         <Route path="/chain/my-chain" element={<LaunchPageOwner />} />
+        <Route path="/chain/draft-chain" element={<LaunchPageDraft />} />
         <Route path="/launchpad" element={<LaunchpadOverview />} />
         <Route path="/launchpad/language" element={<LanguageSelection />} />
         <Route path="/launchpad/repository" element={<ConnectRepo />} />
