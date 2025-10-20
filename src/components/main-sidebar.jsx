@@ -55,7 +55,10 @@ export default function MainSidebar({ variant = 'default' }) {
 
             {/* Navigation */}
             <nav className="flex flex-col items-center gap-2">
-              <button className="w-[57px] flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-sm font-medium text-white hover:bg-white/5 transition-colors">
+              <button
+                onClick={() => navigate('/')}
+                className="w-[57px] flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-sm font-medium text-white hover:bg-white/5 transition-colors"
+              >
                 <Zap className="w-4 h-4" />
                 <span className="text-[10px]">Launchpad</span>
               </button>
@@ -137,7 +140,10 @@ export default function MainSidebar({ variant = 'default' }) {
 
         {/* Navigation */}
         <nav className="px-4 space-y-2">
-          <button className="w-full h-9 flex items-center gap-3 px-4 rounded-xl bg-white/10 text-sm font-medium text-white shadow-[0px_2px_3px_0px_rgba(0,0,0,0.1)] transition-colors">
+          <button
+            onClick={() => navigate('/')}
+            className="w-full h-9 flex items-center gap-3 px-4 rounded-xl bg-white/10 text-sm font-medium text-white shadow-[0px_2px_3px_0px_rgba(0,0,0,0.1)] transition-colors"
+          >
             <Zap className="w-4 h-4" />
             <span>Launchpad</span>
           </button>
