@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Avatar } from '@/components/ui/avatar'
-import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight, Zap, Target, Sparkles, Crown, Trophy } from 'lucide-react'
 
 // Custom social icons
 const TwitterIcon = () => (
@@ -29,6 +30,93 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
       default: return null
     }
   }
+
+  // Define all milestones with their requirements
+  const milestones = [
+    {
+      id: 1,
+      icon: Users,
+      title: 'First 10 holders',
+      requirement: 10,
+      current: chainData.holderCount || 0,
+      type: 'holders'
+    },
+    {
+      id: 2,
+      icon: TrendingUp,
+      title: '$1k market cap',
+      requirement: 1000,
+      current: chainData.marketCap || 0,
+      type: 'marketcap'
+    },
+    {
+      id: 3,
+      icon: Users,
+      title: '50 holders milestone',
+      requirement: 50,
+      current: chainData.holderCount || 0,
+      type: 'holders'
+    },
+    {
+      id: 4,
+      icon: Zap,
+      title: '1,000 transactions',
+      requirement: 1000,
+      current: chainData.explorer?.totalTransactions || 0,
+      type: 'transactions'
+    },
+    {
+      id: 5,
+      icon: TrendingUp,
+      title: '$5k market cap',
+      requirement: 5000,
+      current: chainData.marketCap || 0,
+      type: 'marketcap'
+    },
+    {
+      id: 6,
+      icon: Users,
+      title: '100 holders club',
+      requirement: 100,
+      current: chainData.holderCount || 0,
+      type: 'holders'
+    },
+    {
+      id: 7,
+      icon: Target,
+      title: '$10k market cap',
+      requirement: 10000,
+      current: chainData.marketCap || 0,
+      type: 'marketcap'
+    },
+    {
+      id: 8,
+      icon: Sparkles,
+      title: '500 holders strong',
+      requirement: 500,
+      current: chainData.holderCount || 0,
+      type: 'holders'
+    },
+    {
+      id: 9,
+      icon: Crown,
+      title: '$25k market cap',
+      requirement: 25000,
+      current: chainData.marketCap || 0,
+      type: 'marketcap'
+    },
+    {
+      id: 10,
+      icon: Trophy,
+      title: 'Graduation ready',
+      requirement: 50000,
+      current: chainData.marketCap || 0,
+      type: 'marketcap'
+    }
+  ]
+
+  // Get completed milestones
+  const completedMilestones = milestones.filter(m => m.current >= m.requirement)
 
   const navigateGallery = (direction) => {
     if (direction === 'prev') {
@@ -108,6 +196,49 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
               {chainData.description}
             </p>
           </div>
+
+          {/* Milestone Badges Summary */}
+          {!isDraft && completedMilestones.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <button
+                  onClick={() => onNavigateToTab('milestones')}
+                  className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group cursor-pointer"
+                >
+                  Achievements
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <div className="flex flex-wrap gap-2">
+                  {completedMilestones.map((milestone) => {
+                    const Icon = milestone.icon
+                    return (
+                      <div
+                        key={milestone.id}
+                        className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/20 rounded-lg"
+                      >
+                        {/* Hexagon Badge */}
+                        <div className="relative w-6 h-6 flex items-center justify-center flex-shrink-0">
+                          <svg
+                            viewBox="0 0 100 100"
+                            className="absolute inset-0 w-full h-full"
+                          >
+                            <polygon
+                              points="50 0, 93.3 25, 93.3 75, 50 100, 6.7 75, 6.7 25"
+                              className="fill-primary/20 stroke-primary"
+                              strokeWidth="4"
+                            />
+                          </svg>
+                          <Icon className="w-3 h-3 relative z-10 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium">{milestone.title}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
           <Separator />
 
