@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Github, Star, GitFork, ExternalLink } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Github, Star, GitFork, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function CodeTab({ chainData }) {
   return (
@@ -13,9 +15,40 @@ export default function CodeTab({ chainData }) {
               <Github className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-1">
-                {chainData.repositoryName}
-              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-xl font-semibold">
+                  {chainData.repositoryName}
+                </h3>
+                {/* Deployment Status Badge */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {chainData.isGraduated ? (
+                        <Badge variant="outline" className="border-green-500/50 text-green-500 gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Deployed
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="border-orange-500/50 text-orange-500 gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Not Deployed
+                        </Badge>
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[260px]">
+                      {chainData.isGraduated ? (
+                        <p className="text-xs">
+                          This repository code is deployed and running on the real blockchain. The chain has graduated and is fully operational.
+                        </p>
+                      ) : (
+                        <p className="text-xs">
+                          This repository code is not yet deployed. The chain is currently virtual (test mode). It will be deployed to the real blockchain after graduation.
+                        </p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               {/* Stats */}
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2 text-sm">

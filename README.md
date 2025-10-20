@@ -51,6 +51,7 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Edit buttons for each section linking back to respective steps
   - Payment summary with lighter card background
   - Important launch notice with key information
+  - "Connect Wallet & Pay" button navigates to owner chain page with success banner
   - Placeholder data for demonstration ($GAME, MyGameChain, etc.)
 
 #### Chain Detail Page
@@ -58,11 +59,14 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
 - **Chain Header**:
   - Compact display with logo, name, ticker
   - Favorite button (star icon, toggles filled yellow when favorited)
-  - Share button (hidden for draft chains)
+  - Share button with copy-to-clipboard functionality and toast notification (hidden for draft chains)
   - Creation/edit timestamp (shows "edited" for drafts, "created" for published chains)
 - **Price Chart & Analytics**:
   - Market cap display with 24h change
-  - Graduation progress tracker (shows "$50k graduated" with 100% bar for graduated chains)
+  - Graduation progress tracker with help icon tooltip:
+    - For virtual chains: Explains virtual (test mode) → real blockchain graduation process
+    - For graduated chains: Confirms chain is deployed on real blockchain
+    - Shows "$50k graduated" with 100% bar for graduated chains
   - Interactive price chart with time period selection (1H, 1D, 1W, 1M, 1Y, ALL)
   - Dynamic chart data based on selected period
   - Live statistics: Volume, MCap, Virtual Liquidity, Holders
@@ -86,6 +90,9 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
     - Bottom border separators between holders
   - **Code**:
     - Repository name with GitHub icon
+    - Deployment status badge with tooltip:
+      - "Not Deployed" (orange) for virtual chains - explains code not yet deployed to real blockchain
+      - "Deployed" (green) for graduated chains - confirms code is running on real blockchain
     - GitHub statistics (stars, forks) below repository name
     - Primary language with color indicator
     - License information (MIT)
@@ -126,7 +133,12 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Consistent form styling with launcher workflow
 - **Modular Architecture**: Component-based structure for maintainability
 - **Page Variants**:
-  - **Owner View** (`/chain/my-chain`): Newly launched chain with minimal activity (1 holder, flat price chart, "Virtual" badge)
+  - **Owner View** (`/chain/my-chain`):
+    - Newly launched chain with minimal activity (1 holder, flat price chart, "Virtual" badge)
+    - Launch success banner on first visit (green gradient with rocket icon)
+    - Banner shows congratulations message with Share button (copies link to clipboard)
+    - Auto-scrolls to top when landing from payment flow
+    - Breadcrumb shows "Launchpad / ChainName / Virtual"
   - **Draft View** (`/chain/draft-chain`):
     - Chain still in configuration (step 4 of 7)
     - Orange "Draft" badge
@@ -221,7 +233,9 @@ src/
 │   │       └── report-problem-dialog.jsx   # Report dialog with 3-step flow
 │   │
 │   ├── launch-page-owner/        # Owner view variant
-│   │   └── index.jsx             # Newly launched chain (minimal activity)
+│   │   ├── index.jsx             # Newly launched chain (minimal activity)
+│   │   └── components/
+│   │       └── launch-success-banner.jsx    # Success banner with share button
 │   │
 │   ├── launch-page-draft/        # Draft view variant
 │   │   ├── index.jsx             # Draft chain page with progress panel

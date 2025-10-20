@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { HelpCircle } from 'lucide-react'
 
 export default function PriceChart({ chainData }) {
   const [selectedPeriod, setSelectedPeriod] = useState('1D')
@@ -86,12 +88,32 @@ export default function PriceChart({ chainData }) {
 
           {/* Right: Graduation Progress */}
           <div className="space-y-2 w-[216px]">
-            <p className="text-xs text-muted-foreground text-right">
-              {chainData.isGraduated
-                ? `$${(chainData.graduationThreshold / 1000).toFixed(0)}k graduated`
-                : `$${(chainData.remainingToGraduation / 1000).toFixed(2)}k until graduation`
-              }
-            </p>
+            <TooltipProvider>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-end gap-1.5 cursor-help">
+                    <p className="text-xs text-muted-foreground text-right">
+                      {chainData.isGraduated
+                        ? `$${(chainData.graduationThreshold / 1000).toFixed(0)}k graduated`
+                        : `$${(chainData.remainingToGraduation / 1000).toFixed(2)}k until graduation`
+                      }
+                    </p>
+                    <HelpCircle className="w-3 h-3 text-muted-foreground" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="max-w-[260px]">
+                  {chainData.isGraduated ? (
+                    <p className="text-xs">
+                      This chain has graduated and is now fully deployed on the real blockchain. All transactions are permanent and recorded on-chain.
+                    </p>
+                  ) : (
+                    <p className="text-xs">
+                      This chain starts as virtual (test mode). When market cap reaches ${(chainData.graduationThreshold / 1000).toFixed(0)}k, it will graduate to a real blockchain with permanent on-chain transactions.
+                    </p>
+                  )}
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
             <Progress value={graduationProgress} className="h-2.5" />
           </div>
         </div>
