@@ -3,6 +3,7 @@ import MainSidebar from '@/components/main-sidebar'
 import TopChainCarousel from './components/top-chain-carousel'
 import FilterBar from './components/filter-bar'
 import ChainCard from './components/chain-card'
+import ChainListItem from './components/chain-list-item'
 
 // Mock data for demonstration
 const MOCK_TOP_CHAINS = [
@@ -255,7 +256,7 @@ export default function Launchpad() {
           <div className="space-y-3">
             {filteredChains.length > 0 ? (
               filteredChains.map((chain) => (
-                <ChainCard key={chain.id} chain={chain} />
+                <ChainListItem key={chain.id} chain={chain} />
               ))
             ) : (
               <div className="text-center py-12">

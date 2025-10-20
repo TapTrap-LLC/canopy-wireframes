@@ -1,11 +1,17 @@
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { LineChart, Line, ResponsiveContainer } from 'recharts'
 import { useNavigate } from 'react-router-dom'
 
 export default function ChainCard({ chain }) {
   const navigate = useNavigate()
 
   const progress = (chain.marketCap / chain.goal) * 100
+
+  // Generate mini chart data
+  const chartData = Array.from({ length: 20 }, (_, i) => ({
+    value: chain.currentPrice + (Math.random() - 0.5) * (chain.currentPrice * 0.15)
+  }))
 
   const handleClick = () => {
     navigate(chain.url)
