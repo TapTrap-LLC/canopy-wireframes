@@ -1,4 +1,4 @@
-import { Check, Code2, GitBranch, Settings, Palette, Link2, Rocket, FileCheck } from 'lucide-react'
+import { Check, Code2, GitBranch, Settings, Palette, Link2, Rocket, FileCheck, CloudUpload, CheckCircle2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 
@@ -12,8 +12,11 @@ const steps = [
   { id: 7, label: 'Review & Payment', icon: FileCheck },
 ]
 
-export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [] }) {
+export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [], isSaving = false, lastSaved = null, repoConnected = false }) {
   const progressPercentage = (completedSteps.length / steps.length) * 100
+
+  // Show auto-save indicator ONLY after repo is actually connected
+  const showAutoSave = repoConnected
 
   return (
     <div className="w-[280px] border-r border-zinc-800 bg-card h-screen sticky top-0 flex flex-col p-6">
@@ -25,6 +28,27 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [] 
           {Math.round(progressPercentage)}% complete. Keep it up.
         </p>
       </div>
+
+      {/* Auto-save Indicator - Only shows when repo is connected */}
+      {showAutoSave && (
+        <div className="mb-6 pb-6 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            {isSaving ? (
+              <>
+                <CloudUpload className="w-3.5 h-3.5 text-muted-foreground animate-pulse" />
+                <span className="text-xs text-muted-foreground">Saving changes...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                <span className="text-xs text-muted-foreground">
+                  {lastSaved ? `Saved ${lastSaved}` : 'All changes saved'}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Steps */}
       <div className="space-y-4 flex-1">

@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { useAutoSave } from '@/hooks/use-auto-save.js'
 
 const blockTimeOptions = [
   { value: '5', label: '5 seconds' },
@@ -36,6 +37,15 @@ export default function ConfigureChain() {
     ticker: '',
     halvingDays: ''
   })
+
+  // Check if repo is connected (from location state)
+  const repoConnected = location.state?.repo ? true : false
+
+  // Auto-save hook
+  const { isSaving, lastSaved } = useAutoSave(
+    [chainName, tokenName, ticker, halvingDays, blockTime],
+    repoConnected
+  )
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -171,7 +181,13 @@ export default function ConfigureChain() {
     <TooltipProvider>
       <div className="flex min-h-screen bg-background">
         <MainSidebar variant="compact" />
-        <LaunchpadSidebar currentStep={3} completedSteps={[1, 2]} />
+        <LaunchpadSidebar
+          currentStep={3}
+          completedSteps={[1, 2]}
+          repoConnected={repoConnected}
+          isSaving={isSaving}
+          lastSaved={lastSaved}
+        />
 
         <div className="flex-1 overflow-auto">
         {/* Header */}

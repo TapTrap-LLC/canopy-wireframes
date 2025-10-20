@@ -11,21 +11,65 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
 ### Implemented Features ✅
 
 #### Launch Chain Workflow
+
+##### User Interface & Navigation
 - **Launch Overview Dialog**:
   - Modal dialog triggered from homepage or sidebar "Create L1 chain" button
   - Shows 5 key requirements for launching a blockchain
   - Clean design with icons, descriptions, and time estimate
   - No routing - appears as overlay on any page
+
+- **Dual Sidebar Layout**:
+  - **Compact Main Sidebar** (73px wide):
+    - Icon-only navigation with small labels below icons (10px font)
+    - Launchpad, Explorer, Staking, Trade, Profile navigation options
+    - Wallet icon-only button (no text in compact mode)
+    - Plus (+) button active state indicator
+    - Inline Canopy logo SVG (18×17px)
+    - Maintains all original button styles (rounded-xl, hover states, colors)
+  - **LaunchpadSidebar** (280px wide):
+    - Progress section with percentage completion bar
+    - "X% complete. Keep it up." encouragement text
+    - Auto-save indicator (only visible after repo connection):
+      - "Saving changes..." with animated CloudUpload icon (pulsing)
+      - "All changes saved" / "Saved [time]" with green CheckCircle2 icon
+      - Debounced auto-save (1 second delay) on all field changes
+    - 7 launch steps with unique icons (Code2, GitBranch, Settings, Palette, Link2, Rocket, FileCheck)
+    - Active step highlighted with bg-primary/10
+    - Completed steps show green checkmark icon
+    - Sticky positioning (h-screen) for always-visible progress tracking
+
+- **Auto-Save System**:
+  - Custom `useAutoSave` hook with debouncing
+  - Triggers on any field interaction (text input, file upload, selection changes)
+  - Shows loading state immediately after repo connection
+  - Simulates API call (800ms) before showing "saved" state
+  - Only activates after GitHub repository is connected (Step 2)
+  - Persists across all steps (3-7) after activation
+
+##### Launch Flow Steps
 - **Template-Based Chain Creation**: Pre-configured templates for Python, Go, Rust, and TypeScript
 - **GitHub Integration**: Direct repository connection and forking workflow
-- **Language Selection**: Visual language picker with devicon library icons
-- **Chain Configuration**:
+- **Language Selection** (Step 1):
+  - Visual language picker with devicon library icons
+  - No auto-save indicator
+  - Scroll to top on page load
+- **Repository Connection** (Step 2):
+  - GitHub repository fork and connection workflow
+  - Auto-save indicator appears when repo is connected
+  - Shows "Saving changes..." → "All changes saved" flow
+  - `repoConnected` state triggers auto-save system
+  - Scroll to top on page load
+
+- **Chain Configuration** (Step 3):
   - Token name, ticker (3-5 chars), and chain name
   - Token supply (1B fixed)
   - Halving schedule (customizable in days)
   - Block time selection (5s to 5min)
   - Real-time calculation of yearly token emission
-- **Branding & Media**:
+  - Auto-save on all field changes (chainName, tokenName, ticker, halvingDays, blockTime)
+  - Scroll to top on page load
+- **Branding & Media** (Step 4):
   - Logo upload (PNG/JPG, 1000×1000px recommended)
   - Brand color picker with hex input
   - Description textarea (20-500 chars, mandatory)
@@ -33,21 +77,27 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Carousel navigation with horizontal scrolling
   - Drag-and-drop thumbnail reordering
   - Editable file names
-- **Links & Documentation**:
+  - Auto-save on all changes (logo, brandColor, description, galleryItems)
+  - Scroll to top on page load
+- **Links & Documentation** (Step 5):
   - Dynamic social media links (Website, Twitter/X, Telegram, Discord, GitHub, Medium, Reddit, LinkedIn)
   - Platform-specific icons for each social link
   - Add/remove social platforms with validation (min. 1 required)
   - Optional whitepapers section with unified list
   - File upload (PDF, DOC, DOCX) and URL support
   - Metadata fetching for whitepaper URLs
-- **Launch Settings**:
+  - Auto-save on changes (socialLinks, whitepapers)
+  - Scroll to top on page load
+- **Launch Settings** (Step 6):
   - Fixed graduation threshold display ($50,000)
   - Virtual chain to real chain graduation explanation
   - Optional initial purchase in CNPY tokens
   - "Why should I buy?" expandable information section
   - Tooltip explaining CNPY usage for initial purchase
   - 1:1 token ratio display showing tokens received
-- **Review & Payment**:
+  - Auto-save on initialPurchase field changes
+  - Scroll to top on page load
+- **Review & Payment** (Step 7):
   - Comprehensive summary of all configuration data
   - Organized sections: Language & Repository, Chain Details, Branding & Media, Links & Documentation, Launch Settings
   - Repository name display (not full URL)
@@ -57,6 +107,8 @@ Canopy Launcher provides a streamlined, user-friendly interface for deploying bl
   - Payment summary with lighter card background
   - Important launch notice with key information
   - "Connect Wallet & Pay" button navigates to owner chain page with success banner
+  - Auto-save indicator visible but no active saving (review-only page)
+  - Scroll to top on page load
   - Placeholder data for demonstration ($GAME, MyGameChain, etc.)
 
 #### Chain Detail Page
@@ -192,14 +244,22 @@ src/
 │   │   ├── dialog.jsx
 │   │   ├── input.jsx
 │   │   ├── label.jsx
+│   │   ├── progress.jsx         # Progress bar for LaunchpadSidebar
 │   │   ├── select.jsx
 │   │   ├── sidebar.jsx
 │   │   ├── textarea.jsx
 │   │   ├── tooltip.jsx
 │   │   └── ...
 │   ├── launch-overview-dialog.jsx # Launch overview modal (triggered globally)
-│   ├── launchpad-sidebar.jsx      # Launch workflow navigation
-│   └── main-sidebar.jsx           # Main app navigation with dialog trigger
+│   ├── launchpad-sidebar.jsx      # Launch workflow navigation with auto-save indicator
+│   │                              # Props: currentStep, completedSteps, repoConnected, isSaving, lastSaved
+│   └── main-sidebar.jsx           # Main app navigation with compact variant
+│                                  # Variant: default (260px) | compact (73px)
+│
+├── hooks/                        # Custom React hooks
+│   └── use-auto-save.js           # Auto-save hook with debouncing
+│                                # Parameters: dependencies[], repoConnected, debounceMs
+│                                # Returns: { isSaving, lastSaved }
 │
 ├── pages/                        # Page components (views)
 │   ├── launch-chain/             # Launch workflow pages
@@ -254,7 +314,7 @@ src/
 │       └── index.jsx             # Graduated chain (100% progress, high activity)
 │
 ├── lib/
-│   └── utils.js                 # Utility functions
+│   └── utils.js                 # Utility functions (cn, etc.)
 │
 ├── App.jsx                      # Main app with routing
 ├── main.jsx                    # Entry point
@@ -295,6 +355,8 @@ The application will be available at `http://localhost:5173`
 3. **Minimalistic Design**: Clean, simple interfaces with proper spacing
 4. **Semantic Colors**: Use theme tokens (e.g., `bg-background`, `text-foreground`)
 5. **Consistent Typography**: Follow established font sizes and weights
+6. **Auto-Save Pattern**: Use `useAutoSave` hook for all multi-step forms with user data
+7. **Scroll to Top**: All pages should scroll to top on mount using `useEffect(() => window.scrollTo(0, 0), [])`
 
 ### File Naming Conventions
 
@@ -309,21 +371,94 @@ The application will be available at `http://localhost:5173`
 - Keep components focused and single-purpose
 - Use proper TypeScript/PropTypes for component props (when applicable)
 
+### Auto-Save Implementation
+
+When implementing auto-save functionality in new pages:
+
+```jsx
+import { useAutoSave } from '@/hooks/useAutoSave'
+
+export default function YourPage() {
+  const location = useLocation()
+  const [field1, setField1] = useState('')
+  const [field2, setField2] = useState('')
+
+  // Check if repo is connected from location state
+  const repoConnected = location.state?.repo ? true : false
+
+  // Use auto-save hook
+  const { isSaving, lastSaved } = useAutoSave(
+    [field1, field2], // Dependencies to watch
+    repoConnected     // Only save when repo is connected
+  )
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <MainSidebar variant="compact" />
+      <LaunchpadSidebar
+        currentStep={3}
+        completedSteps={[1, 2]}
+        repoConnected={repoConnected}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+      />
+      {/* Page content */}
+    </div>
+  )
+}
+```
+
+### Sidebar Variants
+
+**MainSidebar** supports two variants:
+- `default` (260px): Full sidebar with labels and text
+- `compact` (73px): Icon-only with small labels below icons
+
+**LaunchpadSidebar** props:
+- `currentStep` (number): Current active step (1-7)
+- `completedSteps` (array): Array of completed step numbers
+- `repoConnected` (boolean): Shows auto-save indicator when true
+- `isSaving` (boolean): Shows "Saving changes..." state
+- `lastSaved` (string): Relative time string (e.g., "a few seconds ago")
+
 ## 🎯 Workflow Steps
 
-The launcher guides users through these steps:
+The launcher guides users through these steps with dual sidebars and auto-save:
 
 **Pre-Launch:**
-1. **Overview Dialog** ✅ - Modal showing 5 key requirements (Choose language, Connect repo, Configure chain, Customize brand, Review & launch)
+- **Overview Dialog** ✅ - Modal showing 5 key requirements (Choose language, Connect repo, Configure chain, Customize brand, Review & launch)
 
-**Launch Flow:**
+**Launch Flow (with Dual Sidebars):**
 1. **Language Selection** ✅ - Choose programming language template (Python, Go, Rust, TypeScript)
+   - Compact MainSidebar (73px) + LaunchpadSidebar (280px)
+   - No auto-save indicator yet
+   - Progress: 0%
+
 2. **Repository Connection** ✅ - Fork template and connect GitHub repository
+   - Auto-save indicator appears when repo is successfully connected
+   - Shows "Saving changes..." (1s) → "All changes saved"
+   - Progress: 14%
+
 3. **Chain Configuration** ✅ - Set chain name, token details, halving schedule, and block time
+   - Auto-save active on all field changes (1s debounce)
+   - Progress: 28%
+
 4. **Branding & Media** ✅ - Add logo, brand color, description, and gallery (images/videos)
+   - Auto-save active on logo, color, description, gallery changes
+   - Progress: 42%
+
 5. **Links & Documentation** ✅ - Add social links and whitepapers (files or URLs)
+   - Auto-save active on social links and whitepaper changes
+   - Progress: 57%
+
 6. **Launch Settings** ✅ - Configure graduation threshold and optional initial purchase
-7. **Review & Payment** ✅ - Final review, summary, and payment (using placeholder data)
+   - Auto-save active on initial purchase changes
+   - Progress: 71%
+
+7. **Review & Payment** ✅ - Final review, summary, and payment
+   - Auto-save indicator visible (no active saving)
+   - Progress: 85%
+   - Payment completes workflow → redirects to owner chain page
 
 ## 🧪 Scripts
 

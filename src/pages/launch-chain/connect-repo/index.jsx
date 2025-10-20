@@ -14,6 +14,8 @@ export default function ConnectRepo() {
   const location = useLocation()
   const [connectedRepo, setConnectedRepo] = useState(null)
   const [showGitHubDialog, setShowGitHubDialog] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -44,6 +46,15 @@ export default function ConnectRepo() {
   const handleConnectRepo = (repoName) => {
     setConnectedRepo(repoName)
     setShowGitHubDialog(false)
+
+    // Show saving indicator when repo is connected
+    setIsSaving(true)
+
+    // Simulate API call to save repo connection
+    setTimeout(() => {
+      setIsSaving(false)
+      setLastSaved('a few seconds ago')
+    }, 1000)
   }
 
   const handleDisconnect = () => {
@@ -53,7 +64,13 @@ export default function ConnectRepo() {
   return (
     <div className="flex min-h-screen bg-background">
       <MainSidebar variant="compact" />
-      <LaunchpadSidebar currentStep={2} completedSteps={[1]} />
+      <LaunchpadSidebar
+        currentStep={2}
+        completedSteps={[1]}
+        repoConnected={!!connectedRepo}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+      />
 
       <div className="flex-1 overflow-auto">
         {/* Header */}

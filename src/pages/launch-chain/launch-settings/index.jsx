@@ -10,6 +10,7 @@ import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import {Badge} from "@/components/ui/badge.jsx";
+import { useAutoSave } from '@/hooks/use-auto-save.js'
 
 export default function LaunchSettings() {
   const navigate = useNavigate()
@@ -17,6 +18,15 @@ export default function LaunchSettings() {
 
   const [initialPurchase, setInitialPurchase] = useState('')
   const [showWhyBuy, setShowWhyBuy] = useState(false)
+
+  // Check if repo is connected
+  const repoConnected = location.state?.links || location.state?.branding ? true : false
+
+  // Auto-save hook
+  const { isSaving, lastSaved } = useAutoSave(
+    [initialPurchase],
+    repoConnected
+  )
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -48,7 +58,13 @@ export default function LaunchSettings() {
     <TooltipProvider>
       <div className="flex min-h-screen bg-background">
         <MainSidebar variant="compact" />
-        <LaunchpadSidebar currentStep={6} completedSteps={[1, 2, 3, 4, 5]} />
+        <LaunchpadSidebar
+          currentStep={6}
+          completedSteps={[1, 2, 3, 4, 5]}
+          repoConnected={repoConnected}
+          isSaving={isSaving}
+          lastSaved={lastSaved}
+        />
 
         <div className="flex-1 overflow-auto">
         {/* Header */}

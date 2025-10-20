@@ -48,7 +48,7 @@ export default function LanguageSelection() {
       <MainSidebar variant="compact" />
 
       {/* Launch Progress Sidebar */}
-      <LaunchpadSidebar currentStep={1} completedSteps={[]} />
+      <LaunchpadSidebar currentStep={1} completedSteps={[]} repoConnected={false} />
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">

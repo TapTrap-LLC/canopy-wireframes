@@ -10,6 +10,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import LogoUpload from './components/logo-upload'
 import GalleryCarousel from './components/gallery-carousel'
 import {Badge} from "@/components/ui/badge.jsx";
+import { useAutoSave } from '@/hooks/use-auto-save.js'
 
 export default function Branding() {
   const navigate = useNavigate()
@@ -25,6 +26,15 @@ export default function Branding() {
 
   const logoInputRef = useRef(null)
   const galleryInputRef = useRef(null)
+
+  // Check if repo is connected
+  const repoConnected = location.state?.repo || location.state?.chainConfig ? true : false
+
+  // Auto-save hook
+  const { isSaving, lastSaved } = useAutoSave(
+    [logo, brandColor, description, galleryItems],
+    repoConnected
+  )
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -103,7 +113,13 @@ export default function Branding() {
   return (
     <div className="flex min-h-screen bg-background">
       <MainSidebar variant="compact" />
-      <LaunchpadSidebar currentStep={4} completedSteps={[1, 2, 3]} />
+      <LaunchpadSidebar
+        currentStep={4}
+        completedSteps={[1, 2, 3]}
+        repoConnected={repoConnected}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+      />
 
       <div className="flex-1 overflow-auto">
         {/* Header */}

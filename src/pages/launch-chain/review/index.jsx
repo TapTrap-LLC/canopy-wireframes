@@ -34,6 +34,9 @@ export default function Review() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Check if repo is connected
+  const repoConnected = location.state?.launchSettings || location.state?.links ? true : false
+
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
@@ -98,7 +101,11 @@ export default function Review() {
   return (
     <div className="flex min-h-screen bg-background">
       <MainSidebar variant="compact" />
-      <LaunchpadSidebar currentStep={7} completedSteps={[1, 2, 3, 4, 5, 6]} />
+      <LaunchpadSidebar
+        currentStep={7}
+        completedSteps={[1, 2, 3, 4, 5, 6]}
+        repoConnected={repoConnected}
+      />
 
       <div className="flex-1 overflow-auto">
         {/* Header */}

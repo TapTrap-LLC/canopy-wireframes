@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { useAutoSave } from '@/hooks/use-auto-save.js'
 
 // Social platform icons mapping
 const PLATFORM_ICONS = {
@@ -69,6 +70,15 @@ export default function Links() {
   const [urlInput, setUrlInput] = useState('')
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false)
   const [errors, setErrors] = useState({})
+
+  // Check if repo is connected
+  const repoConnected = location.state?.branding || location.state?.chainConfig ? true : false
+
+  // Auto-save hook
+  const { isSaving, lastSaved } = useAutoSave(
+    [socialLinks, whitepapers],
+    repoConnected
+  )
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -204,7 +214,13 @@ export default function Links() {
   return (
     <div className="flex min-h-screen bg-background">
       <MainSidebar variant="compact" />
-      <LaunchpadSidebar currentStep={5} completedSteps={[1, 2, 3, 4]} />
+      <LaunchpadSidebar
+        currentStep={5}
+        completedSteps={[1, 2, 3, 4]}
+        repoConnected={repoConnected}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+      />
 
       <div className="flex-1 overflow-auto">
         {/* Header */}
