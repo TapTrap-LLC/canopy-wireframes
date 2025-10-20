@@ -21,6 +21,7 @@ const MOCK_TOP_CHAINS = [
     currentPrice: 0.0068,
     holderCount: 287,
     volume: 12400,
+    age: '3d',
     url: '/chain/onchain-bnb'
   },
   {
@@ -37,6 +38,7 @@ const MOCK_TOP_CHAINS = [
     currentPrice: 0.0095,
     holderCount: 512,
     volume: 18900,
+    age: '5d',
     url: '/chain/defi-masters'
   },
   {
@@ -53,6 +55,7 @@ const MOCK_TOP_CHAINS = [
     currentPrice: 0.0057,
     holderCount: 423,
     volume: 15200,
+    age: '1d',
     url: '/chain/nft-galaxy'
   },
   {
@@ -69,6 +72,7 @@ const MOCK_TOP_CHAINS = [
     currentPrice: 0.0083,
     holderCount: 658,
     volume: 21700,
+    age: '6d',
     url: '/chain/green-energy'
   }
 ]
@@ -87,6 +91,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0049,
     holderCount: 318,
     volume: 8900,
+    age: '2d',
     url: '/chain/metaverse-protocol'
   },
   {
@@ -102,6 +107,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0062,
     holderCount: 445,
     volume: 13600,
+    age: '4d',
     url: '/chain/gamefi-chain'
   },
   {
@@ -117,6 +123,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0039,
     holderCount: 892,
     volume: 6800,
+    age: '7d',
     url: '/chain/social-connect'
   },
   {
@@ -132,6 +139,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0087,
     holderCount: 234,
     volume: 24100,
+    age: '3d',
     url: '/chain/ai-trading'
   },
   {
@@ -147,6 +155,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0074,
     holderCount: 567,
     volume: 19200,
+    age: '5d',
     url: '/chain/cross-chain'
   },
   {
@@ -162,6 +171,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0055,
     holderCount: 189,
     volume: 11300,
+    age: '1d',
     url: '/chain/privacy-shield'
   },
   {
@@ -177,6 +187,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0078,
     holderCount: 421,
     volume: 16500,
+    age: '6d',
     url: '/chain/real-estate-dao'
   },
   {
@@ -192,6 +203,7 @@ const MOCK_CHAINS = [
     currentPrice: 0.0044,
     holderCount: 734,
     volume: 9400,
+    age: '8d',
     url: '/chain/music-rights'
   }
 ]

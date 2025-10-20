@@ -86,10 +86,10 @@ export default function ChainListItem({ chain }) {
           </p>
         </div>
 
-        {/* Goal Progress % */}
+        {/* Age */}
         <div className="text-center">
-          <p className="text-xs text-muted-foreground mb-1">Progress</p>
-          <p className="text-sm font-semibold">{Math.round(progress)}%</p>
+          <p className="text-xs text-muted-foreground mb-1">Age</p>
+          <p className="text-sm font-semibold">{chain.age || '2d'}</p>
         </div>
       </div>
     </Card>
