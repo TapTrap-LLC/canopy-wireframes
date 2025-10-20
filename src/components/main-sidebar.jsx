@@ -75,8 +75,8 @@ export default function MainSidebar({ variant = 'default' }) {
 
           {/* Bottom Section */}
           <div className="px-2">
-            <button className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80">
-              Connect wallet
+            <button className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80 flex items-center justify-center">
+              <Wallet className="w-5 h-5" />
             </button>
           </div>
         </div>

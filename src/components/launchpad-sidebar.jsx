@@ -16,7 +16,7 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [] 
   const progressPercentage = (completedSteps.length / steps.length) * 100
 
   return (
-    <div className="w-[280px] border-r border-zinc-800 bg-card min-h-screen sticky top-0 flex flex-col p-6">
+    <div className="w-[280px] border-r border-zinc-800 bg-card h-screen sticky top-0 flex flex-col p-6">
       {/* Progress Section */}
       <div className="space-y-3 mb-8">
         <h3 className="text-lg font-semibold">Progress</h3>
