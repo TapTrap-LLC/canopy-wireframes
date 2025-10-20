@@ -19,11 +19,11 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [],
   const showAutoSave = repoConnected
 
   return (
-    <div className="w-[280px] border-r border-zinc-800 bg-card h-screen sticky top-0 flex flex-col p-6">
+    <div className="w-[280px] border-r border-zinc-800 bg-card h-screen sticky top-0 flex flex-col p-6 pt-5.5">
       {/* Progress Section */}
-      <div className="space-y-3 mb-8">
+      <div className="space-y-3 mb-6">
         <h3 className="text-lg font-semibold">Progress</h3>
-        <Progress value={progressPercentage} className="h-3" />
+        <Progress value={progressPercentage} className="h-2" />
         <p className="text-sm text-muted-foreground">
           {Math.round(progressPercentage)}% complete. Keep it up.
         </p>
@@ -51,7 +51,7 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [],
       )}
 
       {/* Steps */}
-      <div className="space-y-4 flex-1">
+      <div className="space-y-3 flex-1">
         <h4 className="text-sm font-medium text-muted-foreground mb-4">Launch Steps</h4>
 
         {steps.map((step) => {
@@ -63,14 +63,14 @@ export default function LaunchpadSidebar({ currentStep = 1, completedSteps = [],
             <div
               key={step.id}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg transition-colors",
+                "flex items-center gap-2 p-2 rounded-lg transition-colors",
                 isActive && "bg-primary/10",
                 !isActive && !isCompleted && "opacity-50"
               )}
             >
               {/* Icon/Status */}
               <div className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0",
+                "flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0",
                 isCompleted && "bg-green-500/20",
                 isActive && !isCompleted && "bg-primary/20",
                 !isActive && !isCompleted && "bg-muted"
