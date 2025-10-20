@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -18,9 +19,11 @@ export default function Branding() {
 
   const [logo, setLogo] = useState(null)
   const [brandColor, setBrandColor] = useState('#6366f1')
+  const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [galleryItems, setGalleryItems] = useState([])
   const [errors, setErrors] = useState({
+    title: '',
     description: ''
   })
 
@@ -32,13 +35,27 @@ export default function Branding() {
 
   // Auto-save hook
   const { isSaving, lastSaved } = useAutoSave(
-    [logo, brandColor, description, galleryItems],
+    [logo, brandColor, title, description, galleryItems],
     repoConnected
   )
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  // Validate title
+  const validateTitle = (value) => {
+    if (!value || value.trim().length === 0) return 'Title is required'
+    if (value.trim().length < 10) return 'Title must be at least 10 characters'
+    if (value.trim().length > 100) return 'Title must be less than 100 characters'
+    return ''
+  }
+
+  const handleTitleChange = (e) => {
+    const value = e.target.value
+    setTitle(value)
+    setErrors(prev => ({ ...prev, title: validateTitle(value) }))
+  }
 
   // Validate description
   const validateDescription = (value) => {
@@ -96,6 +113,7 @@ export default function Branding() {
           branding: {
             logo,
             brandColor,
+            title,
             description,
             gallery: galleryItems
           }
@@ -108,7 +126,7 @@ export default function Branding() {
     navigate('/')
   }
 
-  const isFormValid = logo && description && !errors.description
+  const isFormValid = logo && title && description && !errors.title && !errors.description
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -161,6 +179,26 @@ export default function Branding() {
               {/* Divider */}
               <div className="border-t border-border" />
 
+              {/* Title */}
+              <div className="space-y-2">
+                <Label className="block text-sm font-medium" htmlFor="title">
+                  Chain title
+                </Label>
+                <Input
+                  id="title"
+                  placeholder="e.g., Onchain ENS: Decentralized Naming for the Future"
+                  value={title}
+                  onChange={handleTitleChange}
+                  className={errors.title ? 'border-destructive' : ''}
+                />
+                {errors.title && (
+                  <p className="text-sm text-destructive">{errors.title}</p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  A catchy title that appears on the launchpad. Example: "MyGameChain: The Future of Gaming on Blockchain"
+                </p>
+              </div>
+
               {/* Description */}
               <div className="space-y-2">
                 <Label className="block text-sm font-medium" htmlFor="description">
@@ -168,7 +206,7 @@ export default function Branding() {
                 </Label>
                 <Textarea
                   id="description"
-                  placeholder="A short explanation of what your blockchain does"
+                  placeholder="e.g., Integrated with Canopy's robust infrastructure, our platform is designed to enhance the way digital assets are managed and exchanged..."
                   value={description}
                   onChange={handleDescriptionChange}
                   className={`min-h-32 ${errors.description ? 'border-destructive' : ''}`}
@@ -176,6 +214,9 @@ export default function Branding() {
                 {errors.description && (
                   <p className="text-sm text-destructive">{errors.description}</p>
                 )}
+                <p className="text-sm text-muted-foreground">
+                  A detailed description of your blockchain's purpose and features. Example: "A revolutionary blockchain designed specifically for gaming applications, enabling seamless in-game asset transactions..."
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {description.length}/500 characters
                 </p>
