@@ -262,35 +262,44 @@ export default function Launchpad() {
         />
 
         {/* Chains Grid/List */}
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredChains.length > 0 ? (
-              filteredChains.map((chain) => (
-                <ChainCard key={chain.id} chain={chain} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">
-                  No chains found for this filter.
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredChains.length > 0 ? (
-              filteredChains.map((chain) => (
-                <ChainListItem key={chain.id} chain={chain} />
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  No chains found for this filter.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="space-y-6">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredChains.length > 0 ? (
+                filteredChains.map((chain) => (
+                  <ChainCard key={chain.id} chain={chain} />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">
+                    No chains found for this filter.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredChains.length > 0 ? (
+                filteredChains.map((chain) => (
+                  <ChainListItem key={chain.id} chain={chain} />
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">
+                    No chains found for this filter.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Loading spinner at the bottom */}
+          {filteredChains.length > 0 && (
+            <div className="flex items-center justify-center py-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
