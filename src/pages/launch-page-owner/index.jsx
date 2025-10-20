@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import ChainHeader from '../launch-page/components/chain-header'
 import PriceChart from '../launch-page/components/price-chart'
@@ -13,6 +13,7 @@ import HoldersTab from '../launch-page/components/holders-tab'
 import BlockExplorerTab from '../launch-page/components/block-explorer-tab'
 import TradingPanel from '../launch-page/components/trading-panel'
 import ReportProblemButton from '../launch-page/components/report-problem-button'
+import LaunchSuccessBanner from './components/launch-success-banner'
 import { Globe, Github } from 'lucide-react'
 
 // Mock data for newly launched chain (owner view)
@@ -138,8 +139,26 @@ const newChainData = {
 
 export default function LaunchPageOwner() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
   const [activeTab, setActiveTab] = useState('overview')
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false)
+
+  // Check if coming from successful payment
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      setShowSuccessBanner(true)
+      // Remove the success param from URL
+      searchParams.delete('success')
+      setSearchParams(searchParams, { replace: true })
+      // Scroll to top
+      window.scrollTo(0, 0)
+    }
+  }, [searchParams, setSearchParams])
+
+  const handleDismissBanner = () => {
+    setShowSuccessBanner(false)
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -161,6 +180,16 @@ export default function LaunchPageOwner() {
             </Badge>
           </div>
         </div>
+
+        {/* Success Banner */}
+        {showSuccessBanner && (
+          <div className="px-6 pt-2">
+            <LaunchSuccessBanner
+                chainName={newChainData.name}
+                onDismiss={handleDismissBanner}
+            />
+          </div>
+        )}
 
         <div className="max-w-7xl mx-auto px-6 py-6 pt-3">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

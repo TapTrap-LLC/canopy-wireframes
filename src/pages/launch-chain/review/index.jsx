@@ -85,7 +85,8 @@ export default function Review() {
 
   const handlePayment = () => {
     // In production, this would connect wallet and process payment
-    alert('Payment functionality will be implemented')
+    // For now, navigate to the owner chain page with success banner
+    navigate('/chain/my-chain?success=true')
   }
 
   return (

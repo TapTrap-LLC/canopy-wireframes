@@ -2,9 +2,16 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Upload, Star } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function ChainHeader({ chainData }) {
   const [isFavorited, setIsFavorited] = useState(false)
+
+  const handleShare = () => {
+    // Copy chain URL to clipboard
+    navigator.clipboard.writeText(window.location.href)
+    toast.success('Chain link copied to clipboard!')
+  }
 
   return (
     <Card className="p-4">
@@ -38,7 +45,12 @@ export default function ChainHeader({ chainData }) {
             </Button>
 
             {/* Share Button */}
-            <Button variant="outline" size="icon" className="h-[30px] w-[30px] rounded-lg">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-[30px] w-[30px] rounded-lg"
+              onClick={handleShare}
+            >
               <Upload className="w-4 h-4" />
             </Button>
           </div>
