@@ -101,7 +101,7 @@ const MOCK_CHAINS = [
     logo: null,
     brandColor: '#8b5cf6',
     description: 'A revolutionary blockchain designed specifically for gaming applications, enabling seamless in-game asset transactions, player rewards, and cross-game interoperability.',
-    marketCap: 500,
+    marketCap: 1000,
     goal: 50000,
     change24h: 0,
     currentPrice: 0.005,

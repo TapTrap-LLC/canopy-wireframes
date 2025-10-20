@@ -133,7 +133,7 @@ export default function ChainCard({ chain }) {
             <span className="text-muted-foreground">
               ${(chain.marketCap / 1000).toFixed(1)}k / ${(chain.goal / 1000).toFixed(0)}k
             </span>
-            {chain.change24h && (
+            {chain.change24h !== 0 && chain.change24h !== undefined && chain.change24h !== null && (
               <span className={chain.change24h >= 0 ? 'text-green-500' : 'text-red-500'}>
                 {chain.change24h >= 0 ? '+' : ''}{chain.change24h}%
               </span>
