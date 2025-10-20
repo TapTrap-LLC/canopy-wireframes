@@ -80,35 +80,35 @@ const MOCK_TOP_CHAINS = [
 const MOCK_CHAINS = [
   {
     id: 5,
-    name: 'MetaVerse Protocol',
-    ticker: 'MVP',
+    name: 'Onchain ENS',
+    ticker: 'OENS',
     logo: null,
-    brandColor: '#3b82f6',
-    description: 'Building spatial computing infrastructure for immersive 3D experiences and virtual worlds.',
-    marketCap: 24500,
+    brandColor: '#10b981',
+    description: 'Integrated with Canopy\'s robust infrastructure, our platform is designed to enhance the way digital assets are managed and exchanged.',
+    marketCap: 23000,
     goal: 50000,
-    change24h: 11.8,
-    currentPrice: 0.0049,
-    holderCount: 318, // Achieves: 10, 50, 100 holders + 1k, 5k, 10k mcap = 6 milestones
-    volume: 8900,
+    change24h: 15.6,
+    currentPrice: 0.011647,
+    holderCount: 21, // Achieves: 10 holders + 1k, 5k, 10k mcap = 4 milestones
+    volume: 6500,
     age: '2d',
-    url: '/chain/metaverse-protocol'
+    url: '/chain/someone-else-chain'
   },
   {
     id: 6,
-    name: 'GameFi Chain',
-    ticker: 'GFC',
+    name: 'MyGameChain',
+    ticker: 'GAME',
     logo: null,
-    brandColor: '#f97316',
-    description: 'Play-to-earn gaming platform with skill-based tournaments and NFT item marketplace.',
-    marketCap: 31200,
+    brandColor: '#8b5cf6',
+    description: 'A revolutionary blockchain designed specifically for gaming applications, enabling seamless in-game asset transactions, player rewards, and cross-game interoperability.',
+    marketCap: 500,
     goal: 50000,
-    change24h: 7.2,
-    currentPrice: 0.0062,
-    holderCount: 67, // Achieves: 10, 50 holders + 1k, 5k, 10k, 25k mcap = 6 milestones
-    volume: 13600,
-    age: '4d',
-    url: '/chain/gamefi-chain'
+    change24h: 0,
+    currentPrice: 0.005,
+    holderCount: 1, // Just the owner, no milestones achieved yet
+    volume: 100,
+    age: '1h',
+    url: '/chain/my-chain'
   },
   {
     id: 7,
