@@ -246,7 +246,7 @@ export default function Launchpad() {
     <div className="flex min-h-screen bg-background">
       <MainSidebar />
 
-      <div className="flex-1 p-8 pt-4 space-y-8">
+      <div className="flex-1 p-6 pt-4 space-y-8">
         {/* Top Chains Carousel */}
         <div>
           <h1 className="text-[16px] font-bold mb-6">Top Chains</h1>
