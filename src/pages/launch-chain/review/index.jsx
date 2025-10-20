@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +33,10 @@ const PLATFORM_ICONS = {
 export default function Review() {
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   // Placeholder data (in production, this would come from location.state or context)
   const chainData = {

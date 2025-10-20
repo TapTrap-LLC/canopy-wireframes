@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -69,6 +69,10 @@ export default function Links() {
   const [urlInput, setUrlInput] = useState('')
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false)
   const [errors, setErrors] = useState({})
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const addSocialLink = () => {
     if (!selectedPlatform) return

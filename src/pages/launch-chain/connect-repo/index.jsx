@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,10 @@ export default function ConnectRepo() {
   const location = useLocation()
   const [connectedRepo, setConnectedRepo] = useState(null)
   const [showGitHubDialog, setShowGitHubDialog] = useState(false)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   
   // Get selected language from previous step (in real app, this would come from state management)
   const selectedLanguage = location.state?.language || 'Python'

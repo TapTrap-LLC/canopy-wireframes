@@ -28,7 +28,7 @@ export default function ConfigureChain() {
   const [tokenSupply, setTokenSupply] = useState('1000000000')
   const [halvingDays, setHalvingDays] = useState('365')
   const [blockTime, setBlockTime] = useState('10')
-  
+
   // Validation errors
   const [errors, setErrors] = useState({
     chainName: '',
@@ -36,6 +36,10 @@ export default function ConfigureChain() {
     ticker: '',
     halvingDays: ''
   })
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   // Validation functions
   const validateChainName = (value) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,10 @@ export default function LaunchSettings() {
 
   const [initialPurchase, setInitialPurchase] = useState('')
   const [showWhyBuy, setShowWhyBuy] = useState(false)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const graduationThreshold = 50000 // Fixed at $50,000
 

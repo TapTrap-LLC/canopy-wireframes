@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
@@ -22,6 +22,10 @@ const languages = [
 export default function LanguageSelection() {
   const navigate = useNavigate()
   const [selectedLanguage, setSelectedLanguage] = useState(null)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const handleBack = () => {
     navigate('/launchpad')
