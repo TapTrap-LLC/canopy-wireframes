@@ -17,13 +17,13 @@ import { Globe, Github } from 'lucide-react'
 
 // Mock data for graduated chain (reached threshold)
 const graduatedChainData = {
-  name: 'Onchain ENS',
-  ticker: 'OENS',
-  creator: 'Onchain ENS',
-  title: 'Onchain ENS: Decentralized Naming for the Future',
-  description: 'Integrated with Canopy\'s robust infrastructure, our platform is designed to enhance the way digital assets are managed and exchanged. Our technology enables seamless, transparent, and efficient transactions, unlocking new possibilities for users and developers alike. Experience unmatched security, flexibility, and interoperability with our innovative solution, tailored to meet the evolving needs of the blockchain ecosystem.',
+  name: 'Social Connect',
+  ticker: 'SOCL',
+  creator: 'Social Connect',
+  title: 'Social Connect: Decentralized Social Network',
+  description: 'Decentralized social network where creators own their content and earn from engagement. Our platform is designed to enhance the way digital assets are managed and exchanged. Our technology enables seamless, transparent, and efficient transactions, unlocking new possibilities for users and developers alike. Experience unmatched security, flexibility, and interoperability with our innovative solution, tailored to meet the evolving needs of the blockchain ecosystem.',
   logo: null,
-  brandColor: '#10b981',
+  brandColor: '#06b6d4',
   language: 'TypeScript',
   repositoryName: 'eliezerpujols/mygamechain',
   isVirtual: false, // No longer virtual
@@ -255,7 +255,7 @@ export default function LaunchPageGraduated() {
               Launchpad
             </button>
             <span>/</span>
-            <span className="text-foreground">Onchain ENS</span>
+            <span className="text-foreground">Social Connect</span>
             <Badge variant="outline" className="border-green-500/50 text-green-500 ml-2">
               Graduated
             </Badge>

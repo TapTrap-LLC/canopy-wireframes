@@ -117,14 +117,14 @@ const MOCK_CHAINS = [
     logo: null,
     brandColor: '#06b6d4',
     description: 'Decentralized social network where creators own their content and earn from engagement.',
-    marketCap: 4200,
+    marketCap: 52000,
     goal: 50000,
-    change24h: 5.6,
-    currentPrice: 0.0039,
-    holderCount: 28, // Achieves: 10 holders + 1k mcap = 2 milestones only
-    volume: 1800, // Lower volume for smaller market cap
-    age: '7d',
-    url: '/chain/social-connect'
+    change24h: 15.6,
+    currentPrice: 0.011647,
+    holderCount: 5021, // Achieves: all milestones + graduation = 10 milestones
+    volume: 8500,
+    age: '12d',
+    url: '/chain/graduated-chain'
   },
   {
     id: 8,
@@ -205,6 +205,70 @@ const MOCK_CHAINS = [
     volume: 320, // Very small volume for very small market cap
     age: '8d',
     url: '/chain/music-rights'
+  },
+  {
+    id: 13,
+    name: 'HealthChain',
+    ticker: 'HLTH',
+    logo: null,
+    brandColor: '#dc2626',
+    description: 'Secure medical records on blockchain with patient-controlled access and encrypted health data sharing.',
+    marketCap: 74200,
+    goal: 50000,
+    change24h: 16.3,
+    currentPrice: 0.0148,
+    holderCount: 1567, // Achieves: all milestones = 10 milestones
+    volume: 52100,
+    age: '21d',
+    url: '/chain/healthchain'
+  },
+  {
+    id: 14,
+    name: 'DeFi Yield Pro',
+    ticker: 'DYPRO',
+    logo: null,
+    brandColor: '#3b82f6',
+    description: 'Advanced yield optimization protocol with automated portfolio rebalancing and multi-chain farming.',
+    marketCap: 67500,
+    goal: 50000,
+    change24h: 12.8,
+    currentPrice: 0.0135,
+    holderCount: 892, // Achieves: all holder milestones (10, 50, 100, 500) + all mcap milestones up to graduation = 10 milestones
+    volume: 45200,
+    age: '12d',
+    url: '/chain/defi-yield-pro'
+  },
+  {
+    id: 15,
+    name: 'Onchain ENS',
+    ticker: 'OENS',
+    logo: null,
+    brandColor: '#10b981',
+    description: 'Integrated with Canopy\'s robust infrastructure, our platform is designed to enhance the way digital assets are managed and exchanged.',
+    marketCap: 52000,
+    goal: 50000,
+    change24h: 15.6,
+    currentPrice: 0.011647,
+    holderCount: 5021, // Achieves: all holder milestones + graduation = 10 milestones
+    volume: 8500,
+    age: '12d',
+    url: '/launch-page-graduated'
+  },
+  {
+    id: 16,
+    name: 'Metaverse Land',
+    ticker: 'MLAND',
+    logo: null,
+    brandColor: '#a855f7',
+    description: 'Virtual real estate marketplace with 3D land parcels, builder tools, and cross-metaverse compatibility.',
+    marketCap: 58900,
+    goal: 50000,
+    change24h: 8.5,
+    currentPrice: 0.0118,
+    holderCount: 1243, // Achieves: all holder milestones + graduation = 10 milestones
+    volume: 38700,
+    age: '15d',
+    url: '/chain/metaverse-land'
   }
 ]
 
