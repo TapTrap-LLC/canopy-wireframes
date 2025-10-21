@@ -29,19 +29,20 @@ export default function Launchpad() {
 
     switch (activeFilter) {
       case 'trending':
-        filtered = filtered.filter(chain => chain.priceChange24h > 5)
+        filtered = filtered.filter(chain => chain.priceChange24h > 5 && !chain.isDraft)
         break
       case 'new':
-        filtered = filtered.sort((a, b) => b.id - a.id).slice(0, 4)
+        filtered = filtered.filter(chain => !chain.isDraft).sort((a, b) => b.id - a.id).slice(0, 4)
         break
       case 'graduated':
-        filtered = filtered.filter(chain => chain.isGraduated === true)
+        filtered = filtered.filter(chain => chain.isGraduated === true && !chain.isDraft)
         break
       case 'scheduled':
         filtered = filtered.filter(chain => chain.isDraft === true)
         break
       default:
-        // 'all' - show all chains
+        // 'all' - show all chains except drafts (drafts only accessible via URL)
+        filtered = filtered.filter(chain => !chain.isDraft)
         break
     }
 
