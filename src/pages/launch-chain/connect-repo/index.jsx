@@ -95,41 +95,46 @@ export default function ConnectRepo() {
 
         {/* Content */}
         <div className="p-6">
-          <div className="max-w-4xl mx-auto space-y-8">
-            {/* Title */}
-            <div className="flex flex-col gap-4">
-              <img
-                  src={`https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${selectedLanguage.toLowerCase()}/${selectedLanguage.toLowerCase()}-plain.svg`}
-                  alt={`${selectedLanguage} icon`}
-                  className="w-10 h-10 brightness-0 invert"
-              />
-              <h1 className="text-3xl font-bold flex items-center gap-3">
-                Fork {selectedLanguage} Template to Your GitHub
+          <div className="max-w-4xl mx-auto space-y-10">
+            {/* Hero Section */}
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
+                  <img
+                    src={`https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${selectedLanguage.toLowerCase()}/${selectedLanguage.toLowerCase()}-plain.svg`}
+                    alt={`${selectedLanguage} icon`}
+                    className="w-8 h-8 brightness-0 invert"
+                  />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    Fork {selectedLanguage} Template to Your GitHub
+                  </h1>
+                  <p className="text-muted-foreground text-lg">
+                    Get started with a production-ready blockchain template
+                  </p>
+                </div>
+              </div>
 
-              </h1>
-            </div>
-
-            {/* Status Pills */}
-            <div className="flex flex-wrap gap-3">
-              <Badge variant="secondary" className="py-1.5">
-                ✓ Basic token functionality
-              </Badge>
-              <Badge variant="secondary" className="py-1.5">
-                ✓ Consensus mechanism
-              </Badge>
-              <Badge variant="secondary" className="py-1.5">
-                ✓ Ready to launch as-is
-              </Badge>
-              <Badge variant="secondary" className="py-1.5">
-                ✓ Customizable
-              </Badge>
+              {/* Status Pills */}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs">
+                  ✓ Basic token functionality
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs">
+                  ✓ Consensus mechanism
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs">
+                  ✓ Ready to launch as-is
+                </Badge>
+                <Badge variant="secondary" className="px-3 py-1.5 text-xs">
+                  ✓ Customizable
+                </Badge>
+              </div>
             </div>
 
             {/* Steps Section */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">
-                What happens next?
-              </h2>
+            <div className="space-y-4">
 
               {/* Step 1 */}
               <Card className="p-6">
