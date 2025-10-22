@@ -2,9 +2,15 @@
 
 ## Introduction
 
-This document provides a comprehensive overview of the Canopy Launcher platform from a product and design perspective. All screens and flows have been implemented as high-fidelity wireframes to facilitate product discussions and identify edge cases before final design polish.
+This document describes the design and user flows for key pages of the Canopy Launcher platform. These screens have been implemented as high-fidelity wireframes to facilitate product discussions and identify edge cases before final design and development.
 
-**This document describes the ACTUAL implemented features** - not aspirational designs. Every interaction, validation rule, calculation, tooltip, loading state, and UX behavior documented here exists in the current codebase.
+**What's Documented:**
+- Launchpad (home page with chain listings)
+- Global search functionality
+- Chain launch flow (7-step wizard)
+- Chain detail pages (multiple states)
+- Transaction & block explorer pages
+- Report functionality
 
 **Note:** Wallet connection functionality is not included in this build as it's being developed separately by Rafa and will be integrated once finalized.
 
@@ -102,13 +108,11 @@ The launchpad serves as the main landing page where users discover and explore L
 - Also accessible via "+" icon in compact sidebar mode
 - Opens launch overview dialog
 
-[Image: Launchpad grid view with milestone badges]
+![Launchpad grid view with milestone badges](/imgs/launchpad-grid-view.png)
 
-[Image: Chain card showing milestones]
+![Launchpad list view with all columns](/imgs/launchpad-list-view.png)
 
-[Image: Launchpad list view with all columns]
-
-[Image: Filter and sort controls]
+![Filter and sort controls](/imgs/filter-and-sort-controls.png)
 
 ---
 
@@ -153,11 +157,11 @@ Command-style search accessible throughout the application via `⌘K` (Mac) or `
 - Shows helpful message: "No results found. Try searching for chain names, transaction hashes, or block numbers."
 - Only displays when actively searching (not on empty state)
 
-[Image: Search dialog with recent searches]
+![Search dialog with recent searches](/imgs/search-dialog-recent-searches.png)
 
-[Image: Search results showing chains]
+![Search results showing chains](/imgs/search-results-chains.png)
 
-[Image: Search results showing transactions and blocks]
+![Search results showing transactions and blocks](/imgs/search-results-transactions-blocks.png)
 
 ---
 
@@ -183,7 +187,7 @@ Multi-step wizard for creating a new L1 blockchain. The flow guides users throug
 - "Start" button begins flow
 - Can be dismissed with "Cancel"
 
-[Image: Launch overview dialog]
+![Launch overview dialog](/imgs/launch-overview-dialog.png)
 
 ---
 
@@ -208,7 +212,7 @@ Select the programming language/framework for the blockchain.
 **Validation:**
 - Must select one language to proceed
 
-[Image: Language selection screen]
+![Language selection screen](/imgs/language-selection-screen.png)
 
 ---
 
@@ -270,13 +274,13 @@ Connect to the GitHub repository containing the blockchain code.
 - Canopy GitHub App needs to be created
 - OAuth authentication flow required
 
-[Image: Repository connection screen - Initial state]
+![Repository connection screen - Initial state](/imgs/repository-connection-initial.png)
 
-[Image: GitHub authentication flow]
+![GitHub authentication flow](/imgs/github-authentication-flow.png)
 
-[Image: Repository selection list]
+![Repository selection list](/imgs/repository-selection-list.png)
 
-[Image: Connected repository state]
+![Connected repository state](/imgs/connected-repository-state.png)
 
 ---
 
@@ -397,13 +401,7 @@ Core blockchain parameters and technical configuration.
 **Scroll Behavior:**
 - Automatically scrolls to top when page loads
 
-[Image: Configuration form - basic info section]
-
-[Image: Ticker auto-suggestion - Loading state]
-
-[Image: Ticker auto-suggestion - Suggested state]
-
-[Image: Network Summary Card with calculations]
+![Configuration form - basic info section](/imgs/configuration-form-basic-info.png)
 
 ---
 
@@ -480,11 +478,9 @@ Visual identity for the chain.
 **Scroll Behavior:**
 - Automatically scrolls to top when page loads
 
-[Image: Branding screen with logo upload]
+![Branding screen with logo upload](/imgs/branding-screen-logo-upload.png)
 
-[Image: Title and description fields with character counter]
-
-[Image: Gallery upload with optional badge]
+![Gallery upload with optional badge](/imgs/gallery-upload-optional-badge.png)
 
 ---
 
@@ -580,15 +576,7 @@ Social presence and external links.
 **Scroll Behavior:**
 - Automatically scrolls to top when page loads
 
-[Image: Social links with platform selector]
-
-[Image: Added social links list]
-
-[Image: Resources upload tab]
-
-[Image: Resources URL tab]
-
-[Image: Resources list with files and URLs]
+![Social links with platform selector](/imgs/social-links-platform-selector.png)
 
 ---
 
@@ -656,17 +644,7 @@ Economic model and launch settings.
 **Scroll Behavior:**
 - Automatically scrolls to top when page loads
 
-[Image: Graduation threshold card]
-
-[Image: Virtual chain explanation]
-
-[Image: Initial purchase input with tooltip]
-
-[Image: Token preview display]
-
-[Image: "Why should I buy?" collapsed state]
-
-[Image: "Why should I buy?" expanded card]
+![Graduation threshold card](/imgs/graduation-threshold-card.png)
 
 ---
 
@@ -787,23 +765,7 @@ Final review of all configuration before publishing or saving changes.
 **Scroll Behavior:**
 - Automatically scrolls to top when page loads
 
-[Image: Review screen - Language & Repository card]
-
-[Image: Review screen - Chain Details card]
-
-[Image: Review screen - Branding card with logo preview]
-
-[Image: Review screen - Links & Documentation card]
-
-[Image: Review screen - Launch Settings card]
-
-[Image: Payment Summary card]
-
-[Image: Important Notice card]
-
-[Image: Action buttons - New launch mode]
-
-[Image: Action buttons - Edit mode]
+![Review screen - Language & Repository card](/imgs/review-screen-language-repository.png)
 
 ---
 
@@ -866,11 +828,7 @@ When chain is saved as draft and only visible to the creator.
 - Cancel or Delete buttons
 - On delete: Shows success toast and returns to launchpad
 
-[Image: Draft chain header with breadcrumb and more menu]
-
-[Image: Draft Progress Panel showing steps]
-
-[Image: Draft overview tab with placeholder social links]
+![Draft chain header with breadcrumb and more menu](/imgs/draft-chain-header-breadcrumb.png)
 
 ---
 
@@ -950,13 +908,7 @@ Active chain in bonding curve phase, visible to all users.
 - Shown at bottom of main content area
 - Hidden for draft chains
 
-[Image: Virtual chain with price chart and metrics]
-
-[Image: Chain header with milestone badges]
-
-[Image: Overview tab with quick stats cards]
-
-[Image: Trading panel]
+![Virtual chain with price chart and metrics](/imgs/virtual-chain-price-chart-metrics.png)
 
 ---
 
@@ -987,9 +939,7 @@ After user completes payment, a 30-second review period begins before chain is p
 - Chain becomes publicly visible
 - State changes to Virtual
 
-[Image: Review countdown panel with circular timer]
-
-[Image: Warning card about last chance to edit]
+![Review countdown panel with circular timer](/imgs/review-countdown-panel-timer.png)
 
 ---
 
@@ -1024,9 +974,7 @@ Chain that successfully reached $50k market cap and graduated to mainnet.
 - No graduation progress bar
 - "Liquidity" instead of "Virtual Liq" in stats bar
 
-[Image: Graduated chain with metric selector]
-
-[Image: Price chart showing market cap view]
+![Graduated chain with metric selector](/imgs/graduated-chain-metric-selector.png)
 
 ---
 
@@ -1071,9 +1019,6 @@ Side sheet that opens when clicking a block in Explorer tab.
 - Now uses `getTransactionsByBlockNumber(chainId, blockNumber)`
 - Shows actual transaction count matching block.transactions field
 
-[Image: Block detail sheet - Overview]
-
-[Image: Block detail sheet - Transactions list]
 
 ---
 
@@ -1111,7 +1056,6 @@ Side sheet that opens when clicking a transaction in Explorer tab or block detai
 - Can navigate between transaction → block → transaction
 - Breadcrumb context maintained
 
-[Image: Transaction detail sheet]
 
 ---
 
@@ -1163,7 +1107,7 @@ Full-page view accessible via direct URL: `/transaction/[hash]`
 - "Transaction not found" message
 - Back to launchpad button
 
-[Image: Transaction detail page]
+![Transaction detail page](/imgs/transaction-detail-page.png)
 
 ---
 
@@ -1202,9 +1146,7 @@ Full-page view accessible via direct URL: `/block/[hash]`
 - "Block not found" message
 - Back to launchpad button
 
-[Image: Block detail page - Overview]
-
-[Image: Block detail page - Transactions]
+![Block detail page - Overview](/imgs/block-detail-page-overview.png)
 
 ---
 
@@ -1283,13 +1225,7 @@ Feature for users to report chains that violate platform policies.
 - Dialog closes
 - Form resets
 
-[Image: Report problem button]
-
-[Image: Report dialog with category selection]
-
-[Image: Specific reason selection]
-
-[Image: Additional comments textarea]
+![Report dialog with category selection](/imgs/report-dialog-category-selection.png)
 
 ---
 
