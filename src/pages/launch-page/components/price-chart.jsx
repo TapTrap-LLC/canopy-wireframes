@@ -8,6 +8,7 @@ import { HelpCircle } from 'lucide-react'
 
 export default function PriceChart({ chainData }) {
   const [selectedPeriod, setSelectedPeriod] = useState('1D')
+  const [metricView, setMetricView] = useState('price') // For graduated chains: 'price', 'marketcap', 'volume'
 
   const graduationProgress = chainData.isGraduated
     ? 100
@@ -77,49 +78,99 @@ export default function PriceChart({ chainData }) {
   return (
     <Card className="p-1">
       <div className="space-y-2">
-        {/* Top Section: Marketcap and Graduation */}
+        {/* Top Section: Metrics Display */}
         <div className="flex items-center justify-between px-4 py-3">
-          {/* Left: Marketcap */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Marketcap</p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-semibold">${(chainData.marketCap / 1000).toFixed(0)}k</h3>
-              {chainData.priceChange24h !== 0 && (
-                <span className="text-xs text-muted-foreground">+${chainData.priceChange24h}</span>
-              )}
-            </div>
-          </div>
+          {/* Left: Metric Display */}
+          {chainData.isGraduated ? (
+            // Graduated chains: Show segmented control and selected metric
+            <div className="space-y-2 flex-1">
+              {/* Segmented Control */}
+              <div className="flex gap-1 p-1 bg-muted/50 rounded-lg w-fit">
+                <Button
+                  variant={metricView === 'price' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 text-xs px-3"
+                  onClick={() => setMetricView('price')}
+                >
+                  Price
+                </Button>
+                <Button
+                  variant={metricView === 'marketcap' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 text-xs px-3"
+                  onClick={() => setMetricView('marketcap')}
+                >
+                  Market Cap
+                </Button>
+                <Button
+                  variant={metricView === 'volume' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="h-7 text-xs px-3"
+                  onClick={() => setMetricView('volume')}
+                >
+                  Volume
+                </Button>
+              </div>
 
-          {/* Right: Graduation Progress */}
-          <div className="space-y-2 w-[216px]">
-            <TooltipProvider>
-              <UITooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-end gap-1.5 cursor-help">
-                    <p className="text-xs text-muted-foreground text-right">
-                      {chainData.isGraduated
-                        ? `$${(chainData.graduationThreshold / 1000).toFixed(0)}k graduated`
-                        : `$${(remainingToGraduation / 1000).toFixed(1)}k until graduation`
-                      }
-                    </p>
-                    <HelpCircle className="w-3 h-3 text-muted-foreground" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-[260px]">
-                  {chainData.isGraduated ? (
-                    <p className="text-xs">
-                      This chain has graduated and is now fully deployed on the real blockchain. All transactions are permanent and recorded on-chain.
-                    </p>
-                  ) : (
+              {/* Selected Metric Value */}
+              <div className="flex items-baseline gap-2">
+                {metricView === 'price' && (
+                  <>
+                    <h3 className="text-2xl font-semibold">${chainData.currentPrice.toFixed(4)}</h3>
+                    {chainData.priceChange24h !== 0 && (
+                      <span className={`text-xs font-medium ${chainData.priceChange24h > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {chainData.priceChange24h > 0 ? '+' : ''}{chainData.priceChange24h}%
+                      </span>
+                    )}
+                  </>
+                )}
+                {metricView === 'marketcap' && (
+                  <h3 className="text-2xl font-semibold">${(chainData.marketCap / 1000).toFixed(1)}k</h3>
+                )}
+                {metricView === 'volume' && (
+                  <>
+                    <h3 className="text-2xl font-semibold">${(chainData.volume / 1000).toFixed(1)}k</h3>
+                    <span className="text-xs text-muted-foreground">24h</span>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Virtual chains: Show market cap (current behavior)
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Marketcap</p>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-2xl font-semibold">${(chainData.marketCap / 1000).toFixed(0)}k</h3>
+                {chainData.priceChange24h !== 0 && (
+                  <span className="text-xs text-muted-foreground">+${chainData.priceChange24h}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Right: Graduation Progress (only for virtual chains) */}
+          {!chainData.isGraduated && (
+            <div className="space-y-2 w-[216px]">
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-end gap-1.5 cursor-help">
+                      <p className="text-xs text-muted-foreground text-right">
+                        ${(remainingToGraduation / 1000).toFixed(1)}k until graduation
+                      </p>
+                      <HelpCircle className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="max-w-[260px]">
                     <p className="text-xs">
                       This chain starts as virtual (test mode). When market cap reaches ${(chainData.graduationThreshold / 1000).toFixed(0)}k, it will graduate to a real blockchain with permanent on-chain transactions.
                     </p>
-                  )}
-                </TooltipContent>
-              </UITooltip>
-            </TooltipProvider>
-            <Progress value={graduationProgress} className="h-2.5" />
-          </div>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+              <Progress value={graduationProgress} className="h-2.5" />
+            </div>
+          )}
         </div>
 
         {/* Chart Section */}
