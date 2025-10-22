@@ -3,11 +3,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Copy, CheckCircle2, ArrowRightLeft, Clock, XCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getTransactionsByBlockNumber } from '@/data/db'
 
 export default function BlockDetailSheet({ block, chainData, open, onOpenChange, onTransactionClick }) {
   const [copiedHash, setCopiedHash] = useState(false)
   const [copiedPrevHash, setCopiedPrevHash] = useState(false)
+  const [blockTransactions, setBlockTransactions] = useState([])
+
+  // Load all transactions for this block
+  useEffect(() => {
+    if (block && chainData) {
+      const transactions = getTransactionsByBlockNumber(chainData.id, block.number)
+      setBlockTransactions(transactions)
+    }
+  }, [block, chainData])
 
   if (!block) return null
 
@@ -83,11 +93,6 @@ export default function BlockDetailSheet({ block, chainData, open, onOpenChange,
       </Badge>
     )
   }
-
-  // Get block transactions from chainData
-  const blockTransactions = chainData.explorer?.recentTransactions?.filter(
-    tx => tx.blockNumber === block.number
-  ) || []
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
