@@ -1,47 +1,366 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ArrowUpRight, Zap } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { ArrowUpRight, ArrowDownRight, RotateCcw, ArrowDown, Zap, Plus, ChevronRight } from 'lucide-react'
 
-export default function TradingPanel({ chainData }) {
+export default function TradingPanel({ chainData, isOwner }) {
+  const [activeTab, setActiveTab] = useState('buy') // 'buy', 'sell', 'convert'
+  const [amount, setAmount] = useState('')
+
+  // Calculate conversion based on current price
+  // For Buy: input CNPY, output chain tokens
+  // For Sell: input chain tokens, output CNPY
+  const calculateConversion = () => {
+    if (!amount || amount === '0' || amount === '') return { tokens: '0', usd: '$0.00' }
+
+    const inputAmount = parseFloat(amount)
+    const tokenPrice = chainData.currentPrice || 0.001 // Price per token in USD
+
+    if (activeTab === 'buy') {
+      // User inputs CNPY (assuming 1 CNPY = $1)
+      const tokensReceived = inputAmount / tokenPrice
+      return {
+        tokens: tokensReceived.toLocaleString('en-US', { maximumFractionDigits: 2 }),
+        usd: `$${inputAmount.toFixed(2)}`
+      }
+    } else if (activeTab === 'sell') {
+      // User inputs chain tokens, outputs CNPY
+      const cnpyReceived = inputAmount * tokenPrice
+      return {
+        tokens: cnpyReceived.toLocaleString('en-US', { maximumFractionDigits: 2 }),
+        usd: `$${cnpyReceived.toFixed(2)}`
+      }
+    }
+
+    return { tokens: '0', usd: '$0.00' }
+  }
+
+  const conversion = calculateConversion()
+
+  const handleUseMax = () => {
+    // TODO: Set to max CNPY balance
+    setAmount('100')
+  }
+
+  const handleSwapDirection = () => {
+    // Swap between buy and sell, and keep the amount
+    if (activeTab === 'buy') {
+      setActiveTab('sell')
+    } else if (activeTab === 'sell') {
+      setActiveTab('buy')
+    }
+    // Keep the amount when swapping
+  }
+
   return (
-    <Card className="p-6">
+    <Card className="p-1 sticky top-6">
       <div className="space-y-4">
-        <Button variant="outline" className="w-full justify-start gap-2">
-          <Zap className="w-4 h-4" />
-          <span className="flex-1 text-left">CNPY</span>
-          <span className="text-muted-foreground">Use max</span>
-        </Button>
-
-        <div className="p-4 rounded-lg bg-muted/50 text-center">
-          <div className="text-3xl font-bold">$0</div>
-          <div className="text-sm text-muted-foreground mt-1">0 CNPY ⚡</div>
+        {/* Tab Navigation */}
+        <div className="px-3 pt-3">
+          <div className="bg-muted/50 p-1 rounded-lg flex gap-1">
+            <Button
+              variant={activeTab === 'buy' ? 'default' : 'ghost'}
+              size="sm"
+              className={`flex-1 h-9 gap-2 ${activeTab === 'buy' ? 'bg-primary text-primary-foreground' : ''}`}
+              onClick={() => setActiveTab('buy')}
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              <span className="text-xs font-medium">Buy</span>
+            </Button>
+            <Button
+              variant={activeTab === 'sell' ? 'default' : 'ghost'}
+              size="sm"
+              className="flex-1 h-9 gap-2"
+              onClick={() => setActiveTab('sell')}
+            >
+              <ArrowDownRight className="w-4 h-4" />
+              <span className="text-xs font-medium">Sell</span>
+            </Button>
+            <Button
+              variant={activeTab === 'convert' ? 'default' : 'ghost'}
+              size="sm"
+              className="flex-1 h-9 gap-2"
+              onClick={() => setActiveTab('convert')}
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span className="text-xs font-medium">Convert</span>
+            </Button>
+          </div>
         </div>
 
-        <div className="flex justify-center">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <ArrowUpRight className="w-5 h-5 rotate-90" />
+        {activeTab === 'convert' ? (
+          // Convert Mode UI
+          <>
+            {/* Select Selling Token */}
+            <div className="px-4">
+              <Card className="bg-muted/30 p-4 hover:bg-muted/40 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                      <Plus className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-base font-medium">Select token</p>
+                      <p className="text-sm text-muted-foreground">Select selling asset</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </Card>
+            </div>
+
+            {/* Swap Direction Button */}
+            <div className="relative flex justify-center">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full h-10 w-10 bg-background border-2"
+              >
+                <ArrowDown className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* CNPY Token Card */}
+            <div className="px-4">
+              <Card className="bg-muted/30 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* CNPY Token Avatar */}
+                    <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <svg width="24" height="24" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.7649 0.880227C12.658 0.827134 12.5342 0.905351 12.5342 1.02378V3.04351C12.5342 3.18794 12.7104 3.26027 12.8135 3.15814L14.069 1.91394C14.1383 1.84534 14.1317 1.73215 14.0535 1.67368C13.6439 1.36708 13.2123 1.10259 12.7649 0.880227Z" fill="white"/>
+                        <path d="M10.4705 0.127791C10.5477 0.141319 10.6032 0.208239 10.6032 0.285896V5.28157C10.6032 5.32456 10.586 5.36579 10.5553 5.3962L8.90769 7.02887C8.80463 7.13099 8.62842 7.05867 8.62842 6.91423V0.163239C8.62842 0.0764816 8.69735 0.00493239 8.78487 0.00272091C9.34863 -0.0115243 9.91358 0.0301658 10.4705 0.127791Z" fill="white"/>
+                        <path d="M6.64953 9.26628C6.68021 9.23588 6.69744 9.19464 6.69744 9.15164V0.531669C6.69744 0.424066 6.59358 0.346317 6.48993 0.37839C5.89636 0.562066 5.31929 0.812546 4.77074 1.12983C4.72107 1.15856 4.69092 1.21149 4.69092 1.26849V10.8158C4.69092 10.9602 4.86713 11.0325 4.97019 10.9304L6.64953 9.26628Z" fill="white"/>
+                        <path d="M2.4827 3.0726C2.57734 2.95748 2.75983 3.02558 2.75983 3.17407L2.75984 13.0535C2.75984 13.0965 2.7426 13.1377 2.71192 13.1681L2.53426 13.3441C2.46504 13.4128 2.35058 13.4059 2.29159 13.3285C-0.0224758 10.292 0.0412298 6.04232 2.4827 3.0726Z" fill="white"/>
+                        <path d="M10.3924 8.65513C10.2467 8.65513 10.1737 8.48052 10.2768 8.37839L11.9244 6.74572C11.9551 6.71532 11.9966 6.69824 12.04 6.69824H17.1031C17.1812 6.69824 17.2486 6.75292 17.2625 6.82908C17.3635 7.38074 17.408 7.94056 17.396 8.49942C17.3942 8.58642 17.3219 8.65513 17.234 8.65513H10.3924Z" fill="white"/>
+                        <path d="M14.1825 4.50709C14.0795 4.60922 14.1525 4.78383 14.2982 4.78383H16.3466C16.4664 4.78383 16.5454 4.66045 16.4911 4.55456C16.2638 4.11067 15.9935 3.68279 15.6806 3.27689C15.6215 3.20007 15.5077 3.19389 15.4388 3.26223L14.1825 4.50709Z" fill="white"/>
+                        <path d="M8.13428 10.5684C8.09089 10.5684 8.04928 10.5854 8.0186 10.6158L6.33926 12.28C6.2362 12.3821 6.30919 12.5567 6.45493 12.5567H16.1382C16.196 12.5567 16.2496 12.5265 16.2784 12.4769C16.5952 11.933 16.8447 11.3612 17.027 10.7733C17.0588 10.6707 16.9803 10.5684 16.8721 10.5684H8.13428Z" fill="white"/>
+                        <path d="M3.91045 14.9412C3.83293 14.8825 3.82636 14.7696 3.89534 14.7013L4.08101 14.5173C4.11169 14.4868 4.1533 14.4697 4.19669 14.4697H14.2374C14.3867 14.4697 14.4559 14.6496 14.3406 14.7438C11.33 17.208 6.99201 17.2737 3.91045 14.9412Z" fill="white"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-base font-medium">CNPY</p>
+                      <p className="text-sm text-muted-foreground">0.00 CNPY</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-medium">0.00</p>
+                    <p className="text-sm text-muted-foreground">$0.00</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground ml-2" />
+                </div>
+              </Card>
+            </div>
+
+            {/* Create Canopy Wallet Button */}
+            <div className="px-4 pb-3">
+              <Button className="w-full h-11 relative" size="lg">
+                Create Canopy wallet
+              </Button>
+            </div>
+          </>
+        ) : (
+          // Buy/Sell Mode UI
+          <>
+
+        {/* Input Token Card */}
+        <div className="px-4">
+          <Card className="bg-muted/30 p-4 space-y-3">
+            {/* Token Header */}
+            <div className="flex items-center justify-between">
+              {activeTab === 'buy' ? (
+                // Buy mode: CNPY on top
+                <>
+                  <div className="flex items-center gap-3">
+                    {/* CNPY Token Avatar */}
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.7649 0.880227C12.658 0.827134 12.5342 0.905351 12.5342 1.02378V3.04351C12.5342 3.18794 12.7104 3.26027 12.8135 3.15814L14.069 1.91394C14.1383 1.84534 14.1317 1.73215 14.0535 1.67368C13.6439 1.36708 13.2123 1.10259 12.7649 0.880227Z" fill="white"/>
+                        <path d="M10.4705 0.127791C10.5477 0.141319 10.6032 0.208239 10.6032 0.285896V5.28157C10.6032 5.32456 10.586 5.36579 10.5553 5.3962L8.90769 7.02887C8.80463 7.13099 8.62842 7.05867 8.62842 6.91423V0.163239C8.62842 0.0764816 8.69735 0.00493239 8.78487 0.00272091C9.34863 -0.0115243 9.91358 0.0301658 10.4705 0.127791Z" fill="white"/>
+                        <path d="M6.64953 9.26628C6.68021 9.23588 6.69744 9.19464 6.69744 9.15164V0.531669C6.69744 0.424066 6.59358 0.346317 6.48993 0.37839C5.89636 0.562066 5.31929 0.812546 4.77074 1.12983C4.72107 1.15856 4.69092 1.21149 4.69092 1.26849V10.8158C4.69092 10.9602 4.86713 11.0325 4.97019 10.9304L6.64953 9.26628Z" fill="white"/>
+                        <path d="M2.4827 3.0726C2.57734 2.95748 2.75983 3.02558 2.75983 3.17407L2.75984 13.0535C2.75984 13.0965 2.7426 13.1377 2.71192 13.1681L2.53426 13.3441C2.46504 13.4128 2.35058 13.4059 2.29159 13.3285C-0.0224758 10.292 0.0412298 6.04232 2.4827 3.0726Z" fill="white"/>
+                        <path d="M10.3924 8.65513C10.2467 8.65513 10.1737 8.48052 10.2768 8.37839L11.9244 6.74572C11.9551 6.71532 11.9966 6.69824 12.04 6.69824H17.1031C17.1812 6.69824 17.2486 6.75292 17.2625 6.82908C17.3635 7.38074 17.408 7.94056 17.396 8.49942C17.3942 8.58642 17.3219 8.65513 17.234 8.65513H10.3924Z" fill="white"/>
+                        <path d="M14.1825 4.50709C14.0795 4.60922 14.1525 4.78383 14.2982 4.78383H16.3466C16.4664 4.78383 16.5454 4.66045 16.4911 4.55456C16.2638 4.11067 15.9935 3.68279 15.6806 3.27689C15.6215 3.20007 15.5077 3.19389 15.4388 3.26223L14.1825 4.50709Z" fill="white"/>
+                        <path d="M8.13428 10.5684C8.09089 10.5684 8.04928 10.5854 8.0186 10.6158L6.33926 12.28C6.2362 12.3821 6.30919 12.5567 6.45493 12.5567H16.1382C16.196 12.5567 16.2496 12.5265 16.2784 12.4769C16.5952 11.933 16.8447 11.3612 17.027 10.7733C17.0588 10.6707 16.9803 10.5684 16.8721 10.5684H8.13428Z" fill="white"/>
+                        <path d="M3.91045 14.9412C3.83293 14.8825 3.82636 14.7696 3.89534 14.7013L4.08101 14.5173C4.11169 14.4868 4.1533 14.4697 4.19669 14.4697H14.2374C14.3867 14.4697 14.4559 14.6496 14.3406 14.7438C11.33 17.208 6.99201 17.2737 3.91045 14.9412Z" fill="white"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">CNPY</p>
+                      <p className="text-xs text-muted-foreground">0 CNPY</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={handleUseMax}
+                  >
+                    Use max
+                  </Button>
+                </>
+              ) : (
+                // Sell mode: Chain token on top
+                <>
+                  <div className="flex items-center gap-3">
+                    {/* Chain Token Avatar with Badge */}
+                    <div className="relative">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: chainData.brandColor || '#10b981' }}
+                      >
+                        <span className="text-sm font-bold text-black">
+                          {chainData.ticker[0]}
+                        </span>
+                      </div>
+                      {/* Chain Badge Overlay */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-muted border border-border flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{chainData.name}</p>
+                      <p className="text-xs text-muted-foreground">0 {chainData.ticker}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={handleUseMax}
+                  >
+                    Use max
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Amount Input */}
+            <div className="flex items-center justify-center">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Only allow numbers and decimal point
+                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                    setAmount(value)
+                  }
+                }}
+                placeholder="$0"
+                className="text-5xl font-bold bg-transparent border-0 outline-none p-0 h-auto text-center w-full placeholder:text-muted-foreground"
+              />
+            </div>
+
+            {/* Token Amount */}
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                {activeTab === 'buy'
+                  ? (amount ? `${parseFloat(amount).toLocaleString('en-US', { maximumFractionDigits: 2 })} CNPY` : '0 CNPY')
+                  : (amount ? `${parseFloat(amount).toLocaleString('en-US', { maximumFractionDigits: 2 })} ${chainData.ticker}` : `0 ${chainData.ticker}`)
+                }
+              </p>
+              <Zap className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Swap Direction Button */}
+        <div className="relative flex justify-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full h-8 w-8 bg-background border-2"
+            onClick={handleSwapDirection}
+          >
+            <ArrowDown className="w-4 h-4" />
           </Button>
         </div>
 
-        <Button variant="outline" className="w-full justify-start gap-2">
-          <div className="w-6 h-6 rounded-full bg-[#10b981] flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-black">{chainData.ticker[0]}</span>
-          </div>
-          <span className="flex-1 text-left">{chainData.name}</span>
-          <span className="text-muted-foreground">D</span>
-        </Button>
-
-        <div className="p-4 rounded-lg bg-muted/50 text-center">
-          <div className="text-3xl font-bold">$0.00</div>
+        {/* Output Token Card */}
+        <div className="px-4">
+          <Card className="bg-muted/30 p-4">
+            <div className="flex items-center justify-between">
+              {activeTab === 'buy' ? (
+                // Buy mode: Chain token on bottom
+                <>
+                  <div className="flex items-center gap-3">
+                    {/* Chain Token Avatar with Badge */}
+                    <div className="relative">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: chainData.brandColor || '#10b981' }}
+                      >
+                        <span className="text-sm font-bold text-black">
+                          {chainData.ticker[0]}
+                        </span>
+                      </div>
+                      {/* Chain Badge Overlay */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-muted border border-border flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{chainData.name}</p>
+                      <p className="text-xs text-muted-foreground">0 {chainData.ticker}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{conversion.tokens}</p>
+                    <p className="text-xs text-muted-foreground">{conversion.usd}</p>
+                  </div>
+                </>
+              ) : (
+                // Sell mode: CNPY on bottom
+                <>
+                  <div className="flex items-center gap-3">
+                    {/* CNPY Token Avatar */}
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.7649 0.880227C12.658 0.827134 12.5342 0.905351 12.5342 1.02378V3.04351C12.5342 3.18794 12.7104 3.26027 12.8135 3.15814L14.069 1.91394C14.1383 1.84534 14.1317 1.73215 14.0535 1.67368C13.6439 1.36708 13.2123 1.10259 12.7649 0.880227Z" fill="white"/>
+                        <path d="M10.4705 0.127791C10.5477 0.141319 10.6032 0.208239 10.6032 0.285896V5.28157C10.6032 5.32456 10.586 5.36579 10.5553 5.3962L8.90769 7.02887C8.80463 7.13099 8.62842 7.05867 8.62842 6.91423V0.163239C8.62842 0.0764816 8.69735 0.00493239 8.78487 0.00272091C9.34863 -0.0115243 9.91358 0.0301658 10.4705 0.127791Z" fill="white"/>
+                        <path d="M6.64953 9.26628C6.68021 9.23588 6.69744 9.19464 6.69744 9.15164V0.531669C6.69744 0.424066 6.59358 0.346317 6.48993 0.37839C5.89636 0.562066 5.31929 0.812546 4.77074 1.12983C4.72107 1.15856 4.69092 1.21149 4.69092 1.26849V10.8158C4.69092 10.9602 4.86713 11.0325 4.97019 10.9304L6.64953 9.26628Z" fill="white"/>
+                        <path d="M2.4827 3.0726C2.57734 2.95748 2.75983 3.02558 2.75983 3.17407L2.75984 13.0535C2.75984 13.0965 2.7426 13.1377 2.71192 13.1681L2.53426 13.3441C2.46504 13.4128 2.35058 13.4059 2.29159 13.3285C-0.0224758 10.292 0.0412298 6.04232 2.4827 3.0726Z" fill="white"/>
+                        <path d="M10.3924 8.65513C10.2467 8.65513 10.1737 8.48052 10.2768 8.37839L11.9244 6.74572C11.9551 6.71532 11.9966 6.69824 12.04 6.69824H17.1031C17.1812 6.69824 17.2486 6.75292 17.2625 6.82908C17.3635 7.38074 17.408 7.94056 17.396 8.49942C17.3942 8.58642 17.3219 8.65513 17.234 8.65513H10.3924Z" fill="white"/>
+                        <path d="M14.1825 4.50709C14.0795 4.60922 14.1525 4.78383 14.2982 4.78383H16.3466C16.4664 4.78383 16.5454 4.66045 16.4911 4.55456C16.2638 4.11067 15.9935 3.68279 15.6806 3.27689C15.6215 3.20007 15.5077 3.19389 15.4388 3.26223L14.1825 4.50709Z" fill="white"/>
+                        <path d="M8.13428 10.5684C8.09089 10.5684 8.04928 10.5854 8.0186 10.6158L6.33926 12.28C6.2362 12.3821 6.30919 12.5567 6.45493 12.5567H16.1382C16.196 12.5567 16.2496 12.5265 16.2784 12.4769C16.5952 11.933 16.8447 11.3612 17.027 10.7733C17.0588 10.6707 16.9803 10.5684 16.8721 10.5684H8.13428Z" fill="white"/>
+                        <path d="M3.91045 14.9412C3.83293 14.8825 3.82636 14.7696 3.89534 14.7013L4.08101 14.5173C4.11169 14.4868 4.1533 14.4697 4.19669 14.4697H14.2374C14.3867 14.4697 14.4559 14.6496 14.3406 14.7438C11.33 17.208 6.99201 17.2737 3.91045 14.9412Z" fill="white"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">CNPY</p>
+                      <p className="text-xs text-muted-foreground">0 CNPY</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{conversion.tokens}</p>
+                    <p className="text-xs text-muted-foreground">{conversion.usd}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
         </div>
 
-        <Button className="w-full" size="lg">
-          Connect Wallet
-        </Button>
+            {/* Connect Wallet Button */}
+            <div className="px-4 pb-3">
+              <Button className="w-full h-11" size="lg">
+                Connect Wallet
+              </Button>
+            </div>
 
-        <p className="text-xs text-center text-muted-foreground">
-          1 CNPY = 1.00000 ${chainData.ticker}
-        </p>
+            {/* Exchange Rate */}
+            <div className="px-4 pb-4">
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  1 CNPY = {(1 / (chainData.currentPrice || 0.001)).toFixed(5)} ${chainData.ticker}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </Card>
   )
