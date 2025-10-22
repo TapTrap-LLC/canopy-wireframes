@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,6 +33,8 @@ import ReportProblemButton from '../launch-page/components/report-problem-button
 import DraftHoldersTab from '../launch-page-draft/components/draft-holders-tab'
 import DraftBlockExplorerTab from '../launch-page-draft/components/draft-block-explorer-tab'
 import DraftProgressPanel from '../launch-page-draft/components/draft-progress-panel'
+import ReviewCountdownPanel from '../launch-page-owner/components/review-countdown-panel'
+import LaunchSuccessBanner from '../launch-page-owner/components/launch-success-banner'
 import { getChainDetailsBySlug } from '@/data/db'
 import { MoreVertical, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -40,9 +42,18 @@ import { toast } from 'sonner'
 export default function ChainDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
   const [activeTab, setActiveTab] = useState('overview')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  // Check URL params for success flag
+  const searchParams = new URLSearchParams(location.search)
+  const isSuccessFlow = searchParams.get('success') === 'true'
+
+  // State to manage review period
+  const [showReviewCountdown, setShowReviewCountdown] = useState(isSuccessFlow)
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false)
 
   // Get chain data from database using slug
   const chainData = getChainDetailsBySlug(slug)
@@ -50,6 +61,13 @@ export default function ChainDetail() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  const handleCountdownComplete = () => {
+    setShowReviewCountdown(false)
+    setShowSuccessBanner(true)
+    // Remove success param from URL
+    navigate(location.pathname, { replace: true })
+  }
 
   // If chain not found, show 404
   if (!chainData) {
@@ -81,7 +99,7 @@ export default function ChainDetail() {
         </Badge>
       )
     }
-    if (chainData.isDraft) {
+    if (chainData.isDraft || showReviewCountdown) {
       return (
         <Badge variant="outline" className="border-gray-500/50 text-gray-500 ml-2">
           Draft
@@ -152,6 +170,15 @@ export default function ChainDetail() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 py-6 pt-3">
+          {/* Success Banner */}
+          {showSuccessBanner && (
+            <LaunchSuccessBanner
+              onDismiss={() => setShowSuccessBanner(false)}
+              chainName={chainData.name}
+              chainUrl={window.location.href}
+            />
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content Area */}
             <div className="lg:col-span-2 space-y-6">
@@ -218,7 +245,12 @@ export default function ChainDetail() {
 
             {/* Right Sidebar */}
             <div className="space-y-6">
-              {chainData.isDraft ? (
+              {showReviewCountdown ? (
+                <ReviewCountdownPanel
+                  chainData={chainData}
+                  onCountdownComplete={handleCountdownComplete}
+                />
+              ) : chainData.isDraft ? (
                 <DraftProgressPanel chainData={chainData} />
               ) : (
                 <TradingPanel chainData={chainData} isOwner={isOwner} />
