@@ -44,19 +44,26 @@ export default function CommandSearchDialog({ open, onOpenChange }) {
           brandColor: chains[0]?.brandColor,
           url: chains[0]?.url,
         },
-        {
-          type: 'transaction',
-          id: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-          name: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-        },
-        {
-          type: 'block',
-          id: '12345678',
-          name: 'Block #12345678',
-        },
       ]
+
+      // Add a real transaction if available
+      if (transactionsData.length > 0) {
+        const firstTx = transactionsData[0]
+        const txChain = chains.find(c => c.id === firstTx.chainId)
+        if (txChain) {
+          fakeRecents.push({
+            type: 'transaction',
+            id: firstTx.hash,
+            name: firstTx.hash,
+            chainId: firstTx.chainId,
+            chainName: txChain.name,
+          })
+        }
+      }
+
+      // Add second chain
       if (chains[1]) {
-        fakeRecents.splice(1, 0, {
+        fakeRecents.push({
           type: 'chain',
           id: chains[1]?.id,
           name: chains[1]?.name,
@@ -65,6 +72,22 @@ export default function CommandSearchDialog({ open, onOpenChange }) {
           url: chains[1]?.url,
         })
       }
+
+      // Add a real block if available
+      if (blocksData.length > 0) {
+        const firstBlock = blocksData[0]
+        const blockChain = chains.find(c => c.id === firstBlock.chainId)
+        if (blockChain) {
+          fakeRecents.push({
+            type: 'block',
+            id: firstBlock.hash,
+            name: `Block #${firstBlock.number}`,
+            chainId: firstBlock.chainId,
+            chainName: blockChain.name,
+          })
+        }
+      }
+
       localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(fakeRecents))
       setRecentSearches(fakeRecents)
     }
