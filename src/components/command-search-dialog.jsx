@@ -159,7 +159,7 @@ export default function CommandSearchDialog({ open, onOpenChange }) {
   }
 
   const handleTransactionSelect = (tx) => {
-    // Navigate to the chain page for this transaction
+    // Navigate to the transaction detail page
     const chain = getChainById(tx.chainId)
     if (chain) {
       saveToRecentSearches({
@@ -169,14 +169,14 @@ export default function CommandSearchDialog({ open, onOpenChange }) {
         chainId: tx.chainId,
         chainName: chain.name,
       })
-      navigate(chain.url)
+      navigate(`/transaction/${tx.hash}`)
       onOpenChange(false)
       setSearchQuery('')
     }
   }
 
   const handleBlockSelect = (block) => {
-    // Navigate to the chain page for this block
+    // Navigate to the block detail page
     const chain = getChainById(block.chainId)
     if (chain) {
       saveToRecentSearches({
@@ -186,7 +186,7 @@ export default function CommandSearchDialog({ open, onOpenChange }) {
         chainId: block.chainId,
         chainName: chain.name,
       })
-      navigate(chain.url)
+      navigate(`/block/${block.hash}`)
       onOpenChange(false)
       setSearchQuery('')
     }
@@ -198,19 +198,13 @@ export default function CommandSearchDialog({ open, onOpenChange }) {
       onOpenChange(false)
       setSearchQuery('')
     } else if (recent.type === 'transaction') {
-      const chain = getChainById(recent.chainId)
-      if (chain) {
-        navigate(chain.url)
-        onOpenChange(false)
-        setSearchQuery('')
-      }
+      navigate(`/transaction/${recent.id}`)
+      onOpenChange(false)
+      setSearchQuery('')
     } else if (recent.type === 'block') {
-      const chain = getChainById(recent.chainId)
-      if (chain) {
-        navigate(chain.url)
-        onOpenChange(false)
-        setSearchQuery('')
-      }
+      navigate(`/block/${recent.id}`)
+      onOpenChange(false)
+      setSearchQuery('')
     }
   }
 
