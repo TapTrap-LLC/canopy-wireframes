@@ -17,6 +17,7 @@ export default function Launchpad() {
 
   const [activeFilter, setActiveFilter] = useState('all')
   const [viewMode, setViewMode] = useState('grid')
+  const [sortBy, setSortBy] = useState('marketcap')
   const [filteredChains, setFilteredChains] = useState(ALL_CHAINS)
 
   useEffect(() => {
@@ -46,8 +47,29 @@ export default function Launchpad() {
         break
     }
 
+    // Apply sorting
+    switch (sortBy) {
+      case 'marketcap':
+        filtered = filtered.sort((a, b) => b.marketCap - a.marketCap)
+        break
+      case 'holders':
+        filtered = filtered.sort((a, b) => b.holderCount - a.holderCount)
+        break
+      case 'volume':
+        filtered = filtered.sort((a, b) => b.volume - a.volume)
+        break
+      case 'price':
+        filtered = filtered.sort((a, b) => b.currentPrice - a.currentPrice)
+        break
+      case 'created':
+        filtered = filtered.sort((a, b) => b.id - a.id)
+        break
+      default:
+        break
+    }
+
     setFilteredChains(filtered)
-  }, [activeFilter])
+  }, [activeFilter, sortBy])
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -66,6 +88,8 @@ export default function Launchpad() {
           onFilterChange={setActiveFilter}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
         />
 
         {/* Chains Grid/List */}
