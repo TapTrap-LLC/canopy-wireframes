@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { ArrowLeft, ArrowRight, X, Info, HelpCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, X, Info, HelpCircle, Check, Loader2 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
@@ -22,6 +22,10 @@ export default function ConfigureChain() {
   const [tokenSupply, setTokenSupply] = useState('1000000000')
   const [halvingDays, setHalvingDays] = useState('365')
   const [blockTime, setBlockTime] = useState('10')
+  const [tickerManuallyEdited, setTickerManuallyEdited] = useState(false)
+  const [tickerSuggested, setTickerSuggested] = useState(false)
+  const [isGeneratingTicker, setIsGeneratingTicker] = useState(false)
+  const tickerTimeoutRef = useRef(null)
 
   // Validation errors
   const [errors, setErrors] = useState({
@@ -89,11 +93,70 @@ export default function ConfigureChain() {
     const value = e.target.value
     setTokenName(value)
     setErrors(prev => ({ ...prev, tokenName: validateTokenName(value) }))
+
+    // Clear previous timeout
+    if (tickerTimeoutRef.current) {
+      clearTimeout(tickerTimeoutRef.current)
+    }
+
+    // Reset states
+    setIsGeneratingTicker(false)
+    setTickerSuggested(false)
+
+    // Only auto-generate if not manually edited and value is valid
+    if (value && !tickerManuallyEdited && value.length >= 2) {
+      // Show loading indicator after user stops typing
+      setIsGeneratingTicker(true)
+
+      // Set timeout to generate ticker after 2 seconds
+      tickerTimeoutRef.current = setTimeout(() => {
+        const generatedTicker = generateTickerFromName(value)
+        setTicker(generatedTicker)
+        setIsGeneratingTicker(false)
+        setTickerSuggested(true)
+        setErrors(prev => ({ ...prev, ticker: validateTicker(generatedTicker) }))
+      }, 2000)
+    }
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tickerTimeoutRef.current) {
+        clearTimeout(tickerTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Generate ticker from token name
+  const generateTickerFromName = (name) => {
+    // Remove spaces and special characters, take first letters of each word
+    const words = name.trim().split(/\s+/).filter(w => w.length > 0)
+
+    if (words.length === 1) {
+      // Single word: take first 3-4 characters
+      return words[0].substring(0, 4).toUpperCase()
+    } else {
+      // Multiple words: take first letter of each word
+      let ticker = words.slice(0, 5).map(word => word[0]).join('').toUpperCase()
+
+      // Ensure at least 3 characters
+      if (ticker.length < 3) {
+        // Add more characters from the first word
+        const needed = 3 - ticker.length
+        const extraChars = words[0].substring(1, 1 + needed).toUpperCase()
+        ticker = words[0][0].toUpperCase() + extraChars + ticker.substring(1)
+      }
+
+      return ticker
+    }
   }
 
   const handleTickerChange = (e) => {
     const value = e.target.value.toUpperCase()
     setTicker(value)
+    setTickerManuallyEdited(true) // Mark as manually edited
+    setTickerSuggested(false) // Remove suggested indicator
     setErrors(prev => ({ ...prev, ticker: validateTicker(value) }))
   }
 
@@ -288,6 +351,18 @@ export default function ConfigureChain() {
                   />
                   {errors.ticker && (
                     <p className="text-sm text-destructive">{errors.ticker}</p>
+                  )}
+                  {isGeneratingTicker && !errors.ticker && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Suggesting...</span>
+                    </div>
+                  )}
+                  {tickerSuggested && !errors.ticker && !isGeneratingTicker && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500" />
+                      <span>Suggested Ticker</span>
+                    </div>
                   )}
                 </div>
               </div>
