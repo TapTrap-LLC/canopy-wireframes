@@ -1,52 +1,32 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Separator } from '@/components/ui/separator'
 import { Search, Plus, Zap, BarChart3, Activity, TrendingUp, User, Home, PieChart, Repeat, MoreHorizontal, Wallet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import LaunchOverviewDialog from './launch-overview-dialog'
-import SearchPanel from './search-panel'
-import { getAllChains } from '@/data/db'
+import CommandSearchDialog from './command-search-dialog'
 
 export default function MainSidebar({ variant = 'default' }) {
   const navigate = useNavigate()
   const [showDialog, setShowDialog] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filteredChains, setFilteredChains] = useState([])
+  const [showCommandSearch, setShowCommandSearch] = useState(false)
 
   const handleStartLaunch = () => {
     setShowDialog(false)
     navigate('/launchpad/language')
   }
 
-  // Debounced search effect
+  // Keyboard shortcut for search (⌘K or Ctrl+K)
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredChains([])
-      return
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowCommandSearch(true)
+      }
     }
 
-    const timer = setTimeout(() => {
-      const allChains = getAllChains()
-      const query = searchQuery.toLowerCase()
-      const results = allChains.filter(
-        (chain) =>
-          chain.name.toLowerCase().includes(query) ||
-          chain.ticker.toLowerCase().includes(query)
-      ).slice(0, 10) // Limit to top 10 results
-
-      setFilteredChains(results)
-    }, 300) // 300ms debounce
-
-    return () => clearTimeout(timer)
-  }, [searchQuery])
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value)
-  }
-
-  const handleCloseSearch = () => {
-    setSearchQuery('')
-    setFilteredChains([])
-  }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Compact variant for launch flow
   if (variant === 'compact') {
@@ -76,9 +56,12 @@ export default function MainSidebar({ variant = 'default' }) {
 
             {/* Search and Create */}
             <div className="flex flex-col items-center gap-4">
-              <div className="relative w-9 pt-3">
-                <Search className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-              </div>
+              <button
+                onClick={() => setShowCommandSearch(true)}
+                className="w-9 h-9 flex items-center justify-center hover:bg-white/5 rounded-lg transition-colors"
+              >
+                <Search className="w-4 h-4 text-white/50" />
+              </button>
 
               <button
                 onClick={() => setShowDialog(true)}
@@ -132,6 +115,11 @@ export default function MainSidebar({ variant = 'default' }) {
           onClose={() => setShowDialog(false)}
           onStart={handleStartLaunch}
         />
+
+        <CommandSearchDialog
+          open={showCommandSearch}
+          onOpenChange={setShowCommandSearch}
+        />
       </>
     )
   }
@@ -158,16 +146,18 @@ export default function MainSidebar({ variant = 'default' }) {
 
             {/* Search and Create */}
             <div className="px-4 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-                <input
-                  type="text"
-                  placeholder="Search chains"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full h-9 pl-10 pr-3 rounded-full bg-transparent text-sm text-white/70 placeholder:text-white/50 focus:outline-none"
-                />
-              </div>
+              <button
+                onClick={() => setShowCommandSearch(true)}
+                className="w-full h-9 flex items-center justify-between pl-4 pr-2 rounded-full bg-transparent text-sm text-white/50 hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Search className="w-4 h-4" />
+                  <span>Search chains...</span>
+                </div>
+                <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-2xl bg-white/10 px-1.5 font-mono text-[10px] font-medium text-white/70">
+                  <span className="text-xs">⌘</span>K
+                </kbd>
+              </button>
 
             <button
               onClick={() => setShowDialog(true)}
@@ -218,19 +208,15 @@ export default function MainSidebar({ variant = 'default' }) {
         </div>
       </div>
 
-      {/* Search Panel - Fixed positioning */}
-      {searchQuery && (
-        <SearchPanel
-          chains={filteredChains}
-          searchQuery={searchQuery}
-          onClose={handleCloseSearch}
-        />
-      )}
-
       <LaunchOverviewDialog
         open={showDialog}
         onClose={() => setShowDialog(false)}
         onStart={handleStartLaunch}
+      />
+
+      <CommandSearchDialog
+        open={showCommandSearch}
+        onOpenChange={setShowCommandSearch}
       />
     </>
   )
