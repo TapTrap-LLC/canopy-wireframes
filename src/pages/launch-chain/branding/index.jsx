@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
@@ -12,16 +12,19 @@ import LogoUpload from './components/logo-upload'
 import GalleryCarousel from './components/gallery-carousel'
 import {Badge} from "@/components/ui/badge.jsx";
 import { useAutoSave } from '@/hooks/use-auto-save.js'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
 
 export default function Branding() {
   const navigate = useNavigate()
-  const location = useLocation()
+  const { getFlowData, updateFlowData } = useLaunchFlow()
 
-  const [logo, setLogo] = useState(null)
-  const [brandColor, setBrandColor] = useState('#6366f1')
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [galleryItems, setGalleryItems] = useState([])
+  // Initialize from context if available
+  const savedBranding = getFlowData('branding')
+  const [logo, setLogo] = useState(savedBranding?.logo || null)
+  const [brandColor, setBrandColor] = useState(savedBranding?.brandColor || '#6366f1')
+  const [title, setTitle] = useState(savedBranding?.title || '')
+  const [description, setDescription] = useState(savedBranding?.description || '')
+  const [galleryItems, setGalleryItems] = useState(savedBranding?.gallery || [])
   const [errors, setErrors] = useState({
     title: '',
     description: ''
@@ -30,8 +33,8 @@ export default function Branding() {
   const logoInputRef = useRef(null)
   const galleryInputRef = useRef(null)
 
-  // Check if repo is connected
-  const repoConnected = location.state?.repo || location.state?.chainConfig ? true : false
+  // Check if repo is connected (from context)
+  const repoConnected = getFlowData('chainConfig') ? true : false
 
   // Auto-save hook
   const { isSaving, lastSaved } = useAutoSave(
@@ -107,18 +110,14 @@ export default function Branding() {
 
   const handleContinue = () => {
     if (isFormValid) {
-      navigate('/launchpad/links', {
-        state: {
-          ...location.state,
-          branding: {
-            logo,
-            brandColor,
-            title,
-            description,
-            gallery: galleryItems
-          }
-        }
+      updateFlowData('branding', {
+        logo,
+        brandColor,
+        title,
+        description,
+        gallery: galleryItems
       })
+      navigate('/launchpad/links')
     }
   }
 

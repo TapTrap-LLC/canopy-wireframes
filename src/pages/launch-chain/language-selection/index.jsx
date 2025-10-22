@@ -7,6 +7,7 @@ import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
 
 const languages = [
   { id: 'python', name: 'Python', iconUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-plain.svg' },
@@ -21,7 +22,10 @@ const languages = [
 
 export default function LanguageSelection() {
   const navigate = useNavigate()
-  const [selectedLanguage, setSelectedLanguage] = useState(null)
+  const { getFlowData, updateFlowData } = useLaunchFlow()
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    () => getFlowData('language')?.id || null
+  )
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -34,7 +38,8 @@ export default function LanguageSelection() {
   const handleContinue = () => {
     if (selectedLanguage) {
       const language = languages.find(l => l.id === selectedLanguage)
-      navigate('/launchpad/repository', { state: { language: language.name } })
+      updateFlowData('language', { id: language.id, name: language.name })
+      navigate('/launchpad/repository')
     }
   }
 

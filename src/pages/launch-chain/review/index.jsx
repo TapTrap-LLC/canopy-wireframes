@@ -8,6 +8,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
+import { BLOCK_TIME_OPTIONS } from '@/data/mock-config'
 
 // Social platform icons mapping (same as step 5)
 const PLATFORM_ICONS = {
@@ -33,9 +35,18 @@ const PLATFORM_ICONS = {
 export default function Review() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { getFlowData } = useLaunchFlow()
+
+  // Get all data from context
+  const language = getFlowData('language')
+  const repository = getFlowData('repository')
+  const chainConfig = getFlowData('chainConfig')
+  const branding = getFlowData('branding')
+  const links = getFlowData('links')
+  const launchSettings = getFlowData('launchSettings')
 
   // Check if repo is connected
-  const repoConnected = location.state?.launchSettings || location.state?.links ? true : false
+  const repoConnected = launchSettings ? true : false
 
   // Check if coming from review countdown (edit mode)
   const isEditMode = location.state?.fromReviewCountdown === true
@@ -44,32 +55,31 @@ export default function Review() {
     window.scrollTo(0, 0)
   }, [])
 
-  // Placeholder data (in production, this would come from location.state or context)
+  // Build chain data from context (fallback to defaults if needed)
   const chainData = {
-    language: 'TypeScript',
-    repository: 'https://github.com/username/mygamechain',
-    repositoryName: 'eliezerpujols/mygamechain',
-    chainName: 'MyGameChain',
-    tokenName: 'GAME',
-    ticker: 'GAME',
-    tokenSupply: '1,000,000,000',
-    halvingDays: '365',
-    blockTime: '10 seconds',
-    logo: null, // placeholder
-    brandColor: '#6366f1',
-    description: 'A revolutionary blockchain for gaming communities, enabling fast transactions and seamless in-game economies.',
-    gallery: [],
-    socialLinks: [
-      { platform: 'website', label: 'Website', url: 'https://mygamechain.org' },
-      { platform: 'twitter', label: 'Twitter/X', url: '@mygamechain' },
-      { platform: 'discord', label: 'Discord', url: 'https://discord.gg/mygamechain' }
+    language: language?.name || 'TypeScript',
+    repository: repository?.name || 'https://github.com/username/mygamechain',
+    repositoryName: repository?.name || 'eliezerpujols/mygamechain',
+    chainName: chainConfig?.chainName || 'MyGameChain',
+    tokenName: chainConfig?.tokenName || 'GAME',
+    ticker: chainConfig?.ticker || 'GAME',
+    tokenSupply: chainConfig?.tokenSupply || '1,000,000,000',
+    halvingDays: chainConfig?.halvingDays || '365',
+    blockTime: chainConfig?.blockTime || '10',
+    logo: branding?.logo || null,
+    brandColor: branding?.brandColor || '#6366f1',
+    description: branding?.description || 'A revolutionary blockchain for gaming communities, enabling fast transactions and seamless in-game economies.',
+    gallery: branding?.gallery || [],
+    socialLinks: links?.social?.map(link => ({
+      platform: link.platform,
+      label: link.platform,
+      url: link.url
+    })) || [
+      { platform: 'website', label: 'Website', url: 'https://mygamechain.org' }
     ],
-    resources: [
-      { type: 'file', name: 'Technical Whitepaper.pdf' },
-      { type: 'url', name: 'Tokenomics Overview', url: 'https://mygamechain.org/tokenomics' }
-    ],
-    graduationThreshold: 50000,
-    initialPurchase: 100
+    resources: links?.resources || [],
+    graduationThreshold: launchSettings?.graduationThreshold || 50000,
+    initialPurchase: launchSettings?.initialPurchase || 0
   }
 
   const creationFee = 100 // Fixed creation fee in CNPY
@@ -212,7 +222,9 @@ export default function Review() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Block Time</p>
-                    <p className="font-medium">{chainData.blockTime}</p>
+                    <p className="font-medium">
+                      {BLOCK_TIME_OPTIONS.find(opt => opt.value === chainData.blockTime)?.label || chainData.blockTime}
+                    </p>
                   </div>
                 </div>
               </Card>

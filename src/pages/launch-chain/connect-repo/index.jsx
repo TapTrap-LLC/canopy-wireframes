@@ -3,17 +3,20 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, ArrowRight, X, ExternalLink, Github } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import GitHubConnectDialog from './components/github-connect-dialog'
 import GitHubAuthDialog from './components/github-auth-dialog'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
 
 export default function ConnectRepo() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [connectedRepo, setConnectedRepo] = useState(null)
+  const { getFlowData, updateFlowData } = useLaunchFlow()
+  const [connectedRepo, setConnectedRepo] = useState(
+    () => getFlowData('repository')?.name || null
+  )
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showGitHubDialog, setShowGitHubDialog] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -22,9 +25,9 @@ export default function ConnectRepo() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
-  
-  // Get selected language from previous step (in real app, this would come from state management)
-  const selectedLanguage = location.state?.language || 'Python'
+
+  // Get selected language from context
+  const selectedLanguage = getFlowData('language')?.name || 'Python'
 
   const handleBack = () => {
     navigate('/launchpad/language')
@@ -32,7 +35,8 @@ export default function ConnectRepo() {
 
   const handleContinue = () => {
     if (connectedRepo) {
-      navigate('/launchpad/configure', { state: { repo: connectedRepo } })
+      updateFlowData('repository', { name: connectedRepo })
+      navigate('/launchpad/configure')
     }
   }
 
@@ -61,6 +65,7 @@ export default function ConnectRepo() {
 
   const handleDisconnect = () => {
     setConnectedRepo(null)
+    updateFlowData('repository', null)
   }
 
   const handleAuthorize = () => {

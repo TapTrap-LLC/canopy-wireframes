@@ -6,22 +6,26 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ArrowLeft, ArrowRight, X, Info, HelpCircle, Check, Loader2 } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { useAutoSave } from '@/hooks/use-auto-save.js'
 import { BLOCK_TIME_OPTIONS } from '@/data/mock-config'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
 
 export default function ConfigureChain() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [chainName, setChainName] = useState('')
-  const [tokenName, setTokenName] = useState('')
-  const [ticker, setTicker] = useState('')
-  const [tokenSupply, setTokenSupply] = useState('1000000000')
-  const [halvingDays, setHalvingDays] = useState('365')
-  const [blockTime, setBlockTime] = useState('10')
+  const { getFlowData, updateFlowData } = useLaunchFlow()
+
+  // Initialize from context if available
+  const savedConfig = getFlowData('chainConfig')
+  const [chainName, setChainName] = useState(savedConfig?.chainName || '')
+  const [tokenName, setTokenName] = useState(savedConfig?.tokenName || '')
+  const [ticker, setTicker] = useState(savedConfig?.ticker || '')
+  const [tokenSupply, setTokenSupply] = useState(savedConfig?.tokenSupply || '1000000000')
+  const [halvingDays, setHalvingDays] = useState(savedConfig?.halvingDays || '365')
+  const [blockTime, setBlockTime] = useState(savedConfig?.blockTime || '10')
   const [tickerManuallyEdited, setTickerManuallyEdited] = useState(false)
   const [tickerSuggested, setTickerSuggested] = useState(false)
   const [isGeneratingTicker, setIsGeneratingTicker] = useState(false)
@@ -35,8 +39,8 @@ export default function ConfigureChain() {
     halvingDays: ''
   })
 
-  // Check if repo is connected (from location state)
-  const repoConnected = location.state?.repo ? true : false
+  // Check if repo is connected (from context)
+  const repoConnected = getFlowData('repository') ? true : false
 
   // Auto-save hook
   const { isSaving, lastSaved } = useAutoSave(
@@ -211,18 +215,15 @@ export default function ConfigureChain() {
 
   const handleContinue = () => {
     if (chainName && tokenName && ticker && tokenSupply && halvingDays && blockTime) {
-      navigate('/launchpad/branding', { 
-        state: { 
-          chainConfig: {
-            chainName,
-            tokenName,
-            ticker,
-            tokenSupply,
-            halvingDays,
-            blockTime
-          }
-        } 
+      updateFlowData('chainConfig', {
+        chainName,
+        tokenName,
+        ticker,
+        tokenSupply,
+        halvingDays,
+        blockTime
       })
+      navigate('/launchpad/branding')
     }
   }
 

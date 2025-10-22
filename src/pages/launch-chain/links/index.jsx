@@ -7,11 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { ArrowLeft, ArrowRight, X, Upload, Trash2, Globe, Github, Linkedin, Link as LinkIcon, FileText } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { useAutoSave } from '@/hooks/use-auto-save.js'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
 
 // Social platform icons mapping
 const PLATFORM_ICONS = {
@@ -58,21 +59,23 @@ const SOCIAL_PLATFORMS = [
 
 export default function Links() {
   const navigate = useNavigate()
-  const location = useLocation()
+  const { getFlowData, updateFlowData } = useLaunchFlow()
   const fileInputRef = useRef(null)
 
-  const [socialLinks, setSocialLinks] = useState([
-    { id: 1, platform: 'website', url: '' }
-  ])
+  // Initialize from context if available
+  const savedLinks = getFlowData('links')
+  const [socialLinks, setSocialLinks] = useState(
+    savedLinks?.social || [{ id: 1, platform: 'website', url: '' }]
+  )
   const [selectedPlatform, setSelectedPlatform] = useState('')
   const [resourceTab, setResourceTab] = useState('upload')
-  const [resources, setResources] = useState([]) // Unified list for files and URLs
+  const [resources, setResources] = useState(savedLinks?.resources || [])
   const [urlInput, setUrlInput] = useState('')
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false)
   const [errors, setErrors] = useState({})
 
-  // Check if repo is connected
-  const repoConnected = location.state?.branding || location.state?.chainConfig ? true : false
+  // Check if repo is connected (from context)
+  const repoConnected = getFlowData('branding') ? true : false
 
   // Auto-save hook
   const { isSaving, lastSaved } = useAutoSave(
@@ -189,15 +192,11 @@ export default function Links() {
 
   const handleContinue = () => {
     if (isFormValid) {
-      navigate('/launchpad/settings', {
-        state: {
-          ...location.state,
-          links: {
-            social: socialLinks,
-            resources
-          }
-        }
+      updateFlowData('links', {
+        social: socialLinks,
+        resources
       })
+      navigate('/launchpad/settings')
     }
   }
 

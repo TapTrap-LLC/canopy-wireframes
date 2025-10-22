@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Launchpad from '@/pages/launchpad'
 import LanguageSelection from '@/pages/launch-chain/language-selection'
 import ConnectRepo from '@/pages/launch-chain/connect-repo'
@@ -11,10 +12,26 @@ import ChainDetail from '@/pages/chain-detail'
 import TransactionPage from '@/pages/transaction-page'
 import BlockPage from '@/pages/block-page'
 import { Toaster } from '@/components/ui/sonner'
+import { LaunchFlowProvider, useLaunchFlow } from '@/contexts/launch-flow-context'
 
-function App() {
+function RouteWatcher() {
+  const location = useLocation()
+  const { clearFlowData } = useLaunchFlow()
+
+  useEffect(() => {
+    // Clear launch flow data when navigating away from /launchpad/* routes
+    if (!location.pathname.startsWith('/launchpad')) {
+      clearFlowData()
+    }
+  }, [location.pathname, clearFlowData])
+
+  return null
+}
+
+function AppContent() {
   return (
-    <Router>
+    <>
+      <RouteWatcher />
       <Routes>
         <Route path="/" element={<Launchpad />} />
         {/* Dynamic chain detail route - handles all chains from database */}
@@ -31,6 +48,16 @@ function App() {
         <Route path="/launchpad/review" element={<Review />} />
       </Routes>
       <Toaster />
+    </>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <LaunchFlowProvider>
+        <AppContent />
+      </LaunchFlowProvider>
     </Router>
   )
 }

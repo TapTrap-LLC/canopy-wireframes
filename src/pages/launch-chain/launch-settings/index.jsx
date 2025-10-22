@@ -5,22 +5,27 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ArrowLeft, ArrowRight, X, Target, Coins, Info, HelpCircle } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import MainSidebar from '@/components/main-sidebar'
 import LaunchpadSidebar from '@/components/launchpad-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import {Badge} from "@/components/ui/badge.jsx";
 import { useAutoSave } from '@/hooks/use-auto-save.js'
+import { useLaunchFlow } from '@/contexts/launch-flow-context'
 
 export default function LaunchSettings() {
   const navigate = useNavigate()
-  const location = useLocation()
+  const { getFlowData, updateFlowData } = useLaunchFlow()
 
-  const [initialPurchase, setInitialPurchase] = useState('')
+  // Initialize from context if available
+  const savedSettings = getFlowData('launchSettings')
+  const [initialPurchase, setInitialPurchase] = useState(
+    savedSettings?.initialPurchase?.toString() || ''
+  )
   const [showWhyBuy, setShowWhyBuy] = useState(false)
 
-  // Check if repo is connected
-  const repoConnected = location.state?.links || location.state?.branding ? true : false
+  // Check if repo is connected (from context)
+  const repoConnected = getFlowData('links') ? true : false
 
   // Auto-save hook
   const { isSaving, lastSaved } = useAutoSave(
@@ -39,15 +44,11 @@ export default function LaunchSettings() {
   }
 
   const handleContinue = () => {
-    navigate('/launchpad/review', {
-      state: {
-        ...location.state,
-        launchSettings: {
-          graduationThreshold,
-          initialPurchase: initialPurchase ? parseFloat(initialPurchase) : 0
-        }
-      }
+    updateFlowData('launchSettings', {
+      graduationThreshold,
+      initialPurchase: initialPurchase ? parseFloat(initialPurchase) : 0
     })
+    navigate('/launchpad/review')
   }
 
   const handleClose = () => {
