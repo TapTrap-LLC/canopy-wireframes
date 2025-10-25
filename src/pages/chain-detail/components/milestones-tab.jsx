@@ -1,21 +1,11 @@
 import { Card } from '@/components/ui/card.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
-import { Users, TrendingUp, ArrowRightLeft, Trophy } from 'lucide-react'
-
-// Icon mapping for milestone types
-const MILESTONE_ICONS = {
-  holders: Users,
-  transactions: ArrowRightLeft,
-  marketcap: TrendingUp
-}
+import { enrichMilestonesWithIcons } from '@/utils/milestones'
 
 export default function MilestonesTab({ chainData, isOwner = false }) {
-  // Get milestones from chainData (comes from database with current values already calculated)
-  const milestones = (chainData.milestones || []).map(milestone => ({
-    ...milestone,
-    icon: MILESTONE_ICONS[milestone.type] || Trophy
-  }))
+  // Get milestones from chainData with proper icons
+  const milestones = enrichMilestonesWithIcons(chainData.milestones || [])
 
   // Calculate progress for each milestone
   const getMilestoneStatus = (milestone) => {

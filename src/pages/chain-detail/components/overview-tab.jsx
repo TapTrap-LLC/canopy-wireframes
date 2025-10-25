@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { Avatar } from '@/components/ui/avatar.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
-import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight, Zap, Target, Sparkles, Crown, Trophy } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight } from 'lucide-react'
 
 // Custom social icons
 const TwitterIcon = () => (
@@ -19,6 +19,7 @@ const DiscordIcon = () => (
 )
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip.jsx'
+import { getCompletedMilestones } from '@/utils/milestones'
 
 export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex, onNavigateToTab, isDraft = false, isVirtual = false }) {
   const getSocialIcon = (platform) => {
@@ -31,92 +32,8 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
     }
   }
 
-  // Define all milestones with their requirements
-  const milestones = [
-    {
-      id: 1,
-      icon: Users,
-      title: 'First 10 holders',
-      requirement: 10,
-      current: chainData.holderCount || 0,
-      type: 'holders'
-    },
-    {
-      id: 2,
-      icon: TrendingUp,
-      title: '$1k market cap',
-      requirement: 1000,
-      current: chainData.marketCap || 0,
-      type: 'marketcap'
-    },
-    {
-      id: 3,
-      icon: Users,
-      title: '50 holders milestone',
-      requirement: 50,
-      current: chainData.holderCount || 0,
-      type: 'holders'
-    },
-    {
-      id: 4,
-      icon: Zap,
-      title: '1,000 transactions',
-      requirement: 1000,
-      current: chainData.explorer?.totalTransactions || 0,
-      type: 'transactions'
-    },
-    {
-      id: 5,
-      icon: TrendingUp,
-      title: '$5k market cap',
-      requirement: 5000,
-      current: chainData.marketCap || 0,
-      type: 'marketcap'
-    },
-    {
-      id: 6,
-      icon: Users,
-      title: '100 holders club',
-      requirement: 100,
-      current: chainData.holderCount || 0,
-      type: 'holders'
-    },
-    {
-      id: 7,
-      icon: Target,
-      title: '$10k market cap',
-      requirement: 10000,
-      current: chainData.marketCap || 0,
-      type: 'marketcap'
-    },
-    {
-      id: 8,
-      icon: Sparkles,
-      title: '500 holders strong',
-      requirement: 500,
-      current: chainData.holderCount || 0,
-      type: 'holders'
-    },
-    {
-      id: 9,
-      icon: Crown,
-      title: '$25k market cap',
-      requirement: 25000,
-      current: chainData.marketCap || 0,
-      type: 'marketcap'
-    },
-    {
-      id: 10,
-      icon: Trophy,
-      title: 'Graduation ready',
-      requirement: 50000,
-      current: chainData.marketCap || 0,
-      type: 'marketcap'
-    }
-  ]
-
-  // Get completed milestones
-  const completedMilestones = milestones.filter(m => m.current >= m.requirement)
+  // Get completed milestones from chainData with icons
+  const completedMilestones = getCompletedMilestones(chainData.milestones || [])
 
   const navigateGallery = (direction) => {
     if (direction === 'prev') {
