@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Avatar } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button.jsx'
+import { Card } from '@/components/ui/card.jsx'
+import { Separator } from '@/components/ui/separator.jsx'
+import { Avatar } from '@/components/ui/avatar.jsx'
+import { Badge } from '@/components/ui/badge.jsx'
 import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight, Zap, Target, Sparkles, Crown, Trophy } from 'lucide-react'
 
 // Custom social icons
@@ -18,9 +18,9 @@ const DiscordIcon = () => (
   </svg>
 )
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip.jsx'
 
-export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex, onNavigateToTab, isDraft = false }) {
+export default function OverviewTab({ chainData, currentGalleryIndex, setCurrentGalleryIndex, onNavigateToTab, isDraft = false, isVirtual = false }) {
   const getSocialIcon = (platform) => {
     switch(platform) {
       case 'twitter': return <TwitterIcon />
@@ -291,7 +291,7 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
 
       {/* Quick Stats Grid */}
       {!isDraft && (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${isVirtual ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
         {/* Holders Summary */}
         <Card className="flex flex-col">
           <div className="flex items-start gap-3 p-5">
@@ -366,6 +366,7 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
         </Card>
 
         {/* Block Explorer Summary */}
+        {!isVirtual && (
         <Card className="flex flex-col">
           <div className="flex items-start gap-3 p-5">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -402,6 +403,7 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
             </Button>
           </div>
         </Card>
+        )}
       </div>
       )}
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button.jsx'
+import { Card } from '@/components/ui/card.jsx'
+import { Input } from '@/components/ui/input.jsx'
 import { ArrowUpRight, ArrowDownRight, RotateCcw, ArrowDown, Zap, Plus, ChevronRight } from 'lucide-react'
 
 export default function TradingPanel({ chainData, isOwner }) {

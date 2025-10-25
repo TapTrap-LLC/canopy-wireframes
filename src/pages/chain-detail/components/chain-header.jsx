@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button.jsx'
+import { Card } from '@/components/ui/card.jsx'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@/components/ui/tooltip.jsx'
 import { Upload, Star, Users, TrendingUp, Zap, Target, Sparkles, Crown, Trophy } from 'lucide-react'
 import { toast } from 'sonner'
 

@@ -1,6 +1,6 @@
-import { Card } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card.jsx'
+import { Progress } from '@/components/ui/progress.jsx'
+import { Badge } from '@/components/ui/badge.jsx'
 import { Users, TrendingUp, ArrowRightLeft, Trophy } from 'lucide-react'
 
 // Icon mapping for milestone types
