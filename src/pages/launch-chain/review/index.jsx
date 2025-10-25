@@ -186,7 +186,9 @@ export default function Review() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Language:</span>
-                    <Badge variant="secondary">{chainData.language}</Badge>
+                    <Badge variant="secondary">
+                      {typeof chainData.language === 'string' ? chainData.language : chainData.language?.name || 'TypeScript'}
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-2">
                     <Github className="w-4 h-4 text-muted-foreground" />
@@ -446,6 +448,7 @@ export default function Review() {
           // Build from all context data
           name: chainConfig?.chainName || 'Untitled Chain',
           ticker: chainConfig?.ticker || 'UNTD',
+          title: branding?.title || `${chainConfig?.chainName || 'Untitled Chain'}: The Future of Blockchain`,
           description: branding?.description || '',
           tokenName: chainConfig?.tokenName || 'Token',
           totalSupply: parseInt(chainConfig?.tokenSupply || 1000000000),
@@ -455,11 +458,16 @@ export default function Review() {
           halvingDays: parseInt(chainConfig?.halvingDays || 365),
           brandColor: branding?.brandColor || '#10b981',
           logo: branding?.logo || null,
+          gallery: branding?.gallery || [],
           bannerImage: branding?.gallery?.[0]?.preview || null,
-          links: links?.social || [],
+          social: links?.social || [],
+          resources: links?.resources || [],
           launchType: 'fair',
           initialPrice: launchSettings?.initialPurchase ? parseFloat(launchSettings.initialPurchase) / 1000000 : 0.01,
-          repository: repository
+          graduationThreshold: launchSettings?.graduationThreshold || 50000,
+          initialPurchase: launchSettings?.initialPurchase || 0,
+          language: language?.name || 'TypeScript',
+          repository: repository?.name || null
         }}
       />
     </div>

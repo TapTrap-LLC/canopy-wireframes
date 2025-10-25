@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { Avatar } from '@/components/ui/avatar.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
-import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Globe, Github, FileText, Link as LinkIcon, ExternalLink, Coins, BookOpen, Layers, Clock, Calendar, TrendingUp, Users, Code2, Activity, ArrowRight, Linkedin, Instagram, Youtube, Facebook } from 'lucide-react'
 
 // Custom social icons
 const TwitterIcon = () => (
@@ -18,6 +18,24 @@ const DiscordIcon = () => (
   </svg>
 )
 
+const TelegramIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+  </svg>
+)
+
+const MediumIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+  </svg>
+)
+
+const RedditIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+  </svg>
+)
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip.jsx'
 import { getCompletedMilestones } from '@/utils/milestones'
 
@@ -26,9 +44,16 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
     switch(platform) {
       case 'twitter': return <TwitterIcon />
       case 'discord': return <DiscordIcon />
+      case 'telegram': return <TelegramIcon />
+      case 'medium': return <MediumIcon />
+      case 'reddit': return <RedditIcon />
       case 'website': return <Globe className="w-4 h-4" />
       case 'github': return <Github className="w-4 h-4" />
-      default: return null
+      case 'linkedin': return <Linkedin className="w-4 h-4" />
+      case 'instagram': return <Instagram className="w-4 h-4" />
+      case 'youtube': return <Youtube className="w-4 h-4" />
+      case 'facebook': return <Facebook className="w-4 h-4" />
+      default: return <LinkIcon className="w-4 h-4" />
     }
   }
 
@@ -70,9 +95,23 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
           <div className="space-y-3">
             <TooltipProvider>
               <div className="flex items-center gap-2">
-                {isDraft ? (
-                  // Dimmed placeholders for draft chains
-                  ['website', 'twitter', 'discord', 'github'].map(platform => (
+                {/* GitHub repository with stars (shown separately) */}
+                {chainData.repositoryName && (
+                  <a
+                    href={`https://github.com/${chainData.repositoryName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors"
+                  >
+                    <Github className="w-4 h-4" />
+                    <span className="text-xs text-white">23 stars</span>
+                  </a>
+                )}
+
+                {/* Social links (excluding GitHub) */}
+                {isDraft && (!chainData.socialLinks || chainData.socialLinks.filter(l => l.platform !== 'github').length === 0) ? (
+                  // Dimmed placeholders for draft chains without social links
+                  ['website', 'twitter', 'discord'].map(platform => (
                     <Tooltip key={platform}>
                       <TooltipTrigger asChild>
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-full border border-dashed border-muted-foreground/30 opacity-50 cursor-help">
@@ -84,12 +123,12 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
                       </TooltipContent>
                     </Tooltip>
                   ))
-                ) : (
-                  // Active social links
-                  chainData.socialLinks.slice(0, 4).map((link, idx) => {
-                    const isGithub = link.platform === 'github'
-
-                    return (
+                ) : chainData.socialLinks && chainData.socialLinks.length > 0 ? (
+                  // Active social links (for both draft preview and real chains) - filter out github
+                  chainData.socialLinks
+                    .filter(link => link.platform !== 'github')
+                    .slice(0, 4)
+                    .map((link, idx) => (
                       <a
                         key={idx}
                         href={link.url}
@@ -98,20 +137,20 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
                         className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors"
                       >
                         {getSocialIcon(link.platform)}
-                        {isGithub && (
-                          <span className="text-xs text-white">23 stars</span>
-                        )}
                       </a>
-                    )
-                  })
-                )}
+                    ))
+                ) : null}
               </div>
             </TooltipProvider>
             <h3 className="text-lg font-semibold">
               {chainData.title}
             </h3>
 
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+            <p className={`text-sm leading-relaxed whitespace-pre-line ${
+              chainData.description && chainData.description !== 'No description provided yet.'
+                ? 'text-foreground'
+                : 'text-muted-foreground'
+            }`}>
               {chainData.description}
             </p>
           </div>
@@ -261,7 +300,9 @@ export default function OverviewTab({ chainData, currentGalleryIndex, setCurrent
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Repository</p>
-              <p className="text-xl font-bold">{chainData.language}</p>
+              <p className="text-xl font-bold">
+                {typeof chainData.language === 'string' ? chainData.language : chainData.language?.name || 'TypeScript'}
+              </p>
             </div>
           </div>
           <div className="space-y-2 p-5 pt-0">

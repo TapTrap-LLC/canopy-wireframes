@@ -287,16 +287,26 @@ export default function Branding() {
         open={showPreview}
         onOpenChange={setShowPreview}
         formData={{
-          // From current step
+          // From previous steps (context) - be specific about fields
+          language: getFlowData('language')?.name,
+          repository: getFlowData('repository'),
+          name: getFlowData('chainConfig')?.chainName,
+          ticker: getFlowData('chainConfig')?.ticker,
+          tokenName: getFlowData('chainConfig')?.tokenName,
+          totalSupply: parseInt(getFlowData('chainConfig')?.tokenSupply || 1000000000),
+          blockTime: parseInt(getFlowData('chainConfig')?.blockTime || 10),
+          halvingDays: parseInt(getFlowData('chainConfig')?.halvingDays || 365),
+          social: getFlowData('links')?.social,
+          resources: getFlowData('links')?.resources,
+          graduationThreshold: getFlowData('launchSettings')?.graduationThreshold,
+          initialPurchase: getFlowData('launchSettings')?.initialPurchase,
+          // From current step - these override any conflicts
           logo: logo,
           brandColor: brandColor,
+          title: title,
           description: description,
-          bannerImage: galleryItems?.[0]?.preview || null,
-          // From context
-          ...getFlowData('chainConfig'),
-          ...getFlowData('links'),
-          ...getFlowData('launchSettings'),
-          repository: getFlowData('repository')
+          gallery: galleryItems,
+          bannerImage: galleryItems?.[0]?.preview || null
         }}
       />
     </div>

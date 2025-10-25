@@ -282,15 +282,28 @@ export default function LaunchSettings() {
       open={showPreview}
       onOpenChange={setShowPreview}
       formData={{
-        // From current step
+        // From previous steps (context) - be specific about fields
+        language: getFlowData('language')?.name,
+        repository: getFlowData('repository'),
+        name: getFlowData('chainConfig')?.chainName,
+        ticker: getFlowData('chainConfig')?.ticker,
+        tokenName: getFlowData('chainConfig')?.tokenName,
+        totalSupply: parseInt(getFlowData('chainConfig')?.tokenSupply || 1000000000),
+        blockTime: parseInt(getFlowData('chainConfig')?.blockTime || 10),
+        halvingDays: parseInt(getFlowData('chainConfig')?.halvingDays || 365),
+        logo: getFlowData('branding')?.logo,
+        brandColor: getFlowData('branding')?.brandColor,
+        title: getFlowData('branding')?.title,
+        description: getFlowData('branding')?.description,
+        gallery: getFlowData('branding')?.gallery,
+        bannerImage: getFlowData('branding')?.gallery?.[0]?.preview,
+        social: getFlowData('links')?.social,
+        resources: getFlowData('links')?.resources,
+        // From current step - these override any conflicts
         launchType: 'fair',
         initialPrice: initialPurchase ? parseFloat(initialPurchase) / 1000000 : 0.01,
         initialPurchase: initialPurchase ? parseFloat(initialPurchase) : 0,
-        // From context
-        ...getFlowData('chainConfig'),
-        ...getFlowData('branding'),
-        ...getFlowData('links'),
-        repository: getFlowData('repository')
+        graduationThreshold: graduationThreshold
       }}
     />
     </TooltipProvider>

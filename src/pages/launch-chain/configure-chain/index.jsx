@@ -527,20 +527,21 @@ export default function ConfigureChain() {
       open={showPreview}
       onOpenChange={setShowPreview}
       formData={{
-        name: chainName,
-        ticker: ticker,
-        description: '',
+        // From previous steps (context) - be specific about fields
+        language: getFlowData('language')?.name,
+        repository: getFlowData('repository'),
+        ...getFlowData('branding'),
+        ...getFlowData('links'),
+        ...getFlowData('launchSettings'),
+        // From current step - these override any conflicts
+        name: chainName || 'Untitled Chain',
+        ticker: ticker || 'UNTD',
         tokenName: tokenName,
         totalSupply: parseInt(tokenSupply),
         consensus: 'Proof of Stake',
         blockTime: parseInt(blockTime),
         maxValidators: 100,
-        halvingDays: parseInt(halvingDays),
-        // From context if available
-        ...getFlowData('branding'),
-        ...getFlowData('links'),
-        ...getFlowData('launchSettings'),
-        repository: getFlowData('repository')
+        halvingDays: parseInt(halvingDays)
       }}
     />
     </TooltipProvider>
