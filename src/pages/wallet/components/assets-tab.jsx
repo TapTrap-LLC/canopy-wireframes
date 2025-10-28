@@ -1,16 +1,56 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Search, TrendingUp, TrendingDown } from 'lucide-react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Search, TrendingUp, TrendingDown, ArrowUpDown } from 'lucide-react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts'
 
 export default function AssetsTab({ assets, totalValue }) {
   const [assetSearch, setAssetSearch] = useState('')
+  const [sortBy, setSortBy] = useState('value')
+  const [sortOrder, setSortOrder] = useState('desc')
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(column)
+      setSortOrder('desc')
+    }
+  }
 
   const filteredAssets = assets.filter(asset =>
     asset.name.toLowerCase().includes(assetSearch.toLowerCase()) ||
     asset.symbol.toLowerCase().includes(assetSearch.toLowerCase())
   )
+
+  const sortedAssets = [...filteredAssets].sort((a, b) => {
+    let compareA, compareB
+
+    switch (sortBy) {
+      case 'name':
+        compareA = a.name
+        compareB = b.name
+        break
+      case 'value':
+        compareA = a.value
+        compareB = b.value
+        break
+      case 'change24h':
+        compareA = a.change24h
+        compareB = b.change24h
+        break
+      default:
+        compareA = a.value
+        compareB = b.value
+    }
+
+    if (sortOrder === 'asc') {
+      return compareA > compareB ? 1 : -1
+    } else {
+      return compareA < compareB ? 1 : -1
+    }
+  })
 
   // Calculate asset distribution for pie chart
   const chartData = assets.slice(0, 5).map(asset => ({
@@ -111,63 +151,115 @@ export default function AssetsTab({ assets, totalValue }) {
         />
       </div>
 
-      {/* Asset List */}
-      <div className="space-y-3">
-        {filteredAssets.length > 0 ? (
-          filteredAssets.map((asset) => (
-            <Card key={asset.id}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                      style={{ backgroundColor: asset.color }}
-                    >
-                      {asset.symbol.slice(0, 2)}
-                    </div>
-                    <div>
-                      <div className="font-semibold">{asset.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {asset.balance.toLocaleString()} {asset.symbol}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold">
-                      ${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className={`text-sm flex items-center justify-end gap-1 ${asset.change24h > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {asset.change24h > 0 ? (
-                        <TrendingUp className="w-3 h-3" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3" />
-                      )}
-                      {asset.change24h > 0 ? '+' : ''}{asset.change24h}%
-                    </div>
-                  </div>
+      {/* Asset List Table */}
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead
+                className="cursor-pointer hover:text-foreground"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center gap-2">
+                  Chain
+                  <ArrowUpDown className="w-4 h-4" />
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div className="text-center py-12">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-muted rounded-full">
-                <Search className="w-6 h-6 text-muted-foreground" />
-              </div>
-            </div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">No assets found</p>
-            <p className="text-xs text-muted-foreground">Try searching with a different asset name or symbol</p>
-          </div>
-        )}
-      </div>
+              </TableHead>
+              <TableHead className="text-right">Value Hold</TableHead>
+              <TableHead
+                className="cursor-pointer hover:text-foreground text-right"
+                onClick={() => handleSort('change24h')}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  24H Change
+                  <ArrowUpDown className="w-4 h-4" />
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:text-foreground text-right"
+                onClick={() => handleSort('value')}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  24H Volume
+                  <ArrowUpDown className="w-4 h-4" />
+                </div>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedAssets.length > 0 ? (
+              sortedAssets.map((asset) => {
+                const miniChartData = asset.priceHistory ? asset.priceHistory.map(point => ({
+                  price: point.price
+                })) : []
 
-      {/* Loading spinner at the bottom */}
-      {filteredAssets.length > 0 && (
-        <div className="flex items-center justify-center py-2">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-        </div>
-      )}
+                return (
+                  <TableRow key={asset.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: asset.color }}
+                        >
+                          <span className="text-xs font-bold text-white">
+                            {asset.symbol.slice(0, 2)}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium">{asset.symbol}</div>
+                          <div className="text-xs text-muted-foreground">{asset.name}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="font-medium">{asset.balance.toLocaleString()} {asset.symbol}</div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {miniChartData.length > 0 && (
+                          <div className="w-12 h-6">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={miniChartData}>
+                                <Line
+                                  type="monotone"
+                                  dataKey="price"
+                                  stroke={asset.change24h >= 0 ? '#10b981' : '#ef4444'}
+                                  strokeWidth={1.5}
+                                  dot={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+                        <div className={`font-medium ${asset.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {asset.change24h >= 0 ? '+' : ''}{asset.change24h}%
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="font-medium">
+                        ${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-12">
+                  <div className="flex flex-col items-center">
+                    <div className="p-3 bg-muted rounded-full mb-4">
+                      <Search className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">No assets found</p>
+                    <p className="text-xs text-muted-foreground">Try searching with a different asset name or symbol</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   )
 }
