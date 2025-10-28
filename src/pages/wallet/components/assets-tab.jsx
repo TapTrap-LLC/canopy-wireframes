@@ -36,6 +36,10 @@ export default function AssetsTab({ assets, totalValue }) {
         compareA = a.value
         compareB = b.value
         break
+      case 'price':
+        compareA = a.price
+        compareB = b.price
+        break
       case 'change24h':
         compareA = a.change24h
         compareB = b.change24h
@@ -165,7 +169,15 @@ export default function AssetsTab({ assets, totalValue }) {
                   <ArrowUpDown className="w-4 h-4" />
                 </div>
               </TableHead>
-              <TableHead className="text-right">Value Hold</TableHead>
+              <TableHead
+                className="cursor-pointer hover:text-foreground text-right"
+                onClick={() => handleSort('value')}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  Amount
+                  <ArrowUpDown className="w-4 h-4" />
+                </div>
+              </TableHead>
               <TableHead
                 className="cursor-pointer hover:text-foreground text-right"
                 onClick={() => handleSort('change24h')}
@@ -177,10 +189,10 @@ export default function AssetsTab({ assets, totalValue }) {
               </TableHead>
               <TableHead
                 className="cursor-pointer hover:text-foreground text-right"
-                onClick={() => handleSort('value')}
+                onClick={() => handleSort('price')}
               >
                 <div className="flex items-center justify-end gap-2">
-                  24H Volume
+                  Price
                   <ArrowUpDown className="w-4 h-4" />
                 </div>
               </TableHead>
@@ -212,7 +224,12 @@ export default function AssetsTab({ assets, totalValue }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="font-medium">{asset.balance.toLocaleString()} {asset.symbol}</div>
+                      <div className="font-medium">
+                        ${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {asset.balance.toLocaleString()} {asset.symbol}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -237,9 +254,7 @@ export default function AssetsTab({ assets, totalValue }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="font-medium">
-                        ${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </div>
+                      <div className="font-medium">${asset.price.toFixed(4)}</div>
                     </TableCell>
                   </TableRow>
                 )
