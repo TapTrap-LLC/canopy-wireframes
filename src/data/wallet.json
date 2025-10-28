@@ -1,0 +1,138 @@
+{
+  "totalValue": 12458.32,
+  "change24h": 5.2,
+  "assets": [
+    {
+      "id": 1,
+      "chainId": 1,
+      "symbol": "OENS",
+      "name": "Onchain ENS",
+      "balance": 2500,
+      "price": 2.24256,
+      "value": 5606.24,
+      "change24h": 3.2,
+      "logo": null,
+      "color": "#10b981"
+    },
+    {
+      "id": 2,
+      "chainId": 2,
+      "symbol": "GAME",
+      "name": "MyGameChain",
+      "balance": 450,
+      "price": 6.92129,
+      "value": 3114.58,
+      "change24h": 8.1,
+      "logo": null,
+      "color": "#8b5cf6"
+    },
+    {
+      "id": 3,
+      "chainId": 3,
+      "symbol": "SOCL",
+      "name": "Social Connect",
+      "balance": 890,
+      "price": 2.10084,
+      "value": 1869.75,
+      "change24h": -2.3,
+      "logo": null,
+      "color": "#06b6d4"
+    },
+    {
+      "id": 4,
+      "chainId": 5,
+      "symbol": "STRM",
+      "name": "StreamVault",
+      "balance": 320,
+      "price": 4.55,
+      "value": 1456.00,
+      "change24h": 1.8,
+      "logo": null,
+      "color": "#f59e0b"
+    },
+    {
+      "id": 5,
+      "chainId": 6,
+      "symbol": "DFIM",
+      "name": "DeFi Masters",
+      "balance": 150,
+      "price": 2.745,
+      "value": 411.75,
+      "change24h": -0.5,
+      "logo": null,
+      "color": "#ec4899"
+    }
+  ],
+  "stakes": [
+    {
+      "id": 1,
+      "chainId": 1,
+      "symbol": "OENS",
+      "chain": "Onchain ENS",
+      "amount": 500,
+      "apy": 12.5,
+      "rewards": 2.15,
+      "color": "#10b981"
+    },
+    {
+      "id": 2,
+      "chainId": 2,
+      "symbol": "GAME",
+      "chain": "MyGameChain",
+      "amount": 200,
+      "apy": 18.2,
+      "rewards": 0.82,
+      "color": "#8b5cf6"
+    }
+  ],
+  "unstaking": [
+    {
+      "id": 1,
+      "chainId": 1,
+      "symbol": "OENS",
+      "amount": 100,
+      "daysRemaining": 5,
+      "hoursRemaining": 3
+    }
+  ],
+  "transactions": [
+    {
+      "id": 1,
+      "type": "sent",
+      "amount": -50,
+      "symbol": "OENS",
+      "chainId": 1,
+      "timestamp": "2 hours ago",
+      "status": "completed"
+    },
+    {
+      "id": 2,
+      "type": "received",
+      "amount": 125,
+      "symbol": "GAME",
+      "chainId": 2,
+      "timestamp": "5 hours ago",
+      "status": "completed"
+    },
+    {
+      "id": 3,
+      "type": "swap",
+      "amountFrom": 100,
+      "symbolFrom": "OENS",
+      "amountTo": 45,
+      "symbolTo": "SOCL",
+      "chainId": 1,
+      "timestamp": "Yesterday",
+      "status": "completed"
+    },
+    {
+      "id": 4,
+      "type": "staked",
+      "amount": 500,
+      "symbol": "OENS",
+      "chainId": 1,
+      "timestamp": "3 days ago",
+      "status": "completed"
+    }
+  ]
+}
