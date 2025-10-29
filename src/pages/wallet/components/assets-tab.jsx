@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, TrendingUp, TrendingDown, ArrowUpDown } from 'lucide-react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function AssetsTab({ assets, totalValue }) {
   const [assetSearch, setAssetSearch] = useState('')
@@ -56,92 +57,157 @@ export default function AssetsTab({ assets, totalValue }) {
     }
   })
 
-  // Calculate asset distribution for pie chart
-  const chartData = assets.slice(0, 5).map(asset => ({
-    name: asset.symbol,
-    value: asset.value,
-    color: asset.color,
-    percentage: ((asset.value / totalValue) * 100).toFixed(1)
-  }))
+  const [selectedPeriod, setSelectedPeriod] = useState('1D')
 
-  const CustomLegend = ({ payload }) => {
-    return (
-      <div className="space-y-3">
-        {payload.map((entry, index) => (
-          <div key={`legend-${index}`} className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="font-medium">{entry.percentage}%</span>
-              <span className="text-muted-foreground">{entry.name}</span>
-            </div>
-            <span className="text-muted-foreground">
-              ${entry.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-        ))}
-      </div>
-    )
+  // Generate portfolio value history data
+  const getPortfolioChartData = () => {
+    const baseValue = totalValue
+    const variation = baseValue * 0.1
+
+    switch (selectedPeriod) {
+      case '1H':
+        return Array.from({ length: 12 }, (_, i) => ({
+          time: `${Math.floor(i * 5 / 60)}:${(i * 5 % 60).toString().padStart(2, '0')}`,
+          value: baseValue + (Math.random() - 0.5) * variation
+        }))
+      case '1D':
+        return Array.from({ length: 12 }, (_, i) => ({
+          time: `${i * 2}:00`,
+          value: baseValue + (Math.random() - 0.5) * variation
+        }))
+      case '1W':
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        return days.map(day => ({
+          time: day,
+          value: baseValue + (Math.random() - 0.5) * variation
+        }))
+      case '1M':
+        return Array.from({ length: 10 }, (_, i) => ({
+          time: `${(i * 3) + 1}`,
+          value: baseValue + (Math.random() - 0.5) * variation
+        }))
+      case '1Y':
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return months.map(month => ({
+          time: month,
+          value: baseValue + (Math.random() - 0.5) * variation
+        }))
+      default:
+        return []
+    }
   }
+
+  const portfolioChartData = getPortfolioChartData()
 
   return (
     <div className="space-y-6">
-      {/* Asset Distribution Pie Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Asset Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-8">
-            {/* Pie Chart */}
-            <div className="flex-shrink-0">
-              <ResponsiveContainer width={200} height={200}>
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-                            <p className="text-sm font-semibold">{payload[0].name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              ${payload[0].value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {payload[0].payload.percentage}%
-                            </p>
-                          </div>
-                        )
-                      }
-                      return null
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Legend */}
-            <div className="flex-1">
-              <CustomLegend payload={chartData} />
+      {/* Portfolio Value Chart */}
+      <Card className="p-1">
+        <div className="space-y-2">
+          {/* Estimated Balance Header */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="space-y-1">
+              <p className="text-lg font-bold text-white">Estimated Balance</p>
+              <div className="flex items-baseline gap-3">
+                <h3 className="text-3xl font-bold">
+                  ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h3>
+                <span className="text-xs text-muted-foreground">≈ ${totalValue.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Today's PnL</span>
+                <span className={`text-sm ${totalValue * 0.001 >= 0 ? 'text-red-500' : 'text-green-500'}`}>
+                  -${(totalValue * 0.001).toFixed(2)}(0.10%)
+                </span>
+              </div>
             </div>
           </div>
-        </CardContent>
+
+          {/* Chart Section */}
+          <Card className="relative h-[272px] bg-muted/40">
+            {/* Time Period Buttons */}
+            <div className="absolute right-4 top-2.5 z-10 flex gap-0.5 p-0.5 bg-muted/50 rounded-lg">
+              <Button
+                variant={selectedPeriod === '1H' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setSelectedPeriod('1H')}
+              >
+                1H
+              </Button>
+              <Button
+                variant={selectedPeriod === '1D' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setSelectedPeriod('1D')}
+              >
+                1D
+              </Button>
+              <Button
+                variant={selectedPeriod === '1W' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setSelectedPeriod('1W')}
+              >
+                1W
+              </Button>
+              <Button
+                variant={selectedPeriod === '1M' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setSelectedPeriod('1M')}
+              >
+                1M
+              </Button>
+              <Button
+                variant={selectedPeriod === '1Y' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 text-xs px-3"
+                onClick={() => setSelectedPeriod('1Y')}
+              >
+                1Y
+              </Button>
+            </div>
+
+            {/* Chart */}
+            <div className="h-full pt-12 px-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={portfolioChartData}>
+                  <defs>
+                    <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fill: '#71717a', fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    padding={{ left: 20, right: 20 }}
+                  />
+                  <YAxis hide />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    dot={false}
+                    fill="url(#portfolioGradient)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
       </Card>
 
       {/* Search */}

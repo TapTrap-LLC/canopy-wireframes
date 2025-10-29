@@ -29,26 +29,33 @@ export default function Wallet() {
         <div className="max-w-[1024px] mx-auto flex gap-12">
           {/* Main Content */}
           <div className="flex-1 space-y-6">
-            {/* Portfolio Header */}
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Total Portfolio Value</p>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold">
-                  ${walletData.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <span className={`text-sm mt-2 ${walletData.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {walletData.change24h >= 0 ? '+' : ''}{walletData.change24h}% (24h)
-                </span>
-              </div>
-            </div>
-
-            {/* Tabs */}
+            {/* Tabs at Top */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="assets">Assets</TabsTrigger>
-                <TabsTrigger value="staking">Staking</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
-                <TabsTrigger value="governance">Governance</TabsTrigger>
+              <TabsList className="h-auto w-full justify-start bg-transparent p-0 border-b rounded-none">
+                <TabsTrigger
+                  value="assets"
+                  className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+                >
+                  Assets
+                </TabsTrigger>
+                <TabsTrigger
+                  value="staking"
+                  className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+                >
+                  Staking
+                </TabsTrigger>
+                <TabsTrigger
+                  value="activity"
+                  className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+                >
+                  Activity
+                </TabsTrigger>
+                <TabsTrigger
+                  value="governance"
+                  className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+                >
+                  Governance
+                </TabsTrigger>
               </TabsList>
 
               {/* Assets Tab */}
