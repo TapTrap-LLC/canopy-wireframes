@@ -59,7 +59,7 @@ export default function WalletSheet({ open, onOpenChange }) {
 
           {/* Total Balance */}
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Total balance</p>
+            <p className="text-sm text-muted-foreground mb-1">Estimated Balance</p>
             <h2 className="text-4xl font-bold text-foreground mb-1">
               ${getTotalBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h2>
