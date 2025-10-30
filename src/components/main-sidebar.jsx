@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import LaunchOverviewDialog from './launch-overview-dialog'
 import CommandSearchDialog from './command-search-dialog'
 import WalletSheet from '../pages/wallet/components/wallet-sheet.jsx'
+import WalletConnectionDialog from './wallet-connection-dialog'
 import { useWallet } from '@/contexts/wallet-context'
 
 export default function MainSidebar({ variant = 'default' }) {
@@ -12,7 +13,8 @@ export default function MainSidebar({ variant = 'default' }) {
   const [showDialog, setShowDialog] = useState(false)
   const [showCommandSearch, setShowCommandSearch] = useState(false)
   const [showWalletSheet, setShowWalletSheet] = useState(false)
-  const { isConnected, walletAddress, connectWallet, getTotalBalance, formatAddress } = useWallet()
+  const [showWalletConnection, setShowWalletConnection] = useState(false)
+  const { isConnected, walletAddress, getTotalBalance, formatAddress } = useWallet()
 
   const handleStartLaunch = () => {
     setShowDialog(false)
@@ -117,7 +119,7 @@ export default function MainSidebar({ variant = 'default' }) {
               </button>
             ) : (
               <button
-                onClick={connectWallet}
+                onClick={() => setShowWalletConnection(true)}
                 className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80 flex items-center justify-center"
               >
                 <WalletIcon className="w-5 h-5" />
@@ -140,6 +142,11 @@ export default function MainSidebar({ variant = 'default' }) {
         <WalletSheet
           open={showWalletSheet}
           onOpenChange={setShowWalletSheet}
+        />
+
+        <WalletConnectionDialog
+          open={showWalletConnection}
+          onOpenChange={setShowWalletConnection}
         />
       </>
     )
@@ -244,7 +251,7 @@ export default function MainSidebar({ variant = 'default' }) {
             </button>
           ) : (
             <button
-              onClick={connectWallet}
+              onClick={() => setShowWalletConnection(true)}
               className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80"
             >
               Connect wallet
@@ -267,6 +274,11 @@ export default function MainSidebar({ variant = 'default' }) {
       <WalletSheet
         open={showWalletSheet}
         onOpenChange={setShowWalletSheet}
+      />
+
+      <WalletConnectionDialog
+        open={showWalletConnection}
+        onOpenChange={setShowWalletConnection}
       />
     </>
   )
