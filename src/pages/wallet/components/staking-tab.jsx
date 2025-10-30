@@ -5,9 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Info, ArrowUpDown } from 'lucide-react'
 import StakeDialog from './stake-dialog'
+import ClaimDialog from './claim-dialog'
 
 export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00 }) {
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
+  const [claimDialogOpen, setClaimDialogOpen] = useState(false)
   const [selectedStake, setSelectedStake] = useState(null)
   const [sortBy, setSortBy] = useState('apy')
   const [sortOrder, setSortOrder] = useState('desc')
@@ -55,6 +57,11 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
     }
     setSelectedStake(enrichedStake)
     setStakeDialogOpen(true)
+  }
+
+  const handleClaimClick = (stake) => {
+    setSelectedStake(stake)
+    setClaimDialogOpen(true)
   }
   return (
     <TooltipProvider>
@@ -157,7 +164,7 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       {stake.rewards > 0 && (
-                        <Button size="sm" variant="outline" className="h-9">
+                        <Button size="sm" variant="outline" className="h-9" onClick={() => handleClaimClick(stake)}>
                           Claim
                         </Button>
                       )}
@@ -188,6 +195,13 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
       open={stakeDialogOpen}
       onOpenChange={setStakeDialogOpen}
       selectedChain={selectedStake}
+    />
+
+    {/* Claim Dialog */}
+    <ClaimDialog
+      open={claimDialogOpen}
+      onOpenChange={setClaimDialogOpen}
+      selectedStake={selectedStake}
     />
     </TooltipProvider>
   )

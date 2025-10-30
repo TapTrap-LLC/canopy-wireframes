@@ -100,9 +100,9 @@ export default function StakeDialog({ open, onOpenChange, selectedChain }) {
                             <Wallet className="w-4 h-4" />
                           </div>
                           <div className="flex flex-col items-start">
-                            <span className="font-medium text-sm">Transfer trading balance</span>
+                            <span className="font-medium text-sm">Wallet balance</span>
                             <span className="text-xs text-muted-foreground">
-                              {selectedChain.symbol} trading balance: {availableBalance} {selectedChain.symbol}
+                              {selectedChain.symbol} balance: {availableBalance} {selectedChain.symbol}
                             </span>
                           </div>
                         </div>
@@ -115,9 +115,9 @@ export default function StakeDialog({ open, onOpenChange, selectedChain }) {
                             <Wallet className="w-4 h-4" />
                           </div>
                           <div className="flex flex-col items-start gap-1">
-                            <span className="font-medium">Transfer trading balance</span>
+                            <span className="font-medium">Wallet balance</span>
                             <span className="text-xs text-muted-foreground">
-                              {selectedChain.symbol} trading balance: {availableBalance} {selectedChain.symbol}
+                              {selectedChain.symbol} balance: {availableBalance} {selectedChain.symbol}
                             </span>
                           </div>
                         </div>
@@ -229,12 +229,12 @@ export default function StakeDialog({ open, onOpenChange, selectedChain }) {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">From</span>
-                      <span className="text-sm font-medium">Trading balance</span>
+                      <span className="text-sm font-medium">Wallet balance</span>
                     </div>
 
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">To</span>
-                      <span className="text-sm font-medium">Earn balance</span>
+                      <span className="text-sm font-medium">Staking</span>
                     </div>
 
                     <div className="flex justify-between">
