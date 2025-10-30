@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Separator } from '@/components/ui/separator'
-import { Search, Plus, Zap, BarChart3, Activity, TrendingUp, User, Home, PieChart, Repeat, MoreHorizontal, Wallet } from 'lucide-react'
+import { Search, Plus, Zap, BarChart3, Activity, TrendingUp, User, Home, PieChart, Repeat, MoreHorizontal, Wallet as WalletIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import LaunchOverviewDialog from './launch-overview-dialog'
 import CommandSearchDialog from './command-search-dialog'
+import { useWallet } from '@/contexts/wallet-context'
 
 export default function MainSidebar({ variant = 'default' }) {
   const navigate = useNavigate()
   const [showDialog, setShowDialog] = useState(false)
   const [showCommandSearch, setShowCommandSearch] = useState(false)
+  const { isConnected, walletAddress, connectWallet, getTotalBalance, formatAddress } = useWallet()
 
   const handleStartLaunch = () => {
     setShowDialog(false)
@@ -104,12 +106,21 @@ export default function MainSidebar({ variant = 'default' }) {
 
           {/* Bottom Section */}
           <div className="px-2">
-            <button
-              onClick={() => navigate('/wallet')}
-              className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80 flex items-center justify-center"
-            >
-              <Wallet className="w-5 h-5" />
-            </button>
+            {isConnected ? (
+              <button
+                onClick={() => navigate('/wallet')}
+                className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80 flex items-center justify-center"
+              >
+                <WalletIcon className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={connectWallet}
+                className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80 flex items-center justify-center"
+              >
+                <WalletIcon className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -204,13 +215,34 @@ export default function MainSidebar({ variant = 'default' }) {
 
         {/* Bottom Section */}
         <div className="px-4 space-y-3">
-          {/* Connect Wallet */}
-          <button
-            onClick={() => navigate('/wallet')}
-            className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80"
-          >
-            Connect wallet
-          </button>
+          {/* Connect Wallet or Wallet Card */}
+          {isConnected ? (
+            <button
+              onClick={() => navigate('/wallet')}
+              className="w-full rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-700 p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <span className="text-xs font-medium text-white/70">Balance</span>
+                <WalletIcon className="w-4 h-4 text-white/70" />
+              </div>
+              <div className="text-2xl text-left font-bold text-white mb-2">
+                ${getTotalBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#1dd13a] flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-white">C</span>
+                </div>
+                <span className="text-sm font-medium text-white/90">{formatAddress(walletAddress)}</span>
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={connectWallet}
+              className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80"
+            >
+              Connect wallet
+            </button>
+          )}
         </div>
       </div>
 

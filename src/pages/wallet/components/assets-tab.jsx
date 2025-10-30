@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getChainById } from '@/data/db'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -7,6 +9,7 @@ import { Search, TrendingUp, TrendingDown, ArrowUpDown } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function AssetsTab({ assets, totalValue }) {
+  const navigate = useNavigate()
   const [assetSearch, setAssetSearch] = useState('')
   const [sortBy, setSortBy] = useState('value')
   const [sortOrder, setSortOrder] = useState('desc')
@@ -271,8 +274,19 @@ export default function AssetsTab({ assets, totalValue }) {
                   price: point.price
                 })) : []
 
+                const chain = getChainById(asset.chainId)
+                const handleClick = () => {
+                  if (chain) {
+                    navigate(chain.url)
+                  }
+                }
+
                 return (
-                  <TableRow key={asset.id}>
+                  <TableRow
+                    key={asset.id}
+                    onClick={handleClick}
+                    className="cursor-pointer hover:bg-muted/30 transition-colors"
+                  >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div

@@ -14,14 +14,20 @@ import StakingTab from './components/staking-tab'
 import ActivityTab from './components/activity-tab'
 import StakeDialog from './components/stake-dialog'
 import walletData from '@/data/wallet.json'
+import { useWallet } from '@/contexts/wallet-context'
 
 export default function Wallet() {
   const [activeTab, setActiveTab] = useState('assets')
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
+  const { isConnected, connectWallet } = useWallet()
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [])
+    // Auto-connect wallet when visiting wallet page
+    if (!isConnected) {
+      connectWallet()
+    }
+  }, [isConnected, connectWallet])
 
   return (
     <div className="flex min-h-screen bg-background">
