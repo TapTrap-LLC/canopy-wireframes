@@ -3,12 +3,47 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Info } from 'lucide-react'
+import { Info, ArrowUpDown } from 'lucide-react'
 import StakeDialog from './stake-dialog'
 
 export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00 }) {
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
   const [selectedStake, setSelectedStake] = useState(null)
+  const [sortBy, setSortBy] = useState('apy')
+  const [sortOrder, setSortOrder] = useState('desc')
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(column)
+      setSortOrder('desc')
+    }
+  }
+
+  const sortedStakes = [...stakes].sort((a, b) => {
+    let compareA, compareB
+
+    switch (sortBy) {
+      case 'apy':
+        compareA = a.apy
+        compareB = b.apy
+        break
+      case 'earnings':
+        compareA = a.rewardsUSD || 0
+        compareB = b.rewardsUSD || 0
+        break
+      default:
+        compareA = a.apy
+        compareB = b.apy
+    }
+
+    if (sortOrder === 'asc') {
+      return compareA > compareB ? 1 : -1
+    } else {
+      return compareA < compareB ? 1 : -1
+    }
+  })
 
   const handleStakeClick = (stake) => {
     // Find the corresponding asset to get price and balance
@@ -61,14 +96,30 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
           <TableHeader>
             <TableRow>
               <TableHead>Chain</TableHead>
-              <TableHead>Annual yield</TableHead>
-              <TableHead>Current Earned Balance</TableHead>
+              <TableHead
+                className="cursor-pointer hover:text-foreground"
+                onClick={() => handleSort('apy')}
+              >
+                <div className="flex items-center gap-2">
+                  Annual yield
+                  <ArrowUpDown className="w-4 h-4" />
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:text-foreground"
+                onClick={() => handleSort('earnings')}
+              >
+                <div className="flex items-center gap-2">
+                  Current Earned Balance
+                  <ArrowUpDown className="w-4 h-4" />
+                </div>
+              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {stakes.length > 0 ? (
-              stakes.map((stake) => (
+            {sortedStakes.length > 0 ? (
+              sortedStakes.map((stake) => (
                 <TableRow key={stake.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
