@@ -26,6 +26,7 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
   const [canceledUnstakeIds, setCanceledUnstakeIds] = useState([])
   const [unstakedChainIds, setUnstakedChainIds] = useState([])
   const [newUnstakingItems, setNewUnstakingItems] = useState([])
+  const [stakeAdjustments, setStakeAdjustments] = useState({})
 
   const handleSort = (column) => {
     if (sortBy === column) {
@@ -92,6 +93,15 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
     // If 100% of the stake was unstaked, hide it from active stakes
     if (amountUnstaked >= stake.amount) {
       setUnstakedChainIds(prev => [...prev, stake.chainId])
+    } else {
+      // For partial unstakes, adjust the remaining staked amount and reset rewards to 0
+      setStakeAdjustments(prev => ({
+        ...prev,
+        [stake.chainId]: {
+          amountReduction: (prev[stake.chainId]?.amountReduction || 0) + amountUnstaked,
+          resetRewards: true
+        }
+      }))
     }
 
     // Add the unstaked amount to the unstaking queue
@@ -128,8 +138,21 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
   const allUnstakingItems = [...(unstaking || []), ...newUnstakingItems]
   const visibleUnstaking = allUnstakingItems.filter(item => !canceledUnstakeIds.includes(item.id))
 
+  // Apply adjustments to stakes (reduce amount, reset rewards for partial unstakes)
+  const adjustedStakes = sortedStakes.map(stake => {
+    const adjustment = stakeAdjustments[stake.chainId]
+    if (!adjustment) return stake
+
+    return {
+      ...stake,
+      amount: stake.amount - adjustment.amountReduction,
+      rewards: adjustment.resetRewards ? 0 : stake.rewards,
+      rewardsUSD: adjustment.resetRewards ? 0 : stake.rewardsUSD
+    }
+  })
+
   // Filter out fully unstaked chains from active stakes
-  const visibleActiveStakes = sortedStakes.filter(stake =>
+  const visibleActiveStakes = adjustedStakes.filter(stake =>
     stake.amount > 0 && !unstakedChainIds.includes(stake.chainId)
   )
   return (
