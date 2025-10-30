@@ -14,10 +14,6 @@ export default function WalletSheet({ open, onOpenChange }) {
   const { walletAddress, formatAddress, getTotalBalance, disconnectWallet } = useWallet()
   const [activeTab, setActiveTab] = useState('balances')
 
-  // Calculate total tokens (simplified - using first asset as main token)
-  const mainAsset = walletData.assets[0]
-  const totalTokens = walletData.assets.reduce((sum, asset) => sum + asset.balance, 0)
-
   const copyAddress = () => {
     navigator.clipboard.writeText(walletAddress)
     toast.success('Address copied to clipboard')
@@ -142,10 +138,10 @@ export default function WalletSheet({ open, onOpenChange }) {
                         </div>
                         <div className="text-right">
                           <div className="font-medium text-foreground">
-                            {asset.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${asset.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            ${asset.value.toFixed(2)}
+                            ${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </div>
                         </div>
                       </div>
@@ -164,8 +160,8 @@ export default function WalletSheet({ open, onOpenChange }) {
         </div>
 
         {/* Footer - Fixed */}
-        <div className="p-6 border-t border-border space-y-3">
-          <Button variant="outline" className="w-full justify-start gap-3 hover:bg-muted">
+        <div className="p-5 border-t border-border space-y-3">
+          <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-muted">
             <Settings className="w-5 h-5" />
             <span>Wallet settings</span>
           </Button>
