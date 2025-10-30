@@ -2,17 +2,22 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Info, ArrowUpDown } from 'lucide-react'
 import StakeDialog from './stake-dialog'
 import ClaimDialog from './claim-dialog'
+import UnstakeDialog from './unstake-dialog'
 
-export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00 }) {
+export default function StakingTab({ stakes, assets, unstaking, totalInterestEarned = 20.00 }) {
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
   const [claimDialogOpen, setClaimDialogOpen] = useState(false)
+  const [unstakeDialogOpen, setUnstakeDialogOpen] = useState(false)
   const [selectedStake, setSelectedStake] = useState(null)
   const [sortBy, setSortBy] = useState('apy')
   const [sortOrder, setSortOrder] = useState('desc')
+  const [activeStakingTab, setActiveStakingTab] = useState('available')
 
   const handleSort = (column) => {
     if (sortBy === column) {
@@ -63,6 +68,17 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
     setSelectedStake(stake)
     setClaimDialogOpen(true)
   }
+
+  const handleUnstakeClick = (stake) => {
+    // Find the corresponding asset to get price
+    const asset = assets?.find(a => a.chainId === stake.chainId)
+    const enrichedStake = {
+      ...stake,
+      price: asset?.price || 0
+    }
+    setSelectedStake(enrichedStake)
+    setUnstakeDialogOpen(true)
+  }
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -97,9 +113,28 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
           </div>
         </Card>
 
-      {/* Staking Table */}
-      <Card>
-        <Table>
+      {/* Staking Tabs */}
+      <Tabs value={activeStakingTab} onValueChange={setActiveStakingTab}>
+        <TabsList className="w-full justify-start mb-6">
+          <TabsTrigger value="available">Available</TabsTrigger>
+          <TabsTrigger value="active">
+            Active
+            <Badge variant="secondary" className="ml-2">
+              {sortedStakes.filter(s => s.amount > 0).length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="queue">
+            In Queue
+            <Badge variant="secondary" className="ml-2">
+              {unstaking?.length || 0}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab 1: Available Chains */}
+        <TabsContent value="available">
+          <Card>
+            <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Chain</TableHead>
@@ -188,6 +223,149 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
           </TableBody>
         </Table>
       </Card>
+        </TabsContent>
+
+        {/* Tab 2: Active Stakes */}
+        <TabsContent value="active">
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Chain</TableHead>
+                  <TableHead>Staked Amount</TableHead>
+                  <TableHead>APY</TableHead>
+                  <TableHead>Rewards Earned</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedStakes.filter(stake => stake.amount > 0).length > 0 ? (
+                  sortedStakes.filter(stake => stake.amount > 0).map((stake) => {
+                    const asset = assets?.find(a => a.chainId === stake.chainId)
+                    const stakedValueUSD = (stake.amount || 0) * (asset?.price || 0)
+
+                    return (
+                      <TableRow key={stake.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: stake.color }}
+                            >
+                              <span className="text-sm font-bold text-white">
+                                {stake.symbol.slice(0, 2)}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-semibold">{stake.chain}</div>
+                              <div className="text-sm text-muted-foreground">{stake.symbol}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{stake.amount} {stake.symbol}</div>
+                          <div className="text-sm text-muted-foreground">
+                            ${stakedValueUSD.toFixed(2)} USD
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{stake.apy}%</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{stake.rewards || 0} {stake.symbol}</div>
+                          {stake.rewardsUSD > 0 && (
+                            <div className="text-sm text-muted-foreground">
+                              ${stake.rewardsUSD.toFixed(2)} USD
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-9"
+                            onClick={() => handleUnstakeClick(stake)}
+                          >
+                            Unstake
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-12">
+                      <div className="flex flex-col items-center">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">No active stakes</p>
+                        <p className="text-xs text-muted-foreground">Start staking to earn rewards</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Tab 3: Unstaking Queue */}
+        <TabsContent value="queue">
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Chain</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Time Remaining</TableHead>
+                  <TableHead className="text-right">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {unstaking && unstaking.length > 0 ? (
+                  unstaking.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: stakes.find(s => s.chainId === item.chainId)?.color }}
+                          >
+                            <span className="text-sm font-bold text-white">
+                              {item.symbol.slice(0, 2)}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-semibold">{item.symbol}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{item.amount} {item.symbol}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {item.daysRemaining} days {item.hoursRemaining} hours
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant="secondary">Pending</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-12">
+                      <div className="flex flex-col items-center">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">No pending unstakes</p>
+                        <p className="text-xs text-muted-foreground">Unstaked funds will appear here</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
 
     {/* Stake Dialog */}
@@ -201,6 +379,13 @@ export default function StakingTab({ stakes, assets, totalInterestEarned = 20.00
     <ClaimDialog
       open={claimDialogOpen}
       onOpenChange={setClaimDialogOpen}
+      selectedStake={selectedStake}
+    />
+
+    {/* Unstake Dialog */}
+    <UnstakeDialog
+      open={unstakeDialogOpen}
+      onOpenChange={setUnstakeDialogOpen}
       selectedStake={selectedStake}
     />
     </TooltipProvider>
