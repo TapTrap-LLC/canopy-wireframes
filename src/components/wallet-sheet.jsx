@@ -35,7 +35,7 @@ export default function WalletSheet({ open, onOpenChange }) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-full sm:max-w-[420px] p-0 flex flex-col bg-card">
+      <SheetContent side="left" className="w-full sm:max-w-[420px] p-0 flex flex-col bg-card gap-0">
         {/* Header - Fixed */}
         <div className="p-6 space-y-4 border-b border-border">
           {/* Wallet Address & Actions */}
@@ -89,9 +89,9 @@ export default function WalletSheet({ open, onOpenChange }) {
         </div>
 
         {/* Tabs - Scrollable */}
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="w-full justify-start bg-transparent p-0 px-6 border-b border-border rounded-none h-auto">
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <TabsList className="w-full justify-start bg-transparent p-0 px-6 border-b border-border rounded-none h-auto flex-shrink-0">
               <TabsTrigger
                 value="balances"
                 className="py-3 px-0 mr-6 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent data-[state=active]:text-foreground"
@@ -106,8 +106,8 @@ export default function WalletSheet({ open, onOpenChange }) {
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 overflow-y-auto">
-              <TabsContent value="balances" className="p-6 mt-0">
+            <TabsContent value="balances" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden">
+              <div className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-muted-foreground">TOP ASSETS</h3>
@@ -152,12 +152,14 @@ export default function WalletSheet({ open, onOpenChange }) {
                     ))}
                   </div>
                 </div>
-              </TabsContent>
+              </div>
+            </TabsContent>
 
-              <TabsContent value="activity" className="p-6 mt-0">
-                <ActivityTab transactions={walletData.transactions} />
-              </TabsContent>
-            </div>
+            <TabsContent value="activity" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden">
+              <div className="p-6">
+                <ActivityTab transactions={walletData.transactions} compact={true} />
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
 

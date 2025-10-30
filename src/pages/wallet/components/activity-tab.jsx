@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowUpRight, ArrowDownLeft, Repeat, TrendingUp, TrendingDown, CheckCircle, ChevronDown } from 'lucide-react'
 import TransactionDetailSheet from './transaction-detail-sheet'
 
-export default function ActivityTab({ transactions }) {
+export default function ActivityTab({ transactions, compact = false }) {
   const [selectedTypes, setSelectedTypes] = useState([])
   const [selectedStatuses, setSelectedStatuses] = useState([])
   const [selectedAssets, setSelectedAssets] = useState([])
@@ -172,10 +172,13 @@ export default function ActivityTab({ transactions }) {
     setDetailSheetOpen(true)
   }
 
+  const Wrapper = compact ? 'div' : Card
+  const wrapperProps = compact ? {} : { className: "p-6" }
+
   return (
-    <Card className="p-6">
+    <Wrapper {...wrapperProps}>
       {/* Header */}
-      <h2 className="text-xl font-semibold mb-6">Activity</h2>
+      {!compact && <h2 className="text-xl font-semibold mb-6">Activity</h2>}
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -268,11 +271,13 @@ export default function ActivityTab({ transactions }) {
       </div>
 
       {/* Table Headers */}
-      <div className="grid grid-cols-3 gap-4 pb-3 border-b text-sm font-medium text-muted-foreground">
-        <div>Details</div>
-        <div className="text-right">Amount</div>
-        <div className="text-right">Date</div>
-      </div>
+      {!compact && (
+        <div className="grid grid-cols-3 gap-4 pb-3 border-b text-sm font-medium text-muted-foreground">
+          <div>Details</div>
+          <div className="text-right">Amount</div>
+          <div className="text-right">Date</div>
+        </div>
+      )}
 
       {/* Transactions List */}
       <div>
@@ -339,6 +344,6 @@ export default function ActivityTab({ transactions }) {
         open={detailSheetOpen}
         onOpenChange={setDetailSheetOpen}
       />
-    </Card>
+    </Wrapper>
   )
 }
