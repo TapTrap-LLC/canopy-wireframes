@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { ArrowUpRight, ArrowDownLeft, Repeat, TrendingUp, TrendingDown, CheckCircle } from 'lucide-react'
+import { ArrowUpRight, ArrowDownLeft, Repeat, TrendingUp, TrendingDown, CheckCircle, ChevronDown } from 'lucide-react'
 
 export default function ActivityTab({ transactions }) {
-  const [selectedType, setSelectedType] = useState('all')
-  const [selectedStatus, setSelectedStatus] = useState('all')
-  const [selectedAsset, setSelectedAsset] = useState('all')
+  const [selectedTypes, setSelectedTypes] = useState([])
+  const [selectedStatuses, setSelectedStatuses] = useState([])
+  const [selectedAssets, setSelectedAssets] = useState([])
 
   // Get unique assets from transactions
   const assets = ['all', ...new Set(transactions.map(tx => tx.symbol || tx.symbolFrom).filter(Boolean))]
@@ -88,23 +87,75 @@ export default function ActivityTab({ transactions }) {
     }
   }
 
+  const transactionTypes = [
+    { value: 'sent', label: 'Sent' },
+    { value: 'received', label: 'Received' },
+    { value: 'swap', label: 'Swap' },
+    { value: 'staked', label: 'Staked' },
+    { value: 'unstaked', label: 'Unstaked' },
+    { value: 'claimed', label: 'Claimed' }
+  ]
+
+  const statuses = [
+    { value: 'completed', label: 'Completed' },
+    { value: 'pending', label: 'Pending' }
+  ]
+
+  // Toggle functions for multi-select
+  const toggleType = (type) => {
+    setSelectedTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    )
+  }
+
+  const toggleStatus = (status) => {
+    setSelectedStatuses(prev =>
+      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
+    )
+  }
+
+  const toggleAsset = (asset) => {
+    setSelectedAssets(prev =>
+      prev.includes(asset) ? prev.filter(a => a !== asset) : [...prev, asset]
+    )
+  }
+
   // Filter transactions
   const filteredTransactions = transactions.filter(tx => {
-    if (selectedType !== 'all' && tx.type !== selectedType) return false
-    if (selectedStatus !== 'all' && tx.status !== selectedStatus) return false
-    if (selectedAsset !== 'all') {
+    if (selectedTypes.length > 0 && !selectedTypes.includes(tx.type)) return false
+    if (selectedStatuses.length > 0 && !selectedStatuses.includes(tx.status)) return false
+    if (selectedAssets.length > 0) {
       const txAsset = tx.symbol || tx.symbolFrom
-      if (txAsset !== selectedAsset) return false
+      if (!selectedAssets.includes(txAsset)) return false
     }
     return true
   })
 
-  const hasActiveFilters = selectedType !== 'all' || selectedStatus !== 'all' || selectedAsset !== 'all'
+  const hasActiveFilters = selectedTypes.length > 0 || selectedStatuses.length > 0 || selectedAssets.length > 0
 
   const handleResetFilters = () => {
-    setSelectedType('all')
-    setSelectedStatus('all')
-    setSelectedAsset('all')
+    setSelectedTypes([])
+    setSelectedStatuses([])
+    setSelectedAssets([])
+  }
+
+  // Get filter button labels
+  const getTypeLabel = () => {
+    if (selectedTypes.length === 0) return 'Type'
+    if (selectedTypes.length === 1) return transactionTypes.find(t => t.value === selectedTypes[0])?.label
+    return `Type (${selectedTypes.length})`
+  }
+
+  const getStatusLabel = () => {
+    if (selectedStatuses.length === 0) return 'Status'
+    if (selectedStatuses.length === 1) return statuses.find(s => s.value === selectedStatuses[0])?.label
+    return `Status (${selectedStatuses.length})`
+  }
+
+  const getAssetLabel = () => {
+    if (selectedAssets.length === 0) return 'Asset'
+    if (selectedAssets.length === 1) return selectedAssets[0]
+    return `Asset (${selectedAssets.length})`
   }
 
   return (
@@ -115,45 +166,80 @@ export default function ActivityTab({ transactions }) {
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         {/* Type Filter */}
-        <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Type (All)</SelectItem>
-            <SelectItem value="sent">Sent</SelectItem>
-            <SelectItem value="received">Received</SelectItem>
-            <SelectItem value="swap">Swap</SelectItem>
-            <SelectItem value="staked">Staked</SelectItem>
-            <SelectItem value="unstaked">Unstaked</SelectItem>
-            <SelectItem value="claimed">Claimed</SelectItem>
-          </SelectContent>
-        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="h-9 rounded-full">
+              {getTypeLabel()}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {transactionTypes.map((type) => (
+              <DropdownMenuCheckboxItem
+                key={type.value}
+                checked={selectedTypes.includes(type.value)}
+                onCheckedChange={() => toggleType(type.value)}
+              >
+                {type.label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Status Filter */}
-        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Status (All)</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-          </SelectContent>
-        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="h-9 rounded-full">
+              {getStatusLabel()}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {statuses.map((status) => (
+              <DropdownMenuCheckboxItem
+                key={status.value}
+                checked={selectedStatuses.includes(status.value)}
+                onCheckedChange={() => toggleStatus(status.value)}
+              >
+                {status.label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Asset Filter */}
-        <Select value={selectedAsset} onValueChange={setSelectedAsset}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue placeholder="Asset" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Asset (All)</SelectItem>
-            {assets.filter(a => a !== 'all').map(asset => (
-              <SelectItem key={asset} value={asset}>{asset}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="h-9 rounded-full">
+              {getAssetLabel()}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {assets.filter(a => a !== 'all').map((asset) => {
+              const tx = transactions.find(t => (t.symbol || t.symbolFrom) === asset)
+              return (
+                <DropdownMenuCheckboxItem
+                  key={asset}
+                  checked={selectedAssets.includes(asset)}
+                  onCheckedChange={() => toggleAsset(asset)}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: getTokenColor(tx) }}
+                    >
+                      <span className="text-[10px] font-bold text-white">
+                        {asset.substring(0, 1)}
+                      </span>
+                    </div>
+                    <span>{asset}</span>
+                  </div>
+                </DropdownMenuCheckboxItem>
+              )
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Reset Filters */}
         {hasActiveFilters && (
