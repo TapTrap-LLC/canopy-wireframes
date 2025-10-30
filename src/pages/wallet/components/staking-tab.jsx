@@ -9,12 +9,17 @@ import { Info, ArrowUpDown } from 'lucide-react'
 import StakeDialog from './stake-dialog'
 import ClaimDialog from './claim-dialog'
 import UnstakeDialog from './unstake-dialog'
+import UnstakingDetailSheet from './unstaking-detail-sheet'
+import CancelUnstakeDialog from './cancel-unstake-dialog'
 
 export default function StakingTab({ stakes, assets, unstaking, totalInterestEarned = 20.00 }) {
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
   const [claimDialogOpen, setClaimDialogOpen] = useState(false)
   const [unstakeDialogOpen, setUnstakeDialogOpen] = useState(false)
+  const [unstakingDetailOpen, setUnstakingDetailOpen] = useState(false)
+  const [cancelUnstakeDialogOpen, setCancelUnstakeDialogOpen] = useState(false)
   const [selectedStake, setSelectedStake] = useState(null)
+  const [selectedUnstaking, setSelectedUnstaking] = useState(null)
   const [sortBy, setSortBy] = useState('apy')
   const [sortOrder, setSortOrder] = useState('desc')
   const [activeStakingTab, setActiveStakingTab] = useState('available')
@@ -79,6 +84,22 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
     setSelectedStake(enrichedStake)
     setUnstakeDialogOpen(true)
   }
+
+  const handleViewUnstakingDetails = (item) => {
+    setSelectedUnstaking(item)
+    setUnstakingDetailOpen(true)
+  }
+
+  const handleCancelUnstake = (item) => {
+    setSelectedUnstaking(item)
+    setCancelUnstakeDialogOpen(true)
+  }
+
+  const handleConfirmCancelUnstake = (item) => {
+    // TODO: Implement actual cancel unstake logic
+    // This would move the stake back to active staking
+    console.log('Confirmed cancel unstake for:', item)
+  }
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -118,13 +139,13 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
         <TabsList className="w-full justify-start mb-6">
           <TabsTrigger value="available">Available</TabsTrigger>
           <TabsTrigger value="active">
-            Active
+            Active Stakes
             <Badge variant="secondary" className="ml-2">
               {sortedStakes.filter(s => s.amount > 0).length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="queue">
-            In Queue
+            Unstaking Queue
             <Badge variant="secondary" className="ml-2">
               {unstaking?.length || 0}
             </Badge>
@@ -315,8 +336,8 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
                 <TableRow>
                   <TableHead>Chain</TableHead>
                   <TableHead>Amount</TableHead>
-                  <TableHead>Time Remaining</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead>Available In</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -335,6 +356,7 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
                           </div>
                           <div>
                             <div className="font-semibold">{item.symbol}</div>
+                            <Badge variant="secondary" className="mt-1">Pending</Badge>
                           </div>
                         </div>
                       </TableCell>
@@ -343,11 +365,28 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {item.daysRemaining} days {item.hoursRemaining} hours
+                          {item.daysRemaining} days, {item.hoursRemaining} hours
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge variant="secondary">Pending</Badge>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-9"
+                            onClick={() => handleViewUnstakingDetails(item)}
+                          >
+                            View Details
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-9"
+                            onClick={() => handleCancelUnstake(item)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -387,6 +426,23 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
       open={unstakeDialogOpen}
       onOpenChange={setUnstakeDialogOpen}
       selectedStake={selectedStake}
+    />
+
+    {/* Unstaking Detail Sheet */}
+    <UnstakingDetailSheet
+      unstakingItem={selectedUnstaking}
+      stakes={stakes}
+      open={unstakingDetailOpen}
+      onOpenChange={setUnstakingDetailOpen}
+      onCancel={handleCancelUnstake}
+    />
+
+    {/* Cancel Unstake Confirmation Dialog */}
+    <CancelUnstakeDialog
+      open={cancelUnstakeDialogOpen}
+      onOpenChange={setCancelUnstakeDialogOpen}
+      unstakingItem={selectedUnstaking}
+      onConfirm={handleConfirmCancelUnstake}
     />
     </TooltipProvider>
   )
