@@ -1,29 +1,43 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Info } from 'lucide-react'
 
 export default function StakingTab({ stakes, totalInterestEarned = 20.00 }) {
   return (
-    <div className="space-y-6">
-      {/* Total Interest Earned Section */}
-      <Card className="p-1">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Total interest earned to date</p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-bold">
-                ${totalInterestEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </h3>
-              <span className="text-sm text-muted-foreground">USD</span>
-            </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Total Interest Earned Section */}
+        <Card className="p-1">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="space-y-1">
+              <p className="text-lg font-bold text-white">Total interest earned to date</p>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-3xl font-bold">
+                  ${totalInterestEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h3>
+                <span className="text-sm text-muted-foreground">USD</span>
+              </div>
 
-            <p className="text-sm text-muted-foreground">Add here text...</p>
+              <div className="flex items-center gap-1.5 mt-4">
+                <p className="text-sm text-muted-foreground">Earn up to 8.05% APY on your crypto. Redeem any time.</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Annual Percentage Yield (APY) varies by asset and network conditions.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">You can unstake and withdraw your funds at any time.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+            <Button variant="outline" className="h-10">
+              View Earn Balances
+            </Button>
           </div>
-          <Button variant="outline" className="h-10">
-            View Earn Balances
-          </Button>
-        </div>
-      </Card>
+        </Card>
 
       {/* Staking Table */}
       <Card>
@@ -101,5 +115,6 @@ export default function StakingTab({ stakes, totalInterestEarned = 20.00 }) {
         </Table>
       </Card>
     </div>
+    </TooltipProvider>
   )
 }

@@ -76,22 +76,22 @@ export default function AssetsTab({ assets, totalValue }) {
           value: baseValue + (Math.random() - 0.5) * variation
         }))
       case '1W':
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        { const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         return days.map(day => ({
           time: day,
           value: baseValue + (Math.random() - 0.5) * variation
-        }))
+        })) }
       case '1M':
         return Array.from({ length: 10 }, (_, i) => ({
           time: `${(i * 3) + 1}`,
           value: baseValue + (Math.random() - 0.5) * variation
         }))
       case '1Y':
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        { const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         return months.map(month => ({
           time: month,
           value: baseValue + (Math.random() - 0.5) * variation
-        }))
+        })) }
       default:
         return []
     }
