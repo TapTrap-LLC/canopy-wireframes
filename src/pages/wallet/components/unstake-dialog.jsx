@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { X, Check, AlertCircle } from 'lucide-react'
 
-export default function UnstakeDialog({ open, onOpenChange, selectedStake }) {
+export default function UnstakeDialog({ open, onOpenChange, selectedStake, onUnstakeSuccess }) {
   const [step, setStep] = useState(1)
   const [amount, setAmount] = useState('')
 
@@ -24,6 +24,8 @@ export default function UnstakeDialog({ open, onOpenChange, selectedStake }) {
     if (step === 1 && amountNum > 0) {
       setStep(2)
     } else if (step === 2) {
+      // Call the success handler before moving to step 3
+      onUnstakeSuccess && onUnstakeSuccess(selectedStake, amountNum)
       setStep(3)
     }
   }

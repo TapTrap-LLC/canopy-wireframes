@@ -24,6 +24,7 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
   const [sortOrder, setSortOrder] = useState('desc')
   const [activeStakingTab, setActiveStakingTab] = useState('available')
   const [canceledUnstakeIds, setCanceledUnstakeIds] = useState([])
+  const [unstakedChainIds, setUnstakedChainIds] = useState([])
 
   const handleSort = (column) => {
     if (sortBy === column) {
@@ -86,6 +87,13 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
     setUnstakeDialogOpen(true)
   }
 
+  const handleUnstakeSuccess = (stake, amountUnstaked) => {
+    // If 100% of the stake was unstaked, hide it from active stakes
+    if (amountUnstaked >= stake.amount) {
+      setUnstakedChainIds(prev => [...prev, stake.chainId])
+    }
+  }
+
   const handleViewUnstakingDetails = (item) => {
     setSelectedUnstaking(item)
     setUnstakingDetailOpen(true)
@@ -105,6 +113,11 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
 
   // Filter out canceled unstaking items
   const visibleUnstaking = unstaking?.filter(item => !canceledUnstakeIds.includes(item.id)) || []
+
+  // Filter out fully unstaked chains from active stakes
+  const visibleActiveStakes = sortedStakes.filter(stake =>
+    stake.amount > 0 && !unstakedChainIds.includes(stake.chainId)
+  )
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -146,7 +159,7 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
           <TabsTrigger value="active">
             Active Stakes
             <Badge variant="secondary" className="ml-2">
-              {sortedStakes.filter(s => s.amount > 0).length}
+              {visibleActiveStakes.length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="queue">
@@ -265,8 +278,8 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedStakes.filter(stake => stake.amount > 0).length > 0 ? (
-                  sortedStakes.filter(stake => stake.amount > 0).map((stake) => {
+                {visibleActiveStakes.length > 0 ? (
+                  visibleActiveStakes.map((stake) => {
                     const asset = assets?.find(a => a.chainId === stake.chainId)
                     const stakedValueUSD = (stake.amount || 0) * (asset?.price || 0)
 
@@ -321,9 +334,14 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-12">
-                      <div className="flex flex-col items-center">
-                        <p className="text-sm font-medium text-muted-foreground mb-1">No active stakes</p>
-                        <p className="text-xs text-muted-foreground">Start staking to earn rewards</p>
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="p-4 bg-muted rounded-full">
+                          <CheckCircle2 className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground">No active stakes</p>
+                          <p className="text-xs text-muted-foreground">Start staking to earn rewards</p>
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -436,6 +454,7 @@ export default function StakingTab({ stakes, assets, unstaking, totalInterestEar
       open={unstakeDialogOpen}
       onOpenChange={setUnstakeDialogOpen}
       selectedStake={selectedStake}
+      onUnstakeSuccess={handleUnstakeSuccess}
     />
 
     {/* Unstaking Detail Sheet */}
