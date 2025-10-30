@@ -173,10 +173,10 @@ export default function ActivityTab({ transactions, compact = false }) {
   }
 
   const Wrapper = compact ? 'div' : Card
-  const wrapperProps = compact ? {} : { className: "p-6" }
+  const wrapperProps = compact ? {} : { className: "p-4" }
 
   return (
-    <Wrapper {...wrapperProps} className="p-4">
+    <Wrapper {...wrapperProps}>
       {/* Header */}
       {!compact && <h2 className="text-xl font-semibold mb-5">Activity</h2>}
 
