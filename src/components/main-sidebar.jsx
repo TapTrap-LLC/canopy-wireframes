@@ -4,12 +4,14 @@ import { Search, Plus, Zap, BarChart3, Activity, TrendingUp, User, Home, PieChar
 import { useNavigate } from 'react-router-dom'
 import LaunchOverviewDialog from './launch-overview-dialog'
 import CommandSearchDialog from './command-search-dialog'
+import WalletSheet from './wallet-sheet'
 import { useWallet } from '@/contexts/wallet-context'
 
 export default function MainSidebar({ variant = 'default' }) {
   const navigate = useNavigate()
   const [showDialog, setShowDialog] = useState(false)
   const [showCommandSearch, setShowCommandSearch] = useState(false)
+  const [showWalletSheet, setShowWalletSheet] = useState(false)
   const { isConnected, walletAddress, connectWallet, getTotalBalance, formatAddress } = useWallet()
 
   const handleStartLaunch = () => {
@@ -108,7 +110,7 @@ export default function MainSidebar({ variant = 'default' }) {
           <div className="px-2">
             {isConnected ? (
               <button
-                onClick={() => navigate('/wallet')}
+                onClick={() => setShowWalletSheet(true)}
                 className="w-full h-11 rounded-xl bg-[#0e200e] border border-white/15 text-sm font-medium text-[#1dd13a] backdrop-blur transition-colors hover:bg-[#0e200e]/80 flex items-center justify-center"
               >
                 <WalletIcon className="w-5 h-5" />
@@ -133,6 +135,11 @@ export default function MainSidebar({ variant = 'default' }) {
         <CommandSearchDialog
           open={showCommandSearch}
           onOpenChange={setShowCommandSearch}
+        />
+
+        <WalletSheet
+          open={showWalletSheet}
+          onOpenChange={setShowWalletSheet}
         />
       </>
     )
@@ -218,7 +225,7 @@ export default function MainSidebar({ variant = 'default' }) {
           {/* Connect Wallet or Wallet Card */}
           {isConnected ? (
             <button
-              onClick={() => navigate('/wallet')}
+              onClick={() => setShowWalletSheet(true)}
               className="w-full rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-700 p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <div className="flex items-start justify-between mb-2">
@@ -255,6 +262,11 @@ export default function MainSidebar({ variant = 'default' }) {
       <CommandSearchDialog
         open={showCommandSearch}
         onOpenChange={setShowCommandSearch}
+      />
+
+      <WalletSheet
+        open={showWalletSheet}
+        onOpenChange={setShowWalletSheet}
       />
     </>
   )
