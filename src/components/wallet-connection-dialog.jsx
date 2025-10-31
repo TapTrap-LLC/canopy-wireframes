@@ -47,6 +47,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
   const [selectedToken, setSelectedToken] = useState(null) // { walletType, token, amount }
   const [isConverting, setIsConverting] = useState(false)
   const [conversionSuccess, setConversionSuccess] = useState(false)
+  const [loginSeedPhrase, setLoginSeedPhrase] = useState(Array(12).fill(''))
   const { connectWallet: connectWalletContext } = useWallet()
 
   // Reset state when dialog closes
@@ -64,6 +65,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
         setSelectedToken(null)
         setIsConverting(false)
         setConversionSuccess(false)
+        setLoginSeedPhrase(Array(12).fill(''))
       }, 300)
     }
   }, [open])
@@ -159,6 +161,26 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
       { position: 7, word: phrase[6], options: ['thunder', 'rainbow', 'forest', 'whisper'] }
     ]
     return questions
+  }
+
+  // Step 1.5: Seed phrase login
+  const handleSeedPhraseLogin = () => {
+    // For demo purposes, accept any 12 valid words
+    // In production, this would validate against actual wallet recovery
+    const allFieldsFilled = loginSeedPhrase.every(w => w.trim() !== '')
+
+    if (allFieldsFilled) {
+      // Show success toast
+      toast.success('Wallet restored successfully!')
+
+      // Connect wallet
+      connectWalletContext()
+
+      // Close dialog
+      handleClose()
+    } else {
+      toast.error('Please fill in all 12 words')
+    }
   }
 
   // Step 3: Wallet creation
@@ -375,6 +397,88 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                 disabled={!email || !email.includes('@')}
               >
                 Continue
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full h-11 rounded-xl"
+                onClick={() => setStep(1.5)}
+              >
+                Login with Seed Phrase
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 1.5: Login with Seed Phrase */}
+        {step === 1.5 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-2 rounded-full"
+                onClick={() => setStep(1)}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Login with Seed Phrase</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                Enter your 12-word recovery phrase to restore your wallet
+              </p>
+            </div>
+
+            {/* Seed Phrase Input */}
+            <div className="px-6 pb-6 space-y-6">
+              {/* Seed Phrase Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {loginSeedPhrase.map((word, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground w-6">{index + 1}.</span>
+                    <Input
+                      id={`seed-${index}`}
+                      type="text"
+                      value={word}
+                      onChange={(e) => {
+                        const newPhrase = [...loginSeedPhrase]
+                        newPhrase[index] = e.target.value.toLowerCase().trim()
+                        setLoginSeedPhrase(newPhrase)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && index < 11) {
+                          document.getElementById(`seed-${index + 1}`)?.focus()
+                        } else if (e.key === 'Enter' && index === 11) {
+                          handleSeedPhraseLogin()
+                        }
+                      }}
+                      placeholder="word"
+                      autoFocus={index === 0}
+                      className="h-9 rounded-lg text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                className="w-full h-11 rounded-xl bg-primary"
+                onClick={handleSeedPhraseLogin}
+                disabled={loginSeedPhrase.some(w => !w)}
+              >
+                Login
               </Button>
             </div>
           </div>
