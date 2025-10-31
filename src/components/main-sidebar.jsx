@@ -100,7 +100,13 @@ export default function MainSidebar({ variant = 'default' }) {
                 <span className="text-[10px]">Explorer</span>
               </button>
               <button
-                onClick={() => navigate('/wallet?tab=staking')}
+                onClick={() => {
+                  if (isConnected) {
+                    navigate('/wallet?tab=staking')
+                  } else {
+                    setShowWalletConnection(true)
+                  }
+                }}
                 className="w-[57px] flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-sm font-medium text-white hover:bg-white/5 transition-colors"
               >
                 <Activity className="w-4 h-4" />
@@ -224,7 +230,13 @@ export default function MainSidebar({ variant = 'default' }) {
                 <span>Explorer</span>
               </button>
               <button
-                onClick={() => navigate('/wallet?tab=staking')}
+                onClick={() => {
+                  if (isConnected) {
+                    navigate('/wallet?tab=staking')
+                  } else {
+                    setShowWalletConnection(true)
+                  }
+                }}
                 className="w-full h-9 flex items-center gap-3 px-4 rounded-xl text-sm font-medium text-white hover:bg-white/5 transition-colors"
               >
                 <Activity className="w-4 h-4" />
