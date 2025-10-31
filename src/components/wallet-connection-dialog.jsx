@@ -7,9 +7,7 @@ import {
   X,
   ArrowLeft,
   Send,
-  Mail,
   Check,
-  Upload,
   Wallet as WalletIcon,
   Plus,
   ChevronRight,
@@ -25,7 +23,6 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState(['', '', '', ''])
   const [otpError, setOtpError] = useState(false)
-  const [walletCreated, setWalletCreated] = useState(false)
   const [connectedWallets, setConnectedWallets] = useState({
     solana: null,
     evm: null,
@@ -44,7 +41,6 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
         setEmail('')
         setOtp(['', '', '', ''])
         setOtpError(false)
-        setWalletCreated(false)
         setConnectedWallets({ solana: null, evm: null, canopy: null })
         setConvertAmount('')
       }, 300)
@@ -103,13 +99,11 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
 
   // Step 3: Wallet creation
   const handleCreateWallet = () => {
-    setWalletCreated(true)
     setStep(4)
   }
 
   const handleImportWallet = () => {
     // Handle file upload
-    setWalletCreated(true)
     setStep(4)
   }
 
@@ -274,7 +268,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                 <Send className="w-8 h-8 text-primary" />
               </div>
 
-              <h2 className="text-2xl font-bold text-center mb-2">Verification code sent</h2>
+              <h2 className="text-2xl font-bold text-center mb-2">Verification Code Sent</h2>
               <p className="text-sm text-muted-foreground text-center max-w-2xs">
                 We have sent a 4-digit verification code to {email}
               </p>
@@ -337,7 +331,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
         {step === 3 && (
           <div className="flex flex-col">
             {/* Header */}
-            <div className="relative p-6 pb-4 flex flex-col items-center">
+            <div className="relative px-6 py-12 flex flex-col items-center">
               <Button
                 variant="ghost"
                 size="icon"
@@ -355,82 +349,33 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                 <X className="w-5 h-5" />
               </Button>
 
-              <img
-                src="/svg/logo.svg"
-                alt="Canopy"
-                className="h-6 mb-4 invert"
-              />
-
-              <h2 className="text-2xl font-bold text-center">Create or Connect Canopy wallet</h2>
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <WalletIcon className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold text-center mb-4 max-w-2xs">No Canopy Wallet Found for {email}</h2>
+              <p className="text-sm text-muted-foreground text-center">
+                You can create a new wallet or import an existing one.
+              </p>
             </div>
 
             {/* Content */}
             <div className="px-6 pb-6 space-y-6">
-              {/* Email Status Card */}
-              <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-xl border">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{email}</p>
-                  <p className="text-sm text-muted-foreground">Email Verified</p>
-                </div>
-                <Check className="w-5 h-5 text-[#1dd13a]" />
-              </div>
-
-              {/* Status Message */}
-              <p className="text-sm text-muted-foreground text-center">
-                No wallet created for this account yet. Create a new wallet or import an existing one.
-              </p>
-
-              {/* Create Wallet Button */}
-              <Button
-                className="w-full h-12 rounded-xl bg-primary"
-                onClick={handleCreateWallet}
-              >
-                Create Canopy Wallet
-              </Button>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-background px-2 text-muted-foreground">or</span>
-                </div>
-              </div>
-
-              {/* Import Wallet */}
-              <div className="space-y-3">
-                <Label className="text-sm text-muted-foreground block">Import Existing Wallet</Label>
-                <button
-                  onClick={handleImportWallet}
-                  className="w-full p-8 border-2 border-dashed rounded-xl hover:bg-muted/30 transition-colors cursor-pointer"
-                >
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-medium">Upload Keyfile (.JSON)</p>
-                      <p className="text-sm text-muted-foreground">Click to browse or drag and drop</p>
-                    </div>
-                  </div>
-                </button>
-
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-3">
                 <Button
-                  variant="ghost"
-                  className="w-full"
-                  onClick={handleBack}
+                  variant="outline"
+                  className="h-11 rounded-xl"
+                  onClick={handleImportWallet}
+                  disabled
                 >
-                  Back
+                  Import Keyfile
                 </Button>
-              </div>
-
-              {/* Progress Dots */}
-              <div className="flex justify-center gap-2 pt-2">
-                {getProgressDots()}
+                <Button
+                  className="h-11 rounded-xl bg-primary"
+                  onClick={handleCreateWallet}
+                >
+                  Create Wallet
+                </Button>
               </div>
             </div>
           </div>
