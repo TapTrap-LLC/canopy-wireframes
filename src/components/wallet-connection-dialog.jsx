@@ -17,7 +17,8 @@ import {
   ArrowDown,
   Shield,
   Loader2,
-  RotateCcw
+  RotateCcw,
+  ChevronDown
 } from 'lucide-react'
 import { useWallet } from '@/contexts/wallet-context'
 import { toast } from 'sonner'
@@ -41,6 +42,9 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
   const [convertAmount, setConvertAmount] = useState('')
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
   const [walletCreated, setWalletCreated] = useState(false)
+  const [selectedWalletForConversion, setSelectedWalletForConversion] = useState(null)
+  const [showWalletDropdown, setShowWalletDropdown] = useState(false)
+  const [selectedToken, setSelectedToken] = useState(null) // { walletType, token, amount }
   const { connectWallet: connectWalletContext } = useWallet()
 
   // Reset state when dialog closes
@@ -53,9 +57,37 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
         setOtpError(false)
         setConnectedWallets({ solana: null, evm: null, canopy: null })
         setConvertAmount('')
+        setSelectedWalletForConversion(null)
+        setShowWalletDropdown(false)
+        setSelectedToken(null)
       }, 300)
     }
   }, [open])
+
+  // Set the first connected wallet as selected when navigating to step 5
+  useEffect(() => {
+    if (step === 5 && !selectedWalletForConversion) {
+      if (connectedWallets.solana) {
+        setSelectedWalletForConversion('solana')
+      } else if (connectedWallets.evm) {
+        setSelectedWalletForConversion('evm')
+      }
+    }
+
+    // Auto-select first token when navigating to step 5
+    if (step === 5 && !selectedToken) {
+      const firstWallet = connectedWallets.solana || connectedWallets.evm
+      if (firstWallet) {
+        const firstTokenKey = Object.keys(firstWallet.balances)[0]
+        const walletType = connectedWallets.solana ? 'solana' : 'evm'
+        setSelectedToken({
+          walletType,
+          token: firstTokenKey,
+          amount: firstWallet.balances[firstTokenKey]
+        })
+      }
+    }
+  }, [step, connectedWallets, selectedWalletForConversion, selectedToken])
 
   const handleClose = () => {
     onOpenChange(false)
@@ -259,7 +291,11 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
     return dots
   }
 
-  const getTotalBalance = () => {
+  const getTotalBalance = (walletType = null) => {
+    if (walletType && connectedWallets[walletType]) {
+      return Object.values(connectedWallets[walletType].balances).reduce((a, b) => a + b, 0)
+    }
+
     let total = 0
     if (connectedWallets.solana) {
       total += Object.values(connectedWallets.solana.balances).reduce((a, b) => a + b, 0)
@@ -268,6 +304,26 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
       total += Object.values(connectedWallets.evm.balances).reduce((a, b) => a + b, 0)
     }
     return total
+  }
+
+  const getWalletIcon = (walletType) => {
+    if (walletType === 'solana') {
+      return 'bg-orange-500'
+    } else if (walletType === 'evm') {
+      return 'bg-blue-500'
+    }
+    return 'bg-muted'
+  }
+
+  const getWalletLabel = (walletType) => {
+    const wallet = connectedWallets[walletType]
+    if (!wallet) return ''
+    return `${wallet.provider} (${walletType === 'solana' ? 'Solana' : 'EVM'})`
+  }
+
+  const formatWalletAddress = (address) => {
+    if (!address) return ''
+    return `${address.slice(0, 4)}...${address.slice(-4)}`
   }
 
   return (
@@ -373,6 +429,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                           document.getElementById(`otp-${index - 1}`)?.focus()
                         }
                       }}
+                      autoFocus={index === 0}
                       className={`w-16 h-16 text-center !text-2xl font-semibold rounded-xl ${
                         otpError ? 'border-red-500 focus-visible:ring-red-500' : ''
                       }`}
@@ -903,84 +960,117 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                 <CheckCircle className="w-8 h-8 text-primary" />
               </div>
 
-              <h2 className="text-2xl font-bold text-center mb-2">Balances Found!</h2>
+              <h2 className="text-2xl font-bold text-center mb-2">Choose Fund Source</h2>
               <p className="text-sm text-muted-foreground text-center">
-                We found USDT and USDC in your connected wallets
+                Select which token you want to convert to CNPY
               </p>
             </div>
 
             {/* Content */}
             <div className="px-6 pb-6 space-y-6">
-              {/* Balance Summary */}
-              <div className="p-6 bg-muted rounded-xl space-y-4">
+              {/* Balance Summary - Compact */}
+              <div className="p-4 bg-muted rounded-xl space-y-3">
                 <p className="text-sm text-muted-foreground">Total Balance</p>
-                <p className="text-4xl font-bold">${getTotalBalance().toFixed(2)}</p>
+                <p className="text-3xl font-bold">
+                  ${selectedWalletForConversion ? getTotalBalance(selectedWalletForConversion).toFixed(2) : getTotalBalance().toFixed(2)}
+                </p>
 
-                <div className="space-y-3 pt-4 border-t">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                      <WalletIcon className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-sm font-medium">MetaMask (Multi-chain)</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">7xKX ... gAsU</p>
-
-                  <div className="space-y-2 pt-2">
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                          <span className="text-xs font-bold text-white">T</span>
+                {/* Wallet Selector Dropdown */}
+                {selectedWalletForConversion && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowWalletDropdown(!showWalletDropdown)}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-background rounded-full hover:bg-background/80 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`w-5 h-5 rounded-full ${getWalletIcon(selectedWalletForConversion)} flex items-center justify-center`}>
+                          <WalletIcon className="w-3 h-3 text-white" />
                         </div>
-                        <div>
-                          <p className="font-medium">USDT</p>
-                          <p className="text-xs text-muted-foreground">Tether USD</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">100.50</p>
-                        <p className="text-xs text-muted-foreground">$100.50</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                          <span className="text-xs font-bold text-white">$</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">USDC</p>
-                          <p className="text-xs text-muted-foreground">USD Coin</p>
+                        <div className="flex items-center gap-1.5 text-sm">
+                          <span className="font-medium">{getWalletLabel(selectedWalletForConversion)}</span>
+                          <span className="text-muted-foreground">
+                            {formatWalletAddress(connectedWallets[selectedWalletForConversion]?.address)}
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">50.25</p>
-                        <p className="text-xs text-muted-foreground">$50.25</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showWalletDropdown ? 'rotate-180' : ''}`} />
+                    </button>
 
-              {/* Next Step Info */}
-              <div className="p-4 border-2 border-primary/20 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full border-2 border-primary bg-primary/20 flex items-center justify-center mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    {/* Dropdown Menu */}
+                    {showWalletDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-background rounded-xl border shadow-lg z-10">
+                        {Object.entries(connectedWallets).map(([type, wallet]) => {
+                          if (!wallet) return null
+                          return (
+                            <button
+                              key={type}
+                              onClick={() => {
+                                setSelectedWalletForConversion(type)
+                                setShowWalletDropdown(false)
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-colors ${
+                                selectedWalletForConversion === type ? 'bg-muted' : ''
+                              }`}
+                            >
+                              <div className={`w-5 h-5 rounded-full ${getWalletIcon(type)} flex items-center justify-center`}>
+                                <WalletIcon className="w-3 h-3 text-white" />
+                              </div>
+                              <div className="flex-1 text-left">
+                                <p className="text-sm font-medium">{getWalletLabel(type)}</p>
+                                <p className="text-xs text-muted-foreground">${getTotalBalance(type).toFixed(2)}</p>
+                              </div>
+                              {selectedWalletForConversion === type && (
+                                <Check className="w-4 h-4 text-primary" />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="font-medium">Next: Convert to CNPY</p>
-                    <p className="text-sm text-muted-foreground">
-                      Convert your USDT/USDC to CNPY to start buying into projects
-                    </p>
+                )}
+
+                {/* Token List - Compact with Radio Buttons */}
+                {selectedWalletForConversion && connectedWallets[selectedWalletForConversion] && (
+                  <div className="space-y-2 pt-2 border-t">
+                    {Object.entries(connectedWallets[selectedWalletForConversion].balances).map(([token, amount]) => {
+                      const isSelected = selectedToken?.walletType === selectedWalletForConversion && selectedToken?.token === token
+                      return (
+                        <button
+                          key={token}
+                          onClick={() => setSelectedToken({ walletType: selectedWalletForConversion, token, amount })}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-background/80 transition-colors ${
+                            isSelected ? 'bg-background' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {/* Radio Button */}
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                              isSelected ? 'border-primary' : 'border-muted-foreground'
+                            }`}>
+                              {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
+                            </div>
+                            <div className={`w-6 h-6 rounded-full ${token === 'USDT' ? 'bg-green-500' : 'bg-blue-500'} flex items-center justify-center`}>
+                              <span className="text-xs font-bold text-white">{token === 'USDT' ? 'T' : '$'}</span>
+                            </div>
+                            <span className="text-sm font-medium">{token}</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">{amount}</p>
+                            <p className="text-xs text-muted-foreground">${amount.toFixed(2)}</p>
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
-                </div>
+                )}
               </div>
 
               <Button
                 className="w-full h-12 rounded-xl bg-primary"
                 onClick={handleContinueToConversion}
               >
-                Continue to Conversion
+                Convert to CNPY
               </Button>
             </div>
           </div>
@@ -1035,6 +1125,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                       }
                     }}
                     placeholder="$0"
+                    autoFocus
                     className="text-5xl font-bold bg-transparent border-0 outline-none p-0 h-auto text-center w-full placeholder:text-muted-foreground"
                   />
                 </div>
