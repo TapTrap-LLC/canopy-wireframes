@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Copy,
   CheckCircle,
-  ArrowDown
+  ArrowDown,
+  Shield,
+  Loader2
 } from 'lucide-react'
 import { useWallet } from '@/contexts/wallet-context'
 import { toast } from 'sonner'
@@ -23,6 +25,10 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState(['', '', '', ''])
   const [otpError, setOtpError] = useState(false)
+  const [seedPhrase, setSeedPhrase] = useState([])
+  const [verificationAnswers, setVerificationAnswers] = useState({})
+  const [verificationQuestions, setVerificationQuestions] = useState([])
+  const [walletAddress, setWalletAddress] = useState('')
   const [connectedWallets, setConnectedWallets] = useState({
     solana: null,
     evm: null,
@@ -31,6 +37,8 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
   const [showWalletSelect, setShowWalletSelect] = useState(false)
   const [walletType, setWalletType] = useState(null)
   const [convertAmount, setConvertAmount] = useState('')
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false)
+  const [walletCreated, setWalletCreated] = useState(false)
   const { connectWallet: connectWalletContext } = useWallet()
 
   // Reset state when dialog closes
@@ -97,14 +105,85 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
     document.getElementById('otp-0')?.focus()
   }
 
+  // Generate seed phrase
+  const generateSeedPhrase = () => {
+    const words = [
+      'forest', 'happy', 'mountain', 'ocean', 'rainbow', 'silver',
+      'thunder', 'village', 'whisper', 'yellow', 'crystal', 'bridge'
+    ]
+    return words
+  }
+
+  // Generate verification questions
+  const generateVerificationQuestions = (phrase) => {
+    const questions = [
+      { position: 3, word: phrase[2], options: ['ocean', 'silver', 'mountain', 'village'] },
+      { position: 7, word: phrase[6], options: ['thunder', 'rainbow', 'forest', 'whisper'] }
+    ]
+    return questions
+  }
+
   // Step 3: Wallet creation
   const handleCreateWallet = () => {
-    setStep(4)
+    setIsCreatingWallet(true)
+    setWalletCreated(false)
+
+    // Simulate wallet creation delay
+    setTimeout(() => {
+      const phrase = generateSeedPhrase()
+      setSeedPhrase(phrase)
+      setVerificationQuestions(generateVerificationQuestions(phrase))
+      setWalletAddress('0x' + Math.random().toString(16).substr(2, 40))
+      setIsCreatingWallet(false)
+      setWalletCreated(true)
+
+      // Wait a moment to show "Wallet Created" then navigate
+      setTimeout(() => {
+        setWalletCreated(false)
+        setStep(3.1)
+      }, 1500)
+    }, 3000)
   }
 
   const handleImportWallet = () => {
     // Handle file upload
     setStep(4)
+  }
+
+  // Step 3.1: Seed phrase written down
+  const handleSeedPhraseConfirm = () => {
+    setStep(3.2)
+  }
+
+  // Step 3.2: Verify seed phrase
+  const handleVerificationAnswer = (questionIndex, answer) => {
+    setVerificationAnswers(prev => ({
+      ...prev,
+      [questionIndex]: answer
+    }))
+  }
+
+  const handleVerificationContinue = () => {
+    // Check if all answers are correct
+    const allCorrect = verificationQuestions.every((q, idx) =>
+      verificationAnswers[idx] === q.word
+    )
+
+    if (allCorrect) {
+      setStep(3.3)
+    } else {
+      toast.error('Incorrect words selected. Please try again.')
+    }
+  }
+
+  // Step 3.3: Wallet created - Fund or skip
+  const handleFundWallet = () => {
+    setStep(4)
+  }
+
+  const handleDoItLater = () => {
+    connectWalletContext()
+    handleClose()
   }
 
   // Step 4: Connect wallets
@@ -336,7 +415,7 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                 variant="ghost"
                 size="icon"
                 className="absolute left-2 top-2 rounded-full"
-                onClick={handleBack}
+                onClick={() => setStep(1)}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -371,10 +450,220 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                   Import Keyfile
                 </Button>
                 <Button
-                  className="h-11 rounded-xl bg-primary"
+                  className={`h-11 rounded-xl ${walletCreated ? 'bg-green-600 hover:bg-green-600' : 'bg-primary'}`}
                   onClick={handleCreateWallet}
+                  disabled={isCreatingWallet}
                 >
-                  Create Wallet
+                  {isCreatingWallet ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating wallet...
+                    </>
+                  ) : walletCreated ? (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Wallet Created
+                    </>
+                  ) : (
+                    'Create Wallet'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3.1: Secure Your Wallet - Seed Phrase */}
+        {step === 3.1 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-2 rounded-full"
+                onClick={() => setStep(1)}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Secure Your Wallet</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                This is your recovery phrase. Write down these 12 words in exact order and store them safely offline.
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-6 space-y-6">
+              {/* Seed Phrase Grid */}
+              <div className="p-6 bg-muted/30 rounded-xl border-2 border-border">
+                <div className="grid grid-cols-2 gap-3">
+                  {seedPhrase.map((word, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground w-6">{index + 1}.</span>
+                      <span className="font-medium">{word}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                <div className="flex gap-3">
+                  <span className="text-xl">⚠️</span>
+                  <div>
+                    <p className="font-medium text-sm mb-1">Never Share Your Recovery Phrase</p>
+                    <p className="text-sm text-muted-foreground">
+                      Anyone with these words can access and control your wallet. Canopy will never ask for your recovery phrase. Store it offline in a secure location.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                className="w-full h-11 rounded-xl bg-primary"
+                onClick={handleSeedPhraseConfirm}
+              >
+                I've Written It Down
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3.2: Verify Seed Phrase */}
+        {step === 3.2 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-2 rounded-full"
+                onClick={() => setStep(3.1)}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <CheckCircle className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Verify Your Backup</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                Select the words in the correct order to verify your backup
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-6 space-y-6">
+              {verificationQuestions.map((question, qIndex) => (
+                <div key={qIndex} className="space-y-3">
+                  <Label className="block text-center">What is word #{question.position}?</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {question.options.map((option, oIndex) => (
+                      <Button
+                        key={oIndex}
+                        variant={verificationAnswers[qIndex] === option ? 'default' : 'outline'}
+                        className="h-11 rounded-xl"
+                        onClick={() => handleVerificationAnswer(qIndex, option)}
+                      >
+                        {option}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <Button
+                className="w-full h-11 rounded-xl bg-primary mt-4"
+                onClick={handleVerificationContinue}
+                disabled={Object.keys(verificationAnswers).length < verificationQuestions.length}
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3.3: Wallet Created - Fund or Skip */}
+        {step === 3.3 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Wallet Created!</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                This is your wallet address. Fund your wallet to get started.
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-6 space-y-6">
+              {/* Wallet Address */}
+              <div className="p-4 bg-muted/30 rounded-xl border">
+                <Label className="block text-sm text-muted-foreground mb-2">Your Wallet Address</Label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-sm font-mono truncate">{walletAddress}</code>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      navigator.clipboard.writeText(walletAddress)
+                      toast.success('Address copied')
+                    }}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button
+                  className="w-full h-11 rounded-xl bg-primary"
+                  onClick={handleFundWallet}
+                >
+                  Fund Wallet
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-11 rounded-xl"
+                  onClick={handleDoItLater}
+                >
+                  Do It Later
                 </Button>
               </div>
             </div>
@@ -439,14 +728,6 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
           <div className="flex flex-col">
             {/* Header */}
             <div className="relative p-6 pb-4 flex flex-col items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-2 top-2 rounded-full"
-                onClick={handleBack}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -566,27 +847,6 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
                 )}
               </div>
 
-              {/* Canopy Wallet */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground block">Canopy Wallet (Optional)</Label>
-                <button
-                  className="w-full p-4 border-2 border-dashed rounded-xl hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#1dd13a] flex items-center justify-center">
-                        <WalletIcon className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="text-left">
-                        <p className="font-medium">Connect Canopy Wallet</p>
-                        <p className="text-sm text-muted-foreground">Use your Canopy account</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5" />
-                  </div>
-                </button>
-              </div>
-
               {/* Fund via Transfer */}
               <div className="space-y-2">
                 <Label className="text-sm text-muted-foreground block">Fund via Transfer</Label>
@@ -611,11 +871,6 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
               >
                 Continue
               </Button>
-
-              {/* Progress Dots */}
-              <div className="flex justify-center gap-2 pt-2">
-                {getProgressDots()}
-              </div>
             </div>
           </div>
         )}
@@ -725,11 +980,6 @@ export default function WalletConnectionDialog({ open, onOpenChange }) {
               >
                 Continue to Conversion
               </Button>
-
-              {/* Progress Dots */}
-              <div className="flex justify-center gap-2 pt-2">
-                {getProgressDots()}
-              </div>
             </div>
           </div>
         )}
