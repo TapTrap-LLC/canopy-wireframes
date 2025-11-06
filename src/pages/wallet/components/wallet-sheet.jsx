@@ -9,6 +9,7 @@ import { useWallet } from '@/contexts/wallet-context.jsx'
 import { toast } from 'sonner'
 import ActivityTab from '@/pages/wallet/components/activity-tab.jsx'
 import StakeDialog from '@/pages/wallet/components/stake-dialog.jsx'
+import SendDialog from '@/pages/wallet/components/send-dialog.jsx'
 import WalletConnectionDialog from '@/components/wallet-connection-dialog.jsx'
 
 export default function WalletSheet({ open, onOpenChange }) {
@@ -16,6 +17,7 @@ export default function WalletSheet({ open, onOpenChange }) {
   const { walletAddress, formatAddress, getTotalBalance, disconnectWallet, getWalletData } = useWallet()
   const [activeTab, setActiveTab] = useState('balances')
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
   const [fundDialogOpen, setFundDialogOpen] = useState(false)
 
   const walletData = getWalletData()
@@ -109,7 +111,11 @@ export default function WalletSheet({ open, onOpenChange }) {
               <Download className="w-5 h-5" />
               <span className="text-xs">Buy</span>
             </Button>
-            <Button variant="outline" className="flex flex-col gap-1 h-auto py-3 px-2">
+            <Button
+              variant="outline"
+              className="flex flex-col gap-1 h-auto py-3 px-2"
+              onClick={() => setSendDialogOpen(true)}
+            >
               <Send className="w-5 h-5" />
               <span className="text-xs">Send</span>
             </Button>
@@ -279,6 +285,14 @@ export default function WalletSheet({ open, onOpenChange }) {
         onOpenChange={setStakeDialogOpen}
         selectedChain={null}
         availableChains={walletData.stakes}
+        assets={walletData.assets}
+      />
+
+      {/* Send Dialog */}
+      <SendDialog
+        open={sendDialogOpen}
+        onOpenChange={setSendDialogOpen}
+        selectedAsset={null}
         assets={walletData.assets}
       />
 

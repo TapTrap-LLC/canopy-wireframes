@@ -17,6 +17,7 @@ import AssetsTab from './components/assets-tab'
 import StakingTab from './components/staking-tab'
 import ActivityTab from './components/activity-tab'
 import StakeDialog from './components/stake-dialog'
+import SendDialog from './components/send-dialog'
 import WalletConnectionDialog from '@/components/wallet-connection-dialog.jsx'
 import { useWallet } from '@/contexts/wallet-context'
 import { toast } from 'sonner'
@@ -27,6 +28,7 @@ export default function Wallet() {
   const tabParam = searchParams.get('tab') || 'assets'
   const [activeTab, setActiveTab] = useState(tabParam)
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
   const [fundDialogOpen, setFundDialogOpen] = useState(false)
   const { isConnected, connectWallet, walletAddress, formatAddress, disconnectWallet, getWalletData } = useWallet()
 
@@ -169,7 +171,11 @@ export default function Wallet() {
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex-col gap-2"
+                  onClick={() => setSendDialogOpen(true)}
+                >
                   <Send className="w-5 h-5" />
                   <span className="text-sm">Send</span>
                 </Button>
@@ -204,6 +210,14 @@ export default function Wallet() {
           onOpenChange={setStakeDialogOpen}
           selectedChain={null}
           availableChains={walletData.stakes}
+          assets={walletData.assets}
+        />
+
+        {/* Send Dialog for Quick Actions */}
+        <SendDialog
+          open={sendDialogOpen}
+          onOpenChange={setSendDialogOpen}
+          selectedAsset={null}
           assets={walletData.assets}
         />
 
