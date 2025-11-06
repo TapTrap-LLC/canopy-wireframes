@@ -623,37 +623,35 @@ export default function SendDialog({ open, onOpenChange, selectedAsset, assets =
                     </div>
 
                     {/* Transaction Details */}
-                    <div className="space-y-3">
-                      <div className="p-4 bg-muted/30 rounded-lg space-y-3">
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground">Transaction Hash</p>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-mono break-all">{formatAddress(txHash)}</p>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 flex-shrink-0"
-                              onClick={() => copyToClipboard(txHash, 'Transaction hash')}
-                            >
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </div>
+                    <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Transaction Hash</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-mono break-all">{formatAddress(txHash)}</p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 flex-shrink-0"
+                            onClick={() => copyToClipboard(txHash, 'Transaction hash')}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
                         </div>
+                      </div>
 
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground">Amount</p>
-                          <p className="text-sm font-medium">{amountNum} {activeAsset.symbol}</p>
-                        </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Amount</p>
+                        <p className="text-sm font-medium">{amountNum} {activeAsset.symbol}</p>
+                      </div>
 
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground">Recipient</p>
-                          <p className="text-sm font-medium font-mono">{formatAddress(recipientAddress)}</p>
-                        </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Recipient</p>
+                        <p className="text-sm font-medium font-mono">{formatAddress(recipientAddress)}</p>
                       </div>
 
                       <Button
                         variant="outline"
-                        className="w-full"
+                        className="w-full mt-2"
                         onClick={() => {
                           toast.info('Block explorer integration coming soon')
                         }}
@@ -666,16 +664,9 @@ export default function SendDialog({ open, onOpenChange, selectedAsset, assets =
                     <div className="space-y-3">
                       <Button
                         className="w-full h-12"
-                        onClick={handleDone}
-                      >
-                        Done
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full"
                         onClick={handleSendAgain}
                       >
-                        Send Again
+                        Send Another Transaction
                       </Button>
                     </div>
                   </>
