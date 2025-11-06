@@ -215,9 +215,6 @@ export default function SendDialog({ open, onOpenChange, selectedAsset, assets =
                 </Button>
                 <div className="space-y-1">
                   <h2 className="text-xl font-bold">Send</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {needsAssetSelection ? 'Select asset to send' : 'Choose asset and recipient'}
-                  </p>
                 </div>
               </div>
 
@@ -225,7 +222,7 @@ export default function SendDialog({ open, onOpenChange, selectedAsset, assets =
                 {/* Asset Selection or Display */}
                 {needsAssetSelection ? (
                   <div className="space-y-2">
-                    <Label className="block text-sm font-medium">Select Asset</Label>
+                    <Label className="block text-sm font-medium">Select asset to send</Label>
                     <Select value={activeAsset?.id?.toString()} onValueChange={handleAssetSelect}>
                       <SelectTrigger className="h-auto py-3 [&>span]:line-clamp-none [&>span]:block">
                         <SelectValue placeholder="Choose an asset to send">
@@ -342,7 +339,7 @@ export default function SendDialog({ open, onOpenChange, selectedAsset, assets =
                 >
                   <X className="w-5 h-5" />
                 </Button>
-                <div className="space-y-1 text-center pt-8">
+                <div className="space-y-1 text-center">
                   <h2 className="text-xl font-bold">Send {activeAsset.symbol}</h2>
                 </div>
               </div>
@@ -451,7 +448,7 @@ export default function SendDialog({ open, onOpenChange, selectedAsset, assets =
                 >
                   <X className="w-5 h-5" />
                 </Button>
-                <h2 className="text-xl font-bold text-center pt-8">Review & Confirm</h2>
+                <h2 className="text-xl font-bold text-center">Review & Confirm</h2>
               </div>
 
               <div className="px-6 pb-6 space-y-6">
