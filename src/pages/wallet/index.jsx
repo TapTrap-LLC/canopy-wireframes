@@ -18,7 +18,7 @@ import StakingTab from './components/staking-tab'
 import ActivityTab from './components/activity-tab'
 import StakeDialog from './components/stake-dialog'
 import SendDialog from './components/send-dialog'
-import WalletConnectionDialog from '@/components/wallet-connection-dialog.jsx'
+import BuyDialog from './components/buy-dialog'
 import { useWallet } from '@/contexts/wallet-context'
 import { toast } from 'sonner'
 
@@ -29,7 +29,7 @@ export default function Wallet() {
   const [activeTab, setActiveTab] = useState(tabParam)
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
   const [sendDialogOpen, setSendDialogOpen] = useState(false)
-  const [fundDialogOpen, setFundDialogOpen] = useState(false)
+  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
   const { isConnected, connectWallet, walletAddress, formatAddress, disconnectWallet, getWalletData } = useWallet()
 
   const walletData = getWalletData()
@@ -182,7 +182,7 @@ export default function Wallet() {
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex-col gap-2"
-                  onClick={() => setFundDialogOpen(true)}
+                  onClick={() => setBuyDialogOpen(true)}
                 >
                   <Download className="w-5 h-5" />
                   <span className="text-sm">Buy</span>
@@ -221,11 +221,11 @@ export default function Wallet() {
           assets={walletData.assets}
         />
 
-        {/* Fund Wallet Dialog */}
-        <WalletConnectionDialog
-          open={fundDialogOpen}
-          onOpenChange={setFundDialogOpen}
-          initialStep={4}
+        {/* Buy Dialog */}
+        <BuyDialog
+          open={buyDialogOpen}
+          onOpenChange={setBuyDialogOpen}
+          assets={walletData.assets}
         />
       </div>
     </div>
