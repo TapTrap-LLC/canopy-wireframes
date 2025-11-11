@@ -42,7 +42,8 @@ const getProposalById = (proposalId) => {
       network: chain?.name || 'Unknown Network',
       chainLogo: chain?.logo,
       chainColor: chain?.brandColor || '#1dd13a',
-      chainUrl: `/chain/${chain?.name.toLowerCase().replace(/\s+/g, '-')}`
+      chainUrl: `/chain/${chain?.name.toLowerCase().replace(/\s+/g, '-')}`,
+      tokenSymbol: chain?.ticker || 'CNPY'
     }
   }
   return null
@@ -56,7 +57,11 @@ export default function GovernanceDetailPage() {
   const [voteType, setVoteType] = useState(null)
   const { getWalletData } = useWallet()
   const walletData = getWalletData()
-  const userVotingPower = walletData.totalValue || 2500
+
+  // Get voting power for the specific chain
+  const userVotingPower = proposal
+    ? walletData.assets.find(asset => asset.chainId === proposal.chainId)?.value || 0
+    : 0
 
   useEffect(() => {
     // Scroll to top when component mounts or ID changes
@@ -203,7 +208,7 @@ export default function GovernanceDetailPage() {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <BarChart className="w-4 h-4" />
-                    <span>Total Votes: {proposal.totalVotes.toLocaleString()} CNPY</span>
+                    <span>Total Votes: {proposal.totalVotes.toLocaleString()} {proposal.tokenSymbol}</span>
                   </div>
                 </div>
               </CardContent>
@@ -252,12 +257,12 @@ export default function GovernanceDetailPage() {
                       <Check className="w-4 h-4 text-green-600" />
                       <span className="font-medium">For</span>
                       <span className="text-muted-foreground">
-                        ({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} CNPY
+                        ({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} {proposal.tokenSymbol}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">
-                        {((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} CNPY · ({proposal.votesAgainst}%)
+                        {((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} {proposal.tokenSymbol} · ({proposal.votesAgainst}%)
                       </span>
                       <span className="font-medium">Against</span>
                       <X className="w-4 h-4 text-red-600" />
@@ -328,41 +333,28 @@ export default function GovernanceDetailPage() {
               </CardContent>
             </Card>
 
-            {/* User's Vote for completed proposals (inline) */}
-            {!isActive && proposal.userVote && (
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Your Vote</span>
-                    <Badge variant="secondary" className="text-sm">
-                      {proposal.userVote === 'for' ? 'Voted For' : 'Voted Against'}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
           </div>
 
           {/* Right Sidebar - Voting Widget */}
-          {isActive && (
-            <div className="w-64 shrink-0 pt-60">
-              <div className="sticky top-6">
-                <Card>
-                  <CardContent className="p-6 space-y-6">
-                    {/* Your Voting Power */}
-                    <div className="text-center space-y-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <Shield className="w-5 h-5 text-primary" />
-                        <span className="font-medium">Your Voting Power</span>
-                      </div>
-                      <p className="text-2xl font-bold">{userVotingPower.toLocaleString()} CNPY</p>
+          <div className="w-64 shrink-0 pt-60">
+            <div className="sticky top-6">
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  {/* Your Voting Power */}
+                  <div className="text-center space-y-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <Shield className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Your Voting Power</span>
                     </div>
+                    <p className="text-2xl font-bold">{userVotingPower.toLocaleString()} {proposal.tokenSymbol}</p>
+                  </div>
 
-                    <Separator />
+                  <Separator />
 
-                    {/* Vote Actions or Already Voted */}
-                    {!proposal.userVote ? (
+                  {/* Vote Actions or Already Voted */}
+                  {isActive ? (
+                    !proposal.userVote ? (
                       <div className="space-y-3">
                         <Button
                           size="lg"
@@ -422,12 +414,33 @@ export default function GovernanceDetailPage() {
                           </p>
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                    )
+                  ) : (
+                    proposal.userVote && (
+                      <div className="space-y-3">
+                        <div className="text-center p-3 bg-muted rounded-lg">
+                          <p className="text-sm text-muted-foreground">You voted</p>
+                          <p className="text-lg font-semibold mt-1">
+                            {proposal.userVote === 'for' ? (
+                              <span className="flex items-center justify-center gap-2 text-green-500">
+                                <Check className="w-5 h-5" />
+                                For
+                              </span>
+                            ) : (
+                              <span className="flex items-center justify-center gap-2 text-red-400">
+                                <X className="w-5 h-5" />
+                                Against
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

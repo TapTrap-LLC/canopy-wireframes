@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import governanceData from '@/data/governance.json'
 import chainsData from '@/data/chains.json'
+import { useWallet } from '@/contexts/wallet-context'
 
 // Helper function to get chain by ID
 const getChainById = (chainId) => {
@@ -38,15 +39,19 @@ const mockProposals = governanceData.proposals.map(proposal => {
     ...proposal,
     network: chain?.name || 'Unknown Network',
     chainLogo: chain?.logo,
-    chainColor: chain?.brandColor || '#1dd13a'
+    chainColor: chain?.brandColor || '#1dd13a',
+    tokenSymbol: chain?.ticker || 'CNPY'
   }
 })
 
 
-export default function GovernanceTab({ userVotingPower = 2500 }) {
+export default function GovernanceTab() {
   const navigate = useNavigate()
+  const { getTotalBalance } = useWallet()
   const [filter, setFilter] = useState('all') // all, active, passed, failed
   const [selectedChains, setSelectedChains] = useState([])
+
+  const totalBalance = getTotalBalance()
 
   const handleProposalClick = (proposal) => {
     navigate(`/governance/${proposal.id}`)
@@ -133,7 +138,7 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
             <div className="flex justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Voting Power</p>
-                <p className="text-2xl font-bold">{userVotingPower.toLocaleString()} CNPY</p>
+                <p className="text-2xl font-bold">${totalBalance.toLocaleString()}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <Shield className="w-5 h-5 text-primary" />
@@ -311,10 +316,10 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Check className="w-3 h-3 text-green-600" />
                         <span className="font-medium">For</span>
-                        <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} CNPY</span>
+                        <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} {proposal.tokenSymbol}</span>
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground">
-                        <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} CNPY · ({proposal.votesAgainst}%)</span>
+                        <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} {proposal.tokenSymbol} · ({proposal.votesAgainst}%)</span>
                         <span className="font-medium">Against</span>
                         <X className="w-3 h-3 text-red-600" />
                       </div>
