@@ -59,6 +59,9 @@ export default function GovernanceDetailPage() {
   const userVotingPower = walletData.totalValue || 2500
 
   useEffect(() => {
+    // Scroll to top when component mounts or ID changes
+    window.scrollTo(0, 0)
+
     if (id) {
       const proposalData = getProposalById(id)
       setProposal(proposalData)
@@ -300,9 +303,13 @@ export default function GovernanceDetailPage() {
             <Card>
               <CardContent className="p-6 space-y-4">
                 <h3 className="text-lg font-semibold">Summary</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {proposal.summary}
-                </p>
+                <div className="space-y-4">
+                  {proposal.summary.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className="text-muted-foreground leading-relaxed">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
