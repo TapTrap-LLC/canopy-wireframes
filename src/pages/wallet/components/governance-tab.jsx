@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,115 +17,25 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import ProposalDetailSheet from './proposal-detail-sheet'
+import governanceData from '@/data/governance.json'
+import chainsData from '@/data/chains.json'
 
-// Mock data for proposals
-const mockProposals = [
-  {
-    id: 1,
-    title: 'Lower Transaction Fees',
-    network: 'Canopy Network',
-    description: 'Reduce fees from 0.3% to 0.25% to increase volume',
-    status: 'active',
-    urgency: 'urgent',
-    endsIn: '2 days',
-    votesFor: 65,
-    votesAgainst: 35,
-    totalVotes: 2500000,
-    userVote: null,
-    proposedBy: '0x7a3f...9b2c',
-    createdAt: '5 days ago',
-    endDate: 'Dec 15, 2024',
-    quorumReached: true,
-    quorumNeeded: 50,
-    summary: 'This proposal aims to reduce trading fees from 0.3% to 0.25% to boost trading volume.',
-    impact: 'Lower revenue per trade but potentially higher volume.',
-    votingPower: 2500
-  },
-  {
-    id: 2,
-    title: 'Add NFT Support',
-    network: 'Chain1 Network',
-    description: 'Enable NFT minting and trading on the platform',
-    status: 'active',
-    urgency: 'normal',
-    endsIn: '5 days',
-    votesFor: 78,
-    votesAgainst: 22,
-    totalVotes: 1800000,
-    userVote: 'for',
-    proposedBy: '0x9b2c...7a3f',
-    createdAt: '3 days ago',
-    endDate: 'Dec 18, 2024',
-    quorumReached: true,
-    quorumNeeded: 50,
-    summary: 'Add support for NFT minting, trading, and marketplace features.',
-    impact: 'Opens new revenue streams and attracts NFT creators to the platform.',
-    votingPower: 2500
-  },
-  {
-    id: 3,
-    title: 'Increase Staking Rewards',
-    network: 'Canopy Network',
-    description: 'Boost staking APY from 12% to 15% for long-term holders',
-    status: 'active',
-    urgency: 'normal',
-    endsIn: '7 days',
-    votesFor: 45,
-    votesAgainst: 55,
-    totalVotes: 900000,
-    userVote: 'against',
-    proposedBy: '0x5d4e...8b1a',
-    createdAt: '2 days ago',
-    endDate: 'Dec 20, 2024',
-    quorumReached: false,
-    quorumNeeded: 50,
-    summary: 'Increase staking rewards to incentivize long-term holding.',
-    impact: 'Higher inflation but stronger holder incentives.',
-    votingPower: 2500
-  },
-  {
-    id: 4,
-    title: 'Treasury Diversification',
-    network: 'Chain2 Network',
-    description: 'Allocate 20% of treasury to stablecoins for stability',
-    status: 'passed',
-    urgency: 'normal',
-    endsIn: 'Passed',
-    votesFor: 82,
-    votesAgainst: 18,
-    totalVotes: 3200000,
-    userVote: 'for',
-    proposedBy: '0x3c2f...6d8e',
-    createdAt: '10 days ago',
-    endDate: 'Dec 10, 2024',
-    quorumReached: true,
-    quorumNeeded: 50,
-    summary: 'Diversify treasury holdings to reduce risk.',
-    impact: 'More stable treasury value during market volatility.',
-    votingPower: 2500
-  },
-  {
-    id: 5,
-    title: 'Launch Grants Program',
-    network: 'Canopy Network',
-    description: 'Create $1M developer grants program',
-    status: 'failed',
-    urgency: 'normal',
-    endsIn: 'Failed',
-    votesFor: 35,
-    votesAgainst: 65,
-    totalVotes: 1500000,
-    userVote: null,
-    proposedBy: '0x8f3a...2c5d',
-    createdAt: '15 days ago',
-    endDate: 'Dec 5, 2024',
-    quorumReached: true,
-    quorumNeeded: 50,
-    summary: 'Establish a grants program to fund ecosystem development.',
-    impact: 'Would have allocated significant funds to developer incentives.',
-    votingPower: 2500
+// Helper function to get chain by ID
+const getChainById = (chainId) => {
+  return chainsData.find(chain => chain.id === chainId) || null
+}
+
+// Mock data for proposals with chain info
+const mockProposals = governanceData.proposals.map(proposal => {
+  const chain = getChainById(proposal.chainId)
+  return {
+    ...proposal,
+    network: chain?.name || 'Unknown Network',
+    chainLogo: chain?.logo,
+    chainColor: chain?.brandColor || '#1dd13a'
   }
-]
+})
+
 
 export default function GovernanceTab({ userVotingPower = 2500 }) {
   const [selectedProposal, setSelectedProposal] = useState(null)
@@ -277,7 +187,6 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
                     )}
                   </div>
                   <CardTitle className="text-lg">{proposal.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{proposal.network}</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </div>
@@ -285,34 +194,49 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">{proposal.description}</p>
 
+              {/* Network info with avatar */}
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                  style={{ backgroundColor: proposal.chainColor }}
+                >
+                  {proposal.network.charAt(0)}
+                </div>
+                <span className="text-sm text-muted-foreground">{proposal.network}</span>
+              </div>
+
               {proposal.status === 'active' && (
                 <>
-                  {/* Voting Progress */}
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1">
-                          <Check className="w-4 h-4 text-green-600" />
-                          For ({proposal.votesFor}%)
-                        </span>
-                        <span className="text-muted-foreground">
-                          {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} CNPY
-                        </span>
-                      </div>
-                      <Progress value={proposal.votesFor} className="h-2 bg-muted" />
+                  {/* Voting Progress - Single Bar Split Layout like Figma */}
+                  <div className="space-y-2">
+                    {/* Progress Bar */}
+                    <div className="relative h-2 flex gap-0.5 rounded-full overflow-hidden bg-transparent">
+                      {/* For Section */}
+                      <div
+                        className="bg-green-500/70 rounded-full transition-all"
+                        style={{ width: `${proposal.votesFor}%` }}
+                      />
+                      {/* Gap */}
+                      <div className="w-0.5" />
+                      {/* Against Section */}
+                      <div
+                        className="bg-red-500/60 rounded-full transition-all"
+                        style={{ width: `${proposal.votesAgainst}%` }}
+                      />
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1">
-                          <X className="w-4 h-4 text-red-600" />
-                          Against ({proposal.votesAgainst}%)
-                        </span>
-                        <span className="text-muted-foreground">
-                          {((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} CNPY
-                        </span>
+                    {/* Labels Below */}
+                    <div className="flex justify-between text-xs">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Check className="w-3 h-3 text-green-600" />
+                        <span className="font-medium">For</span>
+                        <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} CNPY</span>
                       </div>
-                      <Progress value={proposal.votesAgainst} className="h-2 bg-muted" />
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} CNPY · ({proposal.votesAgainst}%)</span>
+                        <span className="font-medium">Against</span>
+                        <X className="w-3 h-3 text-red-600" />
+                      </div>
                     </div>
                   </div>
 
@@ -347,16 +271,18 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
               )}
 
               {proposal.status !== 'active' && (
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    Final: {proposal.votesFor}% For, {proposal.votesAgainst}% Against
+                <>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="text-sm text-muted-foreground">
+                      Final: {proposal.votesFor}% For, {proposal.votesAgainst}% Against
+                    </div>
+                    {proposal.userVote && (
+                      <Badge variant="secondary">
+                        You voted: {proposal.userVote === 'for' ? 'For' : 'Against'}
+                      </Badge>
+                    )}
                   </div>
-                  {proposal.userVote && (
-                    <Badge variant="secondary">
-                      You voted: {proposal.userVote === 'for' ? 'For' : 'Against'}
-                    </Badge>
-                  )}
-                </div>
+                </>
               )}
             </CardContent>
           </Card>

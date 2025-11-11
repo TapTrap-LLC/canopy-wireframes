@@ -139,36 +139,41 @@ export default function ProposalDetailSheet({ open, onOpenChange, proposal, user
                 </h3>
 
                 <div className="space-y-4">
-                  {/* For Votes */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-2 text-sm font-medium">
-                        <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                        For ({proposal.votesFor}%)
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} CNPY
-                      </span>
+                  {/* Voting Progress - Single Bar Split Layout */}
+                  <div className="space-y-3">
+                    {/* Progress Bar */}
+                    <div className="relative h-3 flex gap-1 rounded-full overflow-hidden bg-transparent">
+                      {/* For Section */}
+                      <div
+                        className="bg-green-500/70 rounded-full transition-all"
+                        style={{ width: `${proposal.votesFor}%` }}
+                      />
+                      {/* Gap */}
+                      <div className="w-1" />
+                      {/* Against Section */}
+                      <div
+                        className="bg-red-500/60 rounded-full transition-all"
+                        style={{ width: `${proposal.votesAgainst}%` }}
+                      />
                     </div>
-                    <Progress value={proposal.votesFor} className="h-3 bg-muted" />
-                  </div>
 
-                  {/* Against Votes */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-2 text-sm font-medium">
-                        <div className="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center">
-                          <X className="w-3 h-3 text-white" />
-                        </div>
-                        Against ({proposal.votesAgainst}%)
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} CNPY
-                      </span>
+                    {/* Labels Below */}
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="font-medium">For</span>
+                        <span className="text-muted-foreground">
+                          ({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} CNPY
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">
+                          {((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} CNPY · ({proposal.votesAgainst}%)
+                        </span>
+                        <span className="font-medium">Against</span>
+                        <X className="w-4 h-4 text-red-600" />
+                      </div>
                     </div>
-                    <Progress value={proposal.votesAgainst} className="h-3 bg-muted" />
                   </div>
 
                   {/* Quorum Status */}
