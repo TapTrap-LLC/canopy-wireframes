@@ -92,12 +92,12 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Voting Power</p>
                 <p className="text-2xl font-bold">{userVotingPower.toLocaleString()} CNPY</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <Shield className="w-5 h-5 text-primary" />
               </div>
             </div>
@@ -106,12 +106,12 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
 
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Active Proposals</p>
                 <p className="text-2xl font-bold">{activeProposalsCount}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-5 h-5 text-orange-500" />
               </div>
             </div>
@@ -120,12 +120,12 @@ export default function GovernanceTab({ userVotingPower = 2500 }) {
 
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Votes Cast</p>
                 <p className="text-2xl font-bold">{votedProposalsCount}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
                 <Users className="w-5 h-5 text-green-500" />
               </div>
             </div>
