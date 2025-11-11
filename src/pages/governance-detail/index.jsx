@@ -141,48 +141,50 @@ export default function GovernanceDetailPage() {
   return (
     <div className="flex min-h-screen bg-background">
       <MainSidebar />
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={handleBackToWallet}
-              className="mb-4 ml-[-14px]"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Governance
-            </Button>
+      <div className="flex-1">
+        <div className="flex gap-8 max-w-7xl mx-auto p-8">
+          {/* Main Content */}
+          <div className="flex-1 max-w-4xl">
+            {/* Header */}
+            <div className="mb-8">
+              <Button
+                variant="ghost"
+                onClick={handleBackToWallet}
+                className="mb-4 ml-[-14px]"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Governance
+              </Button>
 
-            <div className="space-y-4">
-              {/* Status Badges */}
-              <div className="flex items-center gap-2">
-                {isActive ? getUrgencyBadge() : getStatusBadge()}
-              </div>
-
-              {/* Title */}
-              <h1 className="text-3xl font-bold">{proposal.title}</h1>
-
-              {/* Description */}
-              <p className="text-muted-foreground text-lg">
-                {proposal.description}
-              </p>
-
-              {/* Network info with avatar */}
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                  style={{ backgroundColor: proposal.chainColor }}
-                >
-                  {proposal.network.charAt(0)}
+              <div className="space-y-4">
+                {/* Status Badges */}
+                <div className="flex items-center gap-2">
+                  {isActive ? getUrgencyBadge() : getStatusBadge()}
                 </div>
-                <span className="text-muted-foreground">{proposal.network}</span>
+
+                {/* Title */}
+                <h1 className="text-3xl font-bold">{proposal.title}</h1>
+
+                {/* Description */}
+                <p className="text-muted-foreground text-lg">
+                  {proposal.description}
+                </p>
+
+                {/* Network info with avatar */}
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                    style={{ backgroundColor: proposal.chainColor }}
+                  >
+                    {proposal.network.charAt(0)}
+                  </div>
+                  <span className="text-muted-foreground">{proposal.network}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="space-y-6">
+            {/* Main Content */}
+            <div className="space-y-6">
             {/* Proposal Info Card */}
             <Card>
               <CardContent className="p-6 space-y-4">
@@ -326,76 +328,7 @@ export default function GovernanceDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Voting Section */}
-            {isActive && (
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  {/* Your Voting Power */}
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-primary" />
-                      <span className="font-medium">Your Voting Power</span>
-                    </div>
-                    <span className="text-xl font-bold">{userVotingPower.toLocaleString()} CNPY</span>
-                  </div>
-
-                  {/* Vote Actions or Already Voted */}
-                  {!proposal.userVote ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        className="h-14"
-                        onClick={() => handleVote('for')}
-                        disabled={isVoting}
-                      >
-                        {isVoting && voteType === 'for' ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Voting...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-5 h-5 mr-2" />
-                            Vote For
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        className="h-14"
-                        onClick={() => handleVote('against')}
-                        disabled={isVoting}
-                      >
-                        {isVoting && voteType === 'against' ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Voting...
-                          </>
-                        ) : (
-                          <>
-                            <X className="w-5 h-5 mr-2" />
-                            Vote Against
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">You have already voted</span>
-                        <Badge className="bg-primary">
-                          {proposal.userVote === 'for' ? '✓ For' : '✗ Against'}
-                        </Badge>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* User's Vote for completed proposals */}
+            {/* User's Vote for completed proposals (inline) */}
             {!isActive && proposal.userVote && (
               <Card>
                 <CardContent className="p-6">
@@ -409,6 +342,80 @@ export default function GovernanceDetailPage() {
               </Card>
             )}
           </div>
+          </div>
+
+          {/* Right Sidebar - Voting Widget */}
+          {isActive && (
+            <div className="w-64 shrink-0 pt-60">
+              <div className="sticky top-6">
+                <Card>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Your Voting Power */}
+                    <div className="text-center space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <Shield className="w-5 h-5 text-primary" />
+                        <span className="font-medium">Your Voting Power</span>
+                      </div>
+                      <p className="text-2xl font-bold">{userVotingPower.toLocaleString()} CNPY</p>
+                    </div>
+
+                    <Separator />
+
+                    {/* Vote Actions or Already Voted */}
+                    {!proposal.userVote ? (
+                      <div className="space-y-3">
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="w-full h-12"
+                          onClick={() => handleVote('for')}
+                          disabled={isVoting}
+                        >
+                          {isVoting && voteType === 'for' ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Voting...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-5 h-5 mr-2" />
+                              Vote For
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="w-full h-12"
+                          onClick={() => handleVote('against')}
+                          disabled={isVoting}
+                        >
+                          {isVoting && voteType === 'against' ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Voting...
+                            </>
+                          ) : (
+                            <>
+                              <X className="w-5 h-5 mr-2" />
+                              Vote Against
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-center">
+                        <p className="font-medium text-sm mb-2">You have already voted</p>
+                        <Badge className="bg-primary">
+                          {proposal.userVote === 'for' ? '✓ For' : '✗ Against'}
+                        </Badge>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
