@@ -16,6 +16,7 @@ import {
 import AssetsTab from './components/assets-tab'
 import StakingTab from './components/staking-tab'
 import ActivityTab from './components/activity-tab'
+import GovernanceTab from './components/governance-tab'
 import StakeDialog from './components/stake-dialog'
 import SendDialog from './components/send-dialog'
 import BuyDialog from './components/buy-dialog'
@@ -160,6 +161,11 @@ export default function Wallet() {
               {/* Activity Tab */}
               <TabsContent value="activity">
                 <ActivityTab transactions={walletData.transactions} />
+              </TabsContent>
+
+              {/* Governance Tab */}
+              <TabsContent value="governance">
+                <GovernanceTab userVotingPower={walletData.totalValue || 2500} />
               </TabsContent>
             </Tabs>
           </div>
