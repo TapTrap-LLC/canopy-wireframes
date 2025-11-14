@@ -26,6 +26,7 @@ import governanceData from '@/data/governance.json'
 import chainsData from '@/data/chains.json'
 import { toast } from 'sonner'
 import { useWallet } from '@/contexts/wallet-context'
+import VoteConfirmationDialog from './components/vote-confirmation-dialog'
 
 // Helper function to get chain by ID
 const getChainById = (chainId) => {
@@ -55,6 +56,9 @@ export default function GovernanceDetailPage() {
   const [proposal, setProposal] = useState(null)
   const [isVoting, setIsVoting] = useState(false)
   const [voteType, setVoteType] = useState(null)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [confirmDialogStep, setConfirmDialogStep] = useState(1)
+  const [pendingVoteType, setPendingVoteType] = useState(null)
   const { getWalletData } = useWallet()
   const walletData = getWalletData()
 
@@ -84,18 +88,36 @@ export default function GovernanceDetailPage() {
     )
   }
 
-  const handleVote = async (type) => {
+  const handleOpenConfirmDialog = (type) => {
+    setPendingVoteType(type)
+    setConfirmDialogStep(1)
+    setConfirmDialogOpen(true)
+  }
+
+  const handleConfirmVote = async () => {
+    setConfirmDialogStep(2)
     setIsVoting(true)
-    setVoteType(type)
+    setVoteType(pendingVoteType)
 
     // Simulate voting delay
     setTimeout(() => {
       setIsVoting(false)
       setVoteType(null)
       // Update proposal with new vote
-      setProposal({ ...proposal, userVote: type })
-      toast.success(`Successfully voted ${type === 'for' ? 'For' : 'Against'} the proposal`)
+      setProposal({ ...proposal, userVote: pendingVoteType })
+      setConfirmDialogStep(3)
     }, 2000)
+  }
+
+  const handleCloseConfirmDialog = () => {
+    setConfirmDialogOpen(false)
+    setPendingVoteType(null)
+    setConfirmDialogStep(1)
+  }
+
+  const handleDoneVoting = () => {
+    handleCloseConfirmDialog()
+    toast.success(`Successfully voted ${proposal.userVote === 'for' ? 'For' : 'Against'} the proposal`)
   }
 
   const handleBackToWallet = () => {
@@ -360,39 +382,19 @@ export default function GovernanceDetailPage() {
                           size="lg"
                           variant="outline"
                           className="w-full h-12"
-                          onClick={() => handleVote('for')}
-                          disabled={isVoting}
+                          onClick={() => handleOpenConfirmDialog('for')}
                         >
-                          {isVoting && voteType === 'for' ? (
-                            <>
-                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                              Voting...
-                            </>
-                          ) : (
-                            <>
-                              <Check className="w-5 h-5 mr-2" />
-                              Vote For
-                            </>
-                          )}
+                          <Check className="w-5 h-5 mr-2" />
+                          Vote For
                         </Button>
                         <Button
                           size="lg"
                           variant="outline"
                           className="w-full h-12"
-                          onClick={() => handleVote('against')}
-                          disabled={isVoting}
+                          onClick={() => handleOpenConfirmDialog('against')}
                         >
-                          {isVoting && voteType === 'against' ? (
-                            <>
-                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                              Voting...
-                            </>
-                          ) : (
-                            <>
-                              <X className="w-5 h-5 mr-2" />
-                              Vote Against
-                            </>
-                          )}
+                          <X className="w-5 h-5 mr-2" />
+                          Vote Against
                         </Button>
                       </div>
                     ) : (
@@ -443,6 +445,19 @@ export default function GovernanceDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Vote Confirmation Dialog */}
+      <VoteConfirmationDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        step={confirmDialogStep}
+        proposal={proposal}
+        pendingVoteType={pendingVoteType}
+        userVotingPower={userVotingPower}
+        onConfirm={handleConfirmVote}
+        onDone={handleDoneVoting}
+        onBackToGovernance={handleBackToWallet}
+      />
     </div>
   )
 }
