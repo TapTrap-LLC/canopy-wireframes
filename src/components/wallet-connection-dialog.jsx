@@ -51,6 +51,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const [verifySuccess, setVerifySuccess] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { connectWallet: connectWalletContext, getUserByEmail, updateWalletData } = useWallet()
 
   // Reset state when dialog closes
@@ -73,6 +74,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         setIsVerifying(false)
         setVerifySuccess(false)
         setPassword('')
+        setIsLoggingIn(false)
       }, 300)
     }
   }, [open, initialStep])
@@ -185,11 +187,17 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   // Step 2.5: Password verification
   const handlePasswordContinue = () => {
     // For prototype - no validation, any password works
-    const user = getUserByEmail(email)
-    if (user && user.hasWallet) {
-      connectWalletContext(email, user.walletAddress)
-      handleClose()
-    }
+    setIsLoggingIn(true)
+
+    // Simulate login delay (2 seconds)
+    setTimeout(() => {
+      const user = getUserByEmail(email)
+      if (user && user.hasWallet) {
+        connectWalletContext(email, user.walletAddress)
+        setIsLoggingIn(false)
+        handleClose()
+      }
+    }, 2000)
   }
 
   // Generate seed phrase
@@ -744,9 +752,16 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
               <Button
                 className="w-full h-11 rounded-xl bg-primary"
                 onClick={handlePasswordContinue}
-                disabled={!password}
+                disabled={!password || isLoggingIn}
               >
-                Continue
+                {isLoggingIn ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  'Continue'
+                )}
               </Button>
             </div>
           </div>
