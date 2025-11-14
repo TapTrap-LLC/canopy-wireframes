@@ -50,6 +50,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const [isVerifying, setIsVerifying] = useState(false)
   const [verifySuccess, setVerifySuccess] = useState(false)
   const [emailError, setEmailError] = useState('')
+  const [password, setPassword] = useState('')
   const { connectWallet: connectWalletContext, getUserByEmail, updateWalletData } = useWallet()
 
   // Reset state when dialog closes
@@ -71,6 +72,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         setLoginSeedPhrase(Array(12).fill(''))
         setIsVerifying(false)
         setVerifySuccess(false)
+        setPassword('')
       }, 300)
     }
   }, [open, initialStep])
@@ -158,9 +160,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
           setVerifySuccess(false)
 
           if (user && user.hasWallet) {
-            // User has wallet - connect immediately and close dialog
-            connectWalletContext(email, user.walletAddress)
-            handleClose()
+            // User has wallet - go to password step
+            setStep(2.5)
           } else {
             // User doesn't have wallet - go to Step 3 (create wallet)
             setStep(3)
@@ -179,6 +180,16 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
     setOtp(['', '', '', ''])
     setOtpError(false)
     document.getElementById('otp-0')?.focus()
+  }
+
+  // Step 2.5: Password verification
+  const handlePasswordContinue = () => {
+    // For prototype - no validation, any password works
+    const user = getUserByEmail(email)
+    if (user && user.hasWallet) {
+      connectWalletContext(email, user.walletAddress)
+      handleClose()
+    }
   }
 
   // Generate seed phrase
@@ -674,6 +685,68 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                 ) : (
                   'Continue'
                 )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2.5: Password Entry */}
+        {step === 2.5 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-2 rounded-full"
+                onClick={() => setStep(2)}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Enter Password</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                Please enter your password to access your wallet
+              </p>
+            </div>
+
+            {/* Password Input */}
+            <div className="px-6 pb-6 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="password" className="block">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && password && handlePasswordContinue()}
+                  autoFocus
+                  className="h-11 rounded-xl"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your password is your seed phrase without spaces
+                </p>
+              </div>
+
+              <Button
+                className="w-full h-11 rounded-xl bg-primary"
+                onClick={handlePasswordContinue}
+                disabled={!password}
+              >
+                Continue
               </Button>
             </div>
           </div>
