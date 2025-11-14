@@ -1,8 +1,24 @@
 {
   "withfunds@email.com": {
-    "totalValue": 12458.32,
+    "totalValue": 13958.32,
     "change24h": 5.2,
     "assets": [
+    {
+      "id": 0,
+      "chainId": 0,
+      "symbol": "CNPY",
+      "name": "CANOPY",
+      "balance": 1000,
+      "price": 1.50,
+      "value": 1500.00,
+      "change24h": 2.5,
+      "logo": null,
+      "color": "#1dd13a",
+      "priceHistory": [
+        {"price": 1.20}, {"price": 1.25}, {"price": 1.45}, {"price": 1.48},
+        {"price": 1.30}, {"price": 1.35}, {"price": 1.52}, {"price": 1.50}
+      ]
+    },
     {
       "id": 1,
       "chainId": 1,
