@@ -204,14 +204,6 @@ export default function BuyDialog({ open, onOpenChange, defaultTab = 'cnpy', ass
     setError(null)
   }
 
-  const handleDone = () => {
-    const tokenBought = buyType === 'chain-token'
-      ? selectedTargetAsset?.symbol
-      : 'CNPY'
-    toast.success(`Successfully bought ${targetAmount.toFixed(4)} ${tokenBought}`)
-    handleClose()
-  }
-
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text)
     toast.success(`${label} copied to clipboard`)
@@ -870,13 +862,6 @@ export default function BuyDialog({ open, onOpenChange, defaultTab = 'cnpy', ass
                         onClick={handleBuyMore}
                       >
                         Buy More
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full"
-                        onClick={handleDone}
-                      >
-                        Close
                       </Button>
                     </div>
                   </>
