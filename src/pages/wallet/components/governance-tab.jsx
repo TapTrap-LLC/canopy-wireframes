@@ -320,98 +320,117 @@ export default function GovernanceTab() {
 
         {/* Proposals List */}
         <div className="space-y-4">
-          {getFilteredProposals().map((proposal) => (
-            <Card
-              key={proposal.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => handleProposalClick(proposal)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
+          {getFilteredProposals().length > 0 ? (
+            getFilteredProposals().map((proposal) => (
+              <Card
+                key={proposal.id}
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleProposalClick(proposal)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        {getUrgencyBadge(proposal.urgency)}
+                        {getStatusBadge(proposal.status)}
+                        {proposal.status === 'active' && (
+                          <Badge variant="outline" className="gap-1">
+                            <Clock className="w-3 h-3" />
+                            Ends in {proposal.endsIn}
+                          </Badge>
+                        )}
+                      </div>
+                      <CardTitle className="text-lg">{proposal.title}</CardTitle>
+                    </div>
                     <div className="flex items-center gap-2">
-                      {getUrgencyBadge(proposal.urgency)}
-                      {getStatusBadge(proposal.status)}
-                      {proposal.status === 'active' && (
-                        <Badge variant="outline" className="gap-1">
-                          <Clock className="w-3 h-3" />
-                          Ends in {proposal.endsIn}
+                      {proposal.userVote && (
+                        <Badge variant="secondary" className="text-xs">
+                          Your Vote: {proposal.userVote === 'for' ? '✓' : '✗'}
                         </Badge>
                       )}
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    <CardTitle className="text-lg">{proposal.title}</CardTitle>
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{proposal.description}</p>
+
+                  {/* Network info with avatar */}
                   <div className="flex items-center gap-2">
-                    {proposal.userVote && (
-                      <Badge variant="secondary" className="text-xs">
-                        Your Vote: {proposal.userVote === 'for' ? '✓' : '✗'}
-                      </Badge>
-                    )}
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">{proposal.description}</p>
-
-                {/* Network info with avatar */}
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: proposal.chainColor }}
-                  >
-                    {proposal.network.charAt(0)}
-                  </div>
-                  <span className="text-sm text-muted-foreground">{proposal.network}</span>
-                </div>
-
-                {/* Voting Progress - Show for all statuses */}
-                <div className="space-y-2">
-                  {/* Progress Bar */}
-                  <div className="relative h-2 flex gap-0.5 rounded-full overflow-hidden bg-transparent">
-                    {/* For Section */}
                     <div
-                      className={`rounded-full transition-all ${
-                        proposal.status === 'active'
-                          ? 'bg-green-500/70'
-                          : proposal.status === 'passed'
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                      style={{ backgroundColor: proposal.chainColor }}
+                    >
+                      {proposal.network.charAt(0)}
+                    </div>
+                    <span className="text-sm text-muted-foreground">{proposal.network}</span>
+                  </div>
+
+                  {/* Voting Progress - Show for all statuses */}
+                  <div className="space-y-2">
+                    {/* Progress Bar */}
+                    <div className="relative h-2 flex gap-0.5 rounded-full overflow-hidden bg-transparent">
+                      {/* For Section */}
+                      <div
+                        className={`rounded-full transition-all ${
+                          proposal.status === 'active'
                             ? 'bg-green-500/70'
-                            : 'bg-green-500/20'
-                      }`}
-                      style={{ width: `${proposal.votesFor}%` }}
-                    />
-                    {/* Gap */}
-                    <div className="w-0.5" />
-                    {/* Against Section */}
-                    <div
-                      className={`rounded-full transition-all ${
-                        proposal.status === 'active'
-                          ? 'bg-red-500/60'
-                          : proposal.status === 'passed'
-                            ? 'bg-red-500/15'
-                            : 'bg-red-500/60'
-                      }`}
-                      style={{ width: `${proposal.votesAgainst}%` }}
-                    />
-                  </div>
+                            : proposal.status === 'passed'
+                              ? 'bg-green-500/70'
+                              : 'bg-green-500/20'
+                        }`}
+                        style={{ width: `${proposal.votesFor}%` }}
+                      />
+                      {/* Gap */}
+                      <div className="w-0.5" />
+                      {/* Against Section */}
+                      <div
+                        className={`rounded-full transition-all ${
+                          proposal.status === 'active'
+                            ? 'bg-red-500/60'
+                            : proposal.status === 'passed'
+                              ? 'bg-red-500/15'
+                              : 'bg-red-500/60'
+                        }`}
+                        style={{ width: `${proposal.votesAgainst}%` }}
+                      />
+                    </div>
 
-                  {/* Labels Below */}
-                  <div className="flex justify-between text-xs">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Check className="w-3 h-3 text-green-600" />
-                      <span className="font-medium">For</span>
-                      <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} {proposal.tokenSymbol}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} {proposal.tokenSymbol} · ({proposal.votesAgainst}%)</span>
-                      <span className="font-medium">Against</span>
-                      <X className="w-3 h-3 text-red-600" />
+                    {/* Labels Below */}
+                    <div className="flex justify-between text-xs">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Check className="w-3 h-3 text-green-600" />
+                        <span className="font-medium">For</span>
+                        <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} {proposal.tokenSymbol}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} {proposal.tokenSymbol} · ({proposal.votesAgainst}%)</span>
+                        <span className="font-medium">Against</span>
+                        <X className="w-3 h-3 text-red-600" />
+                      </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            // Empty State
+            <Card className="p-12 border-0">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 bg-muted rounded-full">
+                  <AlertTriangle className="w-8 h-8 text-muted-foreground" />
                 </div>
-              </CardContent>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">No proposals found</h3>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    {selectedChain !== null || filter !== 'all'
+                      ? 'Try adjusting your filters to see more proposals'
+                      : 'There are no governance proposals at this time. Check back later for new proposals.'}
+                  </p>
+                </div>
+              </div>
             </Card>
-          ))}
+          )}
         </div>
       </div>
     </div>
