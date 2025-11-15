@@ -42,7 +42,11 @@ export default function WalletSettings() {
   const navigate = useNavigate()
   const { walletAddress, formatAddress, currentUser } = useWallet()
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
-  const [hasChanges, setHasChanges] = useState(false)
+
+  // Track changes per section
+  const [securityChanged, setSecurityChanged] = useState(false)
+  const [displayChanged, setDisplayChanged] = useState(false)
+  const [notificationsChanged, setNotificationsChanged] = useState(false)
 
   // Get email from currentUser or localStorage
   const userEmail = currentUser?.email || localStorage.getItem('userEmail') || ''
@@ -55,22 +59,24 @@ export default function WalletSettings() {
     }
   }, [])
 
-  const updateSetting = (key, value) => {
+  const updateSetting = (key, value, section) => {
     setSettings(prev => ({ ...prev, [key]: value }))
-    setHasChanges(true)
+
+    // Mark the appropriate section as changed
+    if (section === 'security') setSecurityChanged(true)
+    if (section === 'display') setDisplayChanged(true)
+    if (section === 'notifications') setNotificationsChanged(true)
   }
 
-  const saveSettings = () => {
+  const saveSection = (section) => {
     localStorage.setItem('walletSettings', JSON.stringify(settings))
-    setHasChanges(false)
-    toast.success('Settings saved successfully')
-  }
 
-  const resetSettings = () => {
-    setSettings(DEFAULT_SETTINGS)
-    localStorage.removeItem('walletSettings')
-    setHasChanges(false)
-    toast.success('Settings reset to defaults')
+    // Reset the changed flag for this section
+    if (section === 'security') setSecurityChanged(false)
+    if (section === 'display') setDisplayChanged(false)
+    if (section === 'notifications') setNotificationsChanged(false)
+
+    toast.success('Settings saved successfully')
   }
 
   return (
@@ -116,7 +122,7 @@ export default function WalletSettings() {
                 </div>
                 <Select
                   value={settings.autoLockMinutes.toString()}
-                  onValueChange={(value) => updateSetting('autoLockMinutes', parseInt(value))}
+                  onValueChange={(value) => updateSetting('autoLockMinutes', parseInt(value), 'security')}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -139,7 +145,7 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.privacyMode}
-                  onCheckedChange={(checked) => updateSetting('privacyMode', checked)}
+                  onCheckedChange={(checked) => updateSetting('privacyMode', checked, 'security')}
                 />
               </div>
 
@@ -152,7 +158,7 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.requireConfirmation}
-                  onCheckedChange={(checked) => updateSetting('requireConfirmation', checked)}
+                  onCheckedChange={(checked) => updateSetting('requireConfirmation', checked, 'security')}
                 />
               </div>
 
@@ -163,13 +169,22 @@ export default function WalletSettings() {
                     id="threshold"
                     type="number"
                     value={settings.confirmationThreshold}
-                    onChange={(e) => updateSetting('confirmationThreshold', parseInt(e.target.value) || 0)}
+                    onChange={(e) => updateSetting('confirmationThreshold', parseInt(e.target.value) || 0, 'security')}
                     placeholder="1000"
                   />
                   <p className="text-xs text-muted-foreground">
                     Confirm transactions above this amount
                   </p>
                 </div>
+              )}
+
+              {securityChanged && (
+                <Button
+                  onClick={() => saveSection('security')}
+                  className="w-full"
+                >
+                  Save Changes
+                </Button>
               )}
             </CardContent>
           </Card>
@@ -190,7 +205,7 @@ export default function WalletSettings() {
                 <Label>Display Currency</Label>
                 <Select
                   value={settings.currency}
-                  onValueChange={(value) => updateSetting('currency', value)}
+                  onValueChange={(value) => updateSetting('currency', value, 'display')}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -208,7 +223,7 @@ export default function WalletSettings() {
                 <Label>Language</Label>
                 <Select
                   value={settings.language}
-                  onValueChange={(value) => updateSetting('language', value)}
+                  onValueChange={(value) => updateSetting('language', value, 'display')}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -231,7 +246,7 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.hideSmallBalances}
-                  onCheckedChange={(checked) => updateSetting('hideSmallBalances', checked)}
+                  onCheckedChange={(checked) => updateSetting('hideSmallBalances', checked, 'display')}
                 />
               </div>
 
@@ -239,7 +254,7 @@ export default function WalletSettings() {
                 <Label>Asset Sorting</Label>
                 <Select
                   value={settings.assetSorting}
-                  onValueChange={(value) => updateSetting('assetSorting', value)}
+                  onValueChange={(value) => updateSetting('assetSorting', value, 'display')}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -251,6 +266,15 @@ export default function WalletSettings() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {displayChanged && (
+                <Button
+                  onClick={() => saveSection('display')}
+                  className="w-full"
+                >
+                  Save Changes
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -275,7 +299,7 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.transactionAlerts}
-                  onCheckedChange={(checked) => updateSetting('transactionAlerts', checked)}
+                  onCheckedChange={(checked) => updateSetting('transactionAlerts', checked, 'notifications')}
                 />
               </div>
 
@@ -288,7 +312,7 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.priceAlerts}
-                  onCheckedChange={(checked) => updateSetting('priceAlerts', checked)}
+                  onCheckedChange={(checked) => updateSetting('priceAlerts', checked, 'notifications')}
                 />
               </div>
 
@@ -301,7 +325,7 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.governanceAlerts}
-                  onCheckedChange={(checked) => updateSetting('governanceAlerts', checked)}
+                  onCheckedChange={(checked) => updateSetting('governanceAlerts', checked, 'notifications')}
                 />
               </div>
 
@@ -314,9 +338,18 @@ export default function WalletSettings() {
                 </div>
                 <Switch
                   checked={settings.stakingAlerts}
-                  onCheckedChange={(checked) => updateSetting('stakingAlerts', checked)}
+                  onCheckedChange={(checked) => updateSetting('stakingAlerts', checked, 'notifications')}
                 />
               </div>
+
+              {notificationsChanged && (
+                <Button
+                  onClick={() => saveSection('notifications')}
+                  className="w-full"
+                >
+                  Save Changes
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -367,19 +400,6 @@ export default function WalletSettings() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Save Button */}
-          {hasChanges && (
-            <div className="sticky bottom-6 flex justify-end">
-              <Button
-                onClick={saveSettings}
-                size="lg"
-                className="shadow-lg"
-              >
-                Save Changes
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>
