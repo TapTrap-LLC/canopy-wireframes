@@ -263,7 +263,14 @@ export default function WalletSheet({ open, onOpenChange }) {
 
         {/* Footer - Fixed */}
         <div className="p-5 border-t border-border space-y-3">
-          <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-muted">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 hover:bg-muted"
+            onClick={() => {
+              navigate('/wallet/settings')
+              onOpenChange(false)
+            }}
+          >
             <Settings className="w-5 h-5" />
             <span>Wallet settings</span>
           </Button>

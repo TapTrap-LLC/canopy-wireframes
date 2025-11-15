@@ -97,7 +97,12 @@ export default function Wallet() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full hover:bg-muted">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-full hover:bg-muted"
+                  onClick={() => navigate('/wallet/settings')}
+                >
                   <Settings className="w-5 h-5" />
                 </Button>
                 <Button
