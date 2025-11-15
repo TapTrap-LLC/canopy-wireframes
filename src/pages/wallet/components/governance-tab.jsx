@@ -1,10 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -49,32 +47,63 @@ export default function GovernanceTab() {
   const navigate = useNavigate()
   const { getTotalBalance } = useWallet()
   const [filter, setFilter] = useState('all') // all, active, passed, failed
-  const [selectedChains, setSelectedChains] = useState([])
+  const [selectedChain, setSelectedChain] = useState(null) // null means "All Chains"
+  const [showMoreChains, setShowMoreChains] = useState(false)
+  const [showLeftGradient, setShowLeftGradient] = useState(false)
+  const [showRightGradient, setShowRightGradient] = useState(true)
+  const scrollContainerRef = useRef(null)
 
   const totalBalance = getTotalBalance()
-
-  const handleProposalClick = (proposal) => {
-    navigate(`/governance/${proposal.id}`)
-  }
 
   // Get unique chains from proposals
   const uniqueChains = [...new Set(mockProposals.map(p => p.chainId))]
     .map(chainId => getChainById(chainId))
     .filter(Boolean)
 
-  const toggleChain = (chainId) => {
-    setSelectedChains(prev =>
-      prev.includes(chainId) ? prev.filter(c => c !== chainId) : [...prev, chainId]
-    )
+  // Handle scroll to show/hide gradients
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+        setShowLeftGradient(scrollLeft > 0)
+        setShowRightGradient(scrollLeft < scrollWidth - clientWidth - 10)
+      }
+    }
+
+    const container = scrollContainerRef.current
+    if (container) {
+      handleScroll() // Initial check
+      container.addEventListener('scroll', handleScroll)
+      // Also check on window resize
+      window.addEventListener('resize', handleScroll)
+      return () => {
+        container.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', handleScroll)
+      }
+    }
+  }, [uniqueChains])
+
+  const handleProposalClick = (proposal) => {
+    navigate(`/governance/${proposal.id}`)
   }
 
-  const getChainLabel = () => {
-    if (selectedChains.length === 0) return 'All Chains'
-    if (selectedChains.length === 1) {
-      const chain = getChainById(selectedChains[0])
-      return chain?.name || 'Chain'
+  const handleChainClick = (chainId) => {
+    setSelectedChain(selectedChain === chainId ? null : chainId)
+  }
+
+  const getStatusLabel = () => {
+    switch (filter) {
+      case 'all':
+        return 'All Proposals'
+      case 'active':
+        return `Active (${activeProposalsCount})`
+      case 'passed':
+        return `Passed (${passedProposalsCount})`
+      case 'failed':
+        return `Not Passed (${failedProposalsCount})`
+      default:
+        return 'All Proposals'
     }
-    return `Chains (${selectedChains.length})`
   }
 
   const getUrgencyBadge = (urgency) => {
@@ -116,9 +145,9 @@ export default function GovernanceTab() {
       filtered = filtered.filter(p => p.status === filter)
     }
 
-    // Filter by selected chains
-    if (selectedChains.length > 0) {
-      filtered = filtered.filter(p => selectedChains.includes(p.chainId))
+    // Filter by selected chain
+    if (selectedChain !== null) {
+      filtered = filtered.filter(p => p.chainId === selectedChain)
     }
 
     return filtered
@@ -176,161 +205,215 @@ export default function GovernanceTab() {
         </Card>
       </div>
 
-      {/* Governance Tabs */}
-      <Tabs value={filter} onValueChange={setFilter}>
-        <div className="flex items-center justify-between mb-5 mt-10">
-          <TabsList>
-            <TabsTrigger value="all">All Proposals</TabsTrigger>
-            <TabsTrigger value="active">
-              Active
-              <Badge variant="secondary" className="ml-2">
-                {activeProposalsCount}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="passed">
-              Passed
-              <Badge variant="secondary" className="ml-2">
-                {passedProposalsCount}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="failed">
-              Not Passed
-              <Badge variant="secondary" className="ml-2">
-                {failedProposalsCount}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
+      {/* Filters Section */}
+      <div className="mt-10 mb-5">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          {/* Chain Pills with Scroll Container */}
+          <div className="relative flex-1 min-w-0 w-[300px]">
+            {/* Left Gradient */}
+            {showLeftGradient && (
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+            )}
 
-          {/* Chain Filter Dropdown */}
+            {/* Scrollable Container */}
+            <div
+              ref={scrollContainerRef}
+              className="flex items-center gap-2 overflow-x-auto scrollbar-hide"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {/* All Chains Pill */}
+              <button
+                onClick={() => handleChainClick(null)}
+                className={`h-9 px-4 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
+                  selectedChain === null
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                All Chains
+              </button>
+
+              {/* All Chain Pills (showing all, not just first 3) */}
+              {uniqueChains.map((chain) => (
+                <button
+                  key={chain.id}
+                  onClick={() => handleChainClick(chain.id)}
+                  className={`h-9 px-4 rounded-full text-sm font-medium transition-colors flex items-center gap-2 flex-shrink-0 ${
+                    selectedChain === chain.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  <div
+                    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: chain.brandColor }}
+                  >
+                    <span className="text-[8px] font-bold text-white">
+                      {chain.name.substring(0, 1)}
+                    </span>
+                  </div>
+                  <span>{chain.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Gradient */}
+            {showRightGradient && (
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+            )}
+          </div>
+
+          {/* Status Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-9 rounded-full">
-                {getChainLabel()}
+                {getStatusLabel()}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {uniqueChains.map((chain) => (
-                <DropdownMenuCheckboxItem
-                  key={chain.id}
-                  checked={selectedChains.includes(chain.id)}
-                  onCheckedChange={() => toggleChain(chain.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: chain.brandColor }}
-                    >
-                      <span className="text-[10px] font-bold text-white">
-                        {chain.name.substring(0, 1)}
-                      </span>
-                    </div>
-                    <span>{chain.name}</span>
-                  </div>
-                </DropdownMenuCheckboxItem>
-              ))}
+              <DropdownMenuCheckboxItem
+                checked={filter === 'all'}
+                onCheckedChange={() => setFilter('all')}
+              >
+                All Proposals
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'active'}
+                onCheckedChange={() => setFilter('active')}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Active</span>
+                  <Badge variant="secondary" className="ml-2">
+                    {activeProposalsCount}
+                  </Badge>
+                </div>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'passed'}
+                onCheckedChange={() => setFilter('passed')}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Passed</span>
+                  <Badge variant="secondary" className="ml-2">
+                    {passedProposalsCount}
+                  </Badge>
+                </div>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'failed'}
+                onCheckedChange={() => setFilter('failed')}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span>Not Passed</span>
+                  <Badge variant="secondary" className="ml-2">
+                    {failedProposalsCount}
+                  </Badge>
+                </div>
+              </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        <TabsContent value={filter}>
-          {/* Proposals List */}
-          <div className="space-y-4">
-            {getFilteredProposals().map((proposal) => (
-              <Card
-                key={proposal.id}
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleProposalClick(proposal)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        {getUrgencyBadge(proposal.urgency)}
-                        {getStatusBadge(proposal.status)}
-                        {proposal.status === 'active' && (
-                          <Badge variant="outline" className="gap-1">
-                            <Clock className="w-3 h-3" />
-                            Ends in {proposal.endsIn}
-                          </Badge>
-                        )}
-                      </div>
-                      <CardTitle className="text-lg">{proposal.title}</CardTitle>
-                    </div>
+        {/* Proposals List */}
+        <div className="space-y-4">
+          {getFilteredProposals().map((proposal) => (
+            <Card
+              key={proposal.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleProposalClick(proposal)}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      {proposal.userVote && (
-                        <Badge variant="secondary" className="text-xs">
-                          Your Vote: {proposal.userVote === 'for' ? '✓' : '✗'}
+                      {getUrgencyBadge(proposal.urgency)}
+                      {getStatusBadge(proposal.status)}
+                      {proposal.status === 'active' && (
+                        <Badge variant="outline" className="gap-1">
+                          <Clock className="w-3 h-3" />
+                          Ends in {proposal.endsIn}
                         </Badge>
                       )}
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
+                    <CardTitle className="text-lg">{proposal.title}</CardTitle>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{proposal.description}</p>
-
-                  {/* Network info with avatar */}
                   <div className="flex items-center gap-2">
+                    {proposal.userVote && (
+                      <Badge variant="secondary" className="text-xs">
+                        Your Vote: {proposal.userVote === 'for' ? '✓' : '✗'}
+                      </Badge>
+                    )}
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">{proposal.description}</p>
+
+                {/* Network info with avatar */}
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: proposal.chainColor }}
+                  >
+                    {proposal.network.charAt(0)}
+                  </div>
+                  <span className="text-sm text-muted-foreground">{proposal.network}</span>
+                </div>
+
+                {/* Voting Progress - Show for all statuses */}
+                <div className="space-y-2">
+                  {/* Progress Bar */}
+                  <div className="relative h-2 flex gap-0.5 rounded-full overflow-hidden bg-transparent">
+                    {/* For Section */}
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ backgroundColor: proposal.chainColor }}
-                    >
-                      {proposal.network.charAt(0)}
-                    </div>
-                    <span className="text-sm text-muted-foreground">{proposal.network}</span>
-                  </div>
-
-                  {/* Voting Progress - Show for all statuses */}
-                  <div className="space-y-2">
-                    {/* Progress Bar */}
-                    <div className="relative h-2 flex gap-0.5 rounded-full overflow-hidden bg-transparent">
-                      {/* For Section */}
-                      <div
-                        className={`rounded-full transition-all ${
-                          proposal.status === 'active'
+                      className={`rounded-full transition-all ${
+                        proposal.status === 'active'
+                          ? 'bg-green-500/70'
+                          : proposal.status === 'passed'
                             ? 'bg-green-500/70'
-                            : proposal.status === 'passed'
-                              ? 'bg-green-500/70'
-                              : 'bg-green-500/20'
-                        }`}
-                        style={{ width: `${proposal.votesFor}%` }}
-                      />
-                      {/* Gap */}
-                      <div className="w-0.5" />
-                      {/* Against Section */}
-                      <div
-                        className={`rounded-full transition-all ${
-                          proposal.status === 'active'
-                            ? 'bg-red-500/60'
-                            : proposal.status === 'passed'
-                              ? 'bg-red-500/15'
-                              : 'bg-red-500/60'
-                        }`}
-                        style={{ width: `${proposal.votesAgainst}%` }}
-                      />
-                    </div>
+                            : 'bg-green-500/20'
+                      }`}
+                      style={{ width: `${proposal.votesFor}%` }}
+                    />
+                    {/* Gap */}
+                    <div className="w-0.5" />
+                    {/* Against Section */}
+                    <div
+                      className={`rounded-full transition-all ${
+                        proposal.status === 'active'
+                          ? 'bg-red-500/60'
+                          : proposal.status === 'passed'
+                            ? 'bg-red-500/15'
+                            : 'bg-red-500/60'
+                      }`}
+                      style={{ width: `${proposal.votesAgainst}%` }}
+                    />
+                  </div>
 
-                    {/* Labels Below */}
-                    <div className="flex justify-between text-xs">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Check className="w-3 h-3 text-green-600" />
-                        <span className="font-medium">For</span>
-                        <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} {proposal.tokenSymbol}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} {proposal.tokenSymbol} · ({proposal.votesAgainst}%)</span>
-                        <span className="font-medium">Against</span>
-                        <X className="w-3 h-3 text-red-600" />
-                      </div>
+                  {/* Labels Below */}
+                  <div className="flex justify-between text-xs">
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Check className="w-3 h-3 text-green-600" />
+                      <span className="font-medium">For</span>
+                      <span>({proposal.votesFor}%) · {((proposal.totalVotes * proposal.votesFor) / 100).toLocaleString()} {proposal.tokenSymbol}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <span>{((proposal.totalVotes * proposal.votesAgainst) / 100).toLocaleString()} {proposal.tokenSymbol} · ({proposal.votesAgainst}%)</span>
+                      <span className="font-medium">Against</span>
+                      <X className="w-3 h-3 text-red-600" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
