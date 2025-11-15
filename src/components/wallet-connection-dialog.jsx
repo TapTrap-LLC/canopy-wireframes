@@ -33,7 +33,6 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const [verificationQuestions, setVerificationQuestions] = useState([])
   const [walletAddress, setWalletAddress] = useState('')
   const [connectedWallets, setConnectedWallets] = useState({
-    solana: null,
     evm: null,
     canopy: null
   })
@@ -51,6 +50,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const [isVerifying, setIsVerifying] = useState(false)
   const [verifySuccess, setVerifySuccess] = useState(false)
   const [emailError, setEmailError] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { connectWallet: connectWalletContext, getUserByEmail, updateWalletData } = useWallet()
 
   // Reset state when dialog closes
@@ -62,7 +63,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         setOtp(['', '', '', ''])
         setOtpError(false)
         setEmailError('')
-        setConnectedWallets({ solana: null, evm: null, canopy: null })
+        setConnectedWallets({ evm: null, canopy: null })
         setConvertAmount('')
         setSelectedWalletForConversion(null)
         setShowWalletDropdown(false)
@@ -72,6 +73,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         setLoginSeedPhrase(Array(12).fill(''))
         setIsVerifying(false)
         setVerifySuccess(false)
+        setPassword('')
+        setIsLoggingIn(false)
       }, 300)
     }
   }, [open, initialStep])
@@ -79,19 +82,17 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   // Set the first connected wallet as selected when navigating to step 5
   useEffect(() => {
     if (step === 5 && !selectedWalletForConversion) {
-      if (connectedWallets.solana) {
-        setSelectedWalletForConversion('solana')
-      } else if (connectedWallets.evm) {
+      if (connectedWallets.evm) {
         setSelectedWalletForConversion('evm')
       }
     }
 
     // Auto-select first token when navigating to step 5
     if (step === 5 && !selectedToken) {
-      const firstWallet = connectedWallets.solana || connectedWallets.evm
+      const firstWallet = connectedWallets.evm
       if (firstWallet) {
         const firstTokenKey = Object.keys(firstWallet.balances)[0]
-        const walletType = connectedWallets.solana ? 'solana' : 'evm'
+        const walletType = 'evm'
         setSelectedToken({
           walletType,
           token: firstTokenKey,
@@ -161,9 +162,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
           setVerifySuccess(false)
 
           if (user && user.hasWallet) {
-            // User has wallet - connect immediately and close dialog
-            connectWalletContext(email, user.walletAddress)
-            handleClose()
+            // User has wallet - go to password step
+            setStep(2.5)
           } else {
             // User doesn't have wallet - go to Step 3 (create wallet)
             setStep(3)
@@ -182,6 +182,22 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
     setOtp(['', '', '', ''])
     setOtpError(false)
     document.getElementById('otp-0')?.focus()
+  }
+
+  // Step 2.5: Password verification
+  const handlePasswordContinue = () => {
+    // For prototype - no validation, any password works
+    setIsLoggingIn(true)
+
+    // Simulate login delay (2 seconds)
+    setTimeout(() => {
+      const user = getUserByEmail(email)
+      if (user && user.hasWallet) {
+        connectWalletContext(email, user.walletAddress)
+        setIsLoggingIn(false)
+        handleClose()
+      }
+    }, 2000)
   }
 
   // Generate seed phrase
@@ -244,11 +260,6 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
     }, 3000)
   }
 
-  const handleImportWallet = () => {
-    // Handle file upload
-    setStep(4)
-  }
-
   // Step 3.1: Seed phrase written down
   const handleSeedPhraseConfirm = () => {
     setStep(3.2)
@@ -300,8 +311,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
       provider,
       address: '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
       balances: {
-        USDT: 100.50,
-        USDC: 50.25
+        ETH: 0.5,
+        USDC: 150.75
       }
     }
 
@@ -321,7 +332,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   }
 
   const handleContinueToBalances = () => {
-    if (connectedWallets.solana || connectedWallets.evm) {
+    if (connectedWallets.evm) {
       setStep(5)
     }
   }
@@ -411,9 +422,6 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
     }
 
     let total = 0
-    if (connectedWallets.solana) {
-      total += Object.values(connectedWallets.solana.balances).reduce((a, b) => a + b, 0)
-    }
     if (connectedWallets.evm) {
       total += Object.values(connectedWallets.evm.balances).reduce((a, b) => a + b, 0)
     }
@@ -421,9 +429,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   }
 
   const getWalletIcon = (walletType) => {
-    if (walletType === 'solana') {
-      return 'bg-orange-500'
-    } else if (walletType === 'evm') {
+    if (walletType === 'evm') {
       return 'bg-blue-500'
     }
     return 'bg-muted'
@@ -432,7 +438,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const getWalletLabel = (walletType) => {
     const wallet = connectedWallets[walletType]
     if (!wallet) return ''
-    return `${wallet.provider} (${walletType === 'solana' ? 'Solana' : 'EVM'})`
+    return `${wallet.provider} (EVM)`
   }
 
   const formatWalletAddress = (address) => {
@@ -496,95 +502,6 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                 disabled={!email || !email.includes('@')}
               >
                 Continue
-              </Button>
-
-              {/* Divider with OR */}
-              <div className="relative flex items-center justify-center">
-                <div className="flex-1 border-t border-border"></div>
-                <span className="px-4 text-xs text-muted-foreground">OR</span>
-                <div className="flex-1 border-t border-border"></div>
-              </div>
-
-              <Button
-                variant="ghost"
-                className="w-full h-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-transparent -mt-8"
-                onClick={() => setStep(1.5)}
-              >
-                Login with Seed Phrase
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 1.5: Login with Seed Phrase */}
-        {step === 1.5 && (
-          <div className="flex flex-col">
-            {/* Header */}
-            <div className="relative px-6 py-12 flex flex-col items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-2 top-2 rounded-full"
-                onClick={() => setStep(1)}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-2 rounded-full"
-                onClick={handleClose}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Shield className="w-8 h-8 text-primary" />
-              </div>
-
-              <h2 className="text-2xl font-bold text-center mb-2">Login with Seed Phrase</h2>
-              <p className="text-sm text-muted-foreground text-center max-w-sm">
-                Enter your 12-word recovery phrase to restore your wallet
-              </p>
-            </div>
-
-            {/* Seed Phrase Input */}
-            <div className="px-6 pb-6 space-y-6">
-              {/* Seed Phrase Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                {loginSeedPhrase.map((word, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground w-6">{index + 1}.</span>
-                    <Input
-                      id={`seed-${index}`}
-                      type="text"
-                      value={word}
-                      onChange={(e) => {
-                        const newPhrase = [...loginSeedPhrase]
-                        newPhrase[index] = e.target.value.toLowerCase().trim()
-                        setLoginSeedPhrase(newPhrase)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && index < 11) {
-                          document.getElementById(`seed-${index + 1}`)?.focus()
-                        } else if (e.key === 'Enter' && index === 11) {
-                          handleSeedPhraseLogin()
-                        }
-                      }}
-                      placeholder="word"
-                      autoFocus={index === 0}
-                      className="h-9 rounded-lg text-sm"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <Button
-                className="w-full h-11 rounded-xl bg-primary"
-                onClick={handleSeedPhraseLogin}
-                disabled={loginSeedPhrase.some(w => !w)}
-              >
-                Login
               </Button>
             </div>
           </div>
@@ -692,6 +609,75 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
           </div>
         )}
 
+        {/* Step 2.5: Password Entry */}
+        {step === 2.5 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-2 rounded-full"
+                onClick={() => setStep(2)}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Enter Password</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                Please enter your password to access your wallet
+              </p>
+            </div>
+
+            {/* Password Input */}
+            <div className="px-6 pb-6 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="password" className="block">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && password && handlePasswordContinue()}
+                  autoFocus
+                  className="h-11 rounded-xl"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your password is your seed phrase without spaces
+                </p>
+              </div>
+
+              <Button
+                className="w-full h-11 rounded-xl bg-primary"
+                onClick={handlePasswordContinue}
+                disabled={!password || isLoggingIn}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  'Continue'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Step 3: Wallet Setup */}
         {step === 3 && (
           <div className="flex flex-col">
@@ -719,42 +705,32 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
               </div>
               <h2 className="text-2xl font-bold text-center mb-4 max-w-2xs">No Canopy Wallet Found for {email}</h2>
               <p className="text-sm text-muted-foreground text-center">
-                You can create a new wallet or import an existing one.
+                Create a new wallet to get started.
               </p>
             </div>
 
             {/* Content */}
             <div className="px-6 pb-6 space-y-6">
               {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outline"
-                  className="h-11 rounded-xl"
-                  onClick={handleImportWallet}
-                  disabled
-                >
-                  Import Keyfile
-                </Button>
-                <Button
-                  className={`h-11 rounded-xl ${walletCreated ? 'bg-green-600 hover:bg-green-600' : 'bg-primary'}`}
-                  onClick={handleCreateWallet}
-                  disabled={isCreatingWallet}
-                >
-                  {isCreatingWallet ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating wallet...
-                    </>
-                  ) : walletCreated ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Wallet Created
-                    </>
-                  ) : (
-                    'Create Wallet'
-                  )}
-                </Button>
-              </div>
+              <Button
+                className={`w-full h-11 rounded-xl ${walletCreated ? 'bg-green-600 hover:bg-green-600' : 'bg-primary'}`}
+                onClick={handleCreateWallet}
+                disabled={isCreatingWallet}
+              >
+                {isCreatingWallet ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating wallet...
+                  </>
+                ) : walletCreated ? (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Wallet Created
+                  </>
+                ) : (
+                  'Create Wallet'
+                )}
+              </Button>
             </div>
           </div>
         )}
@@ -1033,57 +1009,6 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
 
             {/* Content */}
             <div className="px-6 pb-6 space-y-6 max-h-[400px] overflow-y-auto">
-              {/* Solana Wallet */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground block">Solana Wallet</Label>
-                {connectedWallets.solana ? (
-                  <div className="p-4 bg-[#1dd13a]/10 border-2 border-[#1dd13a] rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
-                          <WalletIcon className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{connectedWallets.solana.provider}</p>
-                          <p className="text-sm text-muted-foreground">
-                            USDT: {connectedWallets.solana.balances.USDT} , USDC: {connectedWallets.solana.balances.USDC}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="w-5 h-5 text-[#1dd13a]" />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleDisconnectWallet('solana')}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleConnectWallet('solana')}
-                    className="w-full p-4 border-2 border-dashed rounded-xl hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                          <Plus className="w-5 h-5" />
-                        </div>
-                        <div className="text-left">
-                          <p className="font-medium">Connect Solana Wallet</p>
-                          <p className="text-sm text-muted-foreground">MetaMask, WalletConnect</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-5 h-5" />
-                    </div>
-                  </button>
-                )}
-              </div>
-
               {/* EVM Wallet */}
               <div className="space-y-2">
                 <Label className="text-sm text-muted-foreground block">EVM Wallet</Label>
@@ -1153,7 +1078,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
               <Button
                 className="w-full h-12 rounded-xl"
                 onClick={handleContinueToBalances}
-                disabled={!connectedWallets.solana && !connectedWallets.evm}
+                disabled={!connectedWallets.evm}
               >
                 Continue
               </Button>
@@ -1277,8 +1202,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                             }`}>
                               {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
                             </div>
-                            <div className={`w-6 h-6 rounded-full ${token === 'USDT' ? 'bg-green-500' : 'bg-blue-500'} flex items-center justify-center`}>
-                              <span className="text-xs font-bold text-white">{token === 'USDT' ? 'T' : '$'}</span>
+                            <div className={`w-6 h-6 rounded-full ${token === 'ETH' ? 'bg-purple-500' : 'bg-blue-500'} flex items-center justify-center`}>
+                              <span className="text-xs font-bold text-white">{token === 'ETH' ? 'E' : '$'}</span>
                             </div>
                             <span className="text-sm font-medium">{token}</span>
                           </div>
@@ -1476,8 +1401,8 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                   <div className="pt-3 border-t">
                     <p className="text-xs text-muted-foreground mb-2">Funded from</p>
                     <div className="flex items-center gap-2">
-                      <div className={`w-5 h-5 rounded-full ${selectedToken.token === 'USDT' ? 'bg-green-500' : 'bg-blue-500'} flex items-center justify-center`}>
-                        <span className="text-xs font-bold text-white">{selectedToken.token === 'USDT' ? 'T' : '$'}</span>
+                      <div className={`w-5 h-5 rounded-full ${selectedToken.token === 'ETH' ? 'bg-purple-500' : 'bg-blue-500'} flex items-center justify-center`}>
+                        <span className="text-xs font-bold text-white">{selectedToken.token === 'ETH' ? 'E' : '$'}</span>
                       </div>
                       <span className="text-sm font-medium">{selectedToken.token}</span>
                       <span className="text-sm text-muted-foreground">

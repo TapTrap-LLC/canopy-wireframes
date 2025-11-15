@@ -11,7 +11,7 @@ This document describes the design and user flows for key pages of the Canopy La
 - Chain detail pages (multiple states)
 - Transaction & block explorer pages
 - Report functionality
-- Wallet functionality (connection, creation, funding, staking, and portfolio management)
+- Wallet functionality (connection, creation, funding, staking, portfolio management, and governance)
 
 ---
 
@@ -24,6 +24,8 @@ This document describes the design and user flows for key pages of the Canopy La
 5. [Transaction & Block Explorer](#5-transaction--block-explorer)
 6. [Report an Issue](#6-report-an-issue)
 7. [Wallet](#7-wallet)
+   - [Governance Tab](#governance-tab)
+   - [Governance Detail Page](#governance-detail-page)
 
 ---
 
@@ -1681,7 +1683,7 @@ Four tabs with URL query parameter tracking (`?tab=assets`):
 1. Assets
 2. Staking
 3. Activity
-4. Governance (not implemented, empty tab)
+4. Governance
 
 **Tab behavior:**
 - Active tab synced with URL (`?tab=assets`, `?tab=staking`, etc.)
@@ -2103,6 +2105,193 @@ Side sheet showing full transaction details:
   rewards: 2.15           // (unstaked only)
 }
 ```
+
+---
+
+### Governance Tab
+
+Complete governance system for participating in DAO decisions and managing proposals.
+
+**Overview:**
+The governance tab allows users to view, vote on, and track governance proposals across different chains. It provides a comprehensive interface for DAO participation with voting power management and detailed proposal information.
+
+**Stats Cards:**
+Three metric cards at the top:
+
+1. **Voting Power:**
+   - Shows user's total voting power (CNPY tokens)
+   - Shield icon with primary color
+   - Example: "2,500 CNPY"
+
+2. **Active Proposals:**
+   - Count of currently active proposals
+   - TrendingUp icon with orange color
+   - Dynamically updated based on proposal status
+
+3. **Votes Cast:**
+   - Total number of proposals user has voted on
+   - Users icon with green color
+   - Tracks user participation
+
+**Filter Buttons:**
+- All Proposals (default)
+- Active (shows count)
+- Passed
+- Not Passed
+
+**Proposal Cards:**
+Each proposal displays:
+
+**Header Section:**
+- Status badges:
+  - URGENT badge (orange border) for urgent proposals with countdown
+  - Time remaining badge for active proposals
+  - Passed/Not Passed badges for completed proposals
+- Proposal title
+- User's vote indicator (if voted)
+- Chevron icon for navigation
+
+**Content Section:**
+- Description text
+- Network information with colored avatar (chain's brand color)
+- Chain name
+
+**Voting Progress:**
+Visual representation of voting status:
+- Single progress bar split between For and Against
+- Green section (70% opacity) for For votes
+- 0.5px gap separator
+- Red section (60% opacity) for Against votes
+- For completed proposals:
+  - Winning side maintains opacity
+  - Losing side reduced to 15-20% opacity
+
+**Vote Labels:**
+- Check icon + "For" label with percentage and token amount
+- X icon + "Against" label with percentage and token amount
+- Format: "For (65%) · 1,625,000 CNPY"
+
+**Interactions:**
+- Click proposal card → Navigate to `/governance/:id` detail page
+- Filter buttons update displayed proposals
+- Real-time calculation of vote percentages
+
+---
+
+### Governance Detail Page
+
+Full-page view for detailed proposal information and voting.
+
+**Route:** `/governance/:id`
+
+**Layout:**
+- MainSidebar navigation
+- Max-width container (1024px)
+- Auto-scrolls to top on navigation
+
+**Header:**
+- Back button → Returns to wallet governance tab
+- Status badges (URGENT, time remaining, or result)
+- Proposal title
+- Description
+- Network badge with chain color
+
+**Content Cards:**
+
+**1. Proposal Info Card:**
+- Proposed by (address)
+- Created date
+- Voting end date
+- Total votes cast
+
+**2. Voting Results Card:**
+- Large visual progress bar (4px height)
+- Split bar design with gap
+- Color coding based on status
+- Vote percentages and amounts
+- Quorum status (active proposals)
+- Final result (completed proposals)
+
+**3. Summary Card:**
+- Detailed proposal summary
+- Markdown-formatted text
+
+**4. Impact Card:**
+- Orange border styling
+- AlertTriangle icon
+- Impact description
+- Highlighted for visibility
+
+**5. Voting Section (Active Proposals Only):**
+- Your Voting Power display
+- Two voting buttons:
+  - "Vote For" with Check icon
+  - "Vote Against" with X icon
+- Loading states during vote submission
+- Already voted indicator
+
+**6. User Vote Display (Completed Proposals):**
+- Shows if user participated
+- Badge indicating vote direction
+
+**Voting Process:**
+1. User clicks Vote For/Against
+2. Button shows loading state
+3. Simulated 2-second delay
+4. Success toast notification
+5. UI updates to show vote cast
+
+---
+
+### Governance Data Structure
+
+**Proposal Object:**
+```javascript
+{
+  id: 1,
+  title: "Lower Transaction Fees",
+  chainId: 1,
+  description: "Reduce fees from 0.3% to 0.25%",
+  status: "active",  // active, passed, failed
+  urgency: "urgent", // urgent, normal
+  endsIn: "2 days",
+  votesFor: 65,      // Percentage
+  votesAgainst: 35,  // Percentage
+  totalVotes: 2500000,
+  userVote: null,    // null, "for", "against"
+  proposedBy: "0x7a3f...9b2c",
+  createdAt: "5 days ago",
+  endDate: "Dec 15, 2024",
+  quorumReached: true,
+  quorumNeeded: 50,
+  summary: "Detailed proposal explanation...",
+  impact: "Potential effects of this change...",
+  votingPower: 2500
+}
+```
+
+**Mock Data:**
+- 8 sample proposals in `/src/data/governance.json`
+- Various states: active, passed, failed
+- Different urgency levels
+- Different chains (using chainId)
+
+**Integration Points:**
+- Uses existing chains data for network information
+- Integrates with wallet context for voting power
+- Routes defined in App.jsx
+- Accessible from wallet page governance tab
+
+**UI/UX Refinements:**
+Based on user feedback, the following improvements were made:
+- Progress bars changed from separate to single split design
+- Colors adjusted with opacity (70% for active, 15-20% for dimmed)
+- Gap added between For/Against sections (0.5px)
+- Icons added to voting labels (Check and X)
+- "Failed" changed to "Not Passed" for friendlier language
+- URGENT badge styled to match "Not Deployed" style
+- User vote badge moved next to chevron icon
+- Completed proposals show dimmed losing side
 
 ---
 

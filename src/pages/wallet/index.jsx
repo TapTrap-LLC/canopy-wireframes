@@ -16,8 +16,10 @@ import {
 import AssetsTab from './components/assets-tab'
 import StakingTab from './components/staking-tab'
 import ActivityTab from './components/activity-tab'
+import GovernanceTab from './components/governance-tab'
 import StakeDialog from './components/stake-dialog'
-import WalletConnectionDialog from '@/components/wallet-connection-dialog.jsx'
+import SendDialog from './components/send-dialog'
+import BuyDialog from './components/buy-dialog'
 import { useWallet } from '@/contexts/wallet-context'
 import { toast } from 'sonner'
 
@@ -27,7 +29,8 @@ export default function Wallet() {
   const tabParam = searchParams.get('tab') || 'assets'
   const [activeTab, setActiveTab] = useState(tabParam)
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
-  const [fundDialogOpen, setFundDialogOpen] = useState(false)
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
+  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
   const { isConnected, connectWallet, walletAddress, formatAddress, disconnectWallet, getWalletData } = useWallet()
 
   const walletData = getWalletData()
@@ -94,7 +97,12 @@ export default function Wallet() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full hover:bg-muted">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 rounded-full hover:bg-muted"
+                  onClick={() => navigate('/wallet/settings')}
+                >
                   <Settings className="w-5 h-5" />
                 </Button>
                 <Button
@@ -159,6 +167,11 @@ export default function Wallet() {
               <TabsContent value="activity">
                 <ActivityTab transactions={walletData.transactions} />
               </TabsContent>
+
+              {/* Governance Tab */}
+              <TabsContent value="governance">
+                <GovernanceTab userVotingPower={walletData.totalValue || 2500} />
+              </TabsContent>
             </Tabs>
           </div>
 
@@ -169,14 +182,18 @@ export default function Wallet() {
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 flex-col gap-2"
+                  onClick={() => setSendDialogOpen(true)}
+                >
                   <Send className="w-5 h-5" />
                   <span className="text-sm">Send</span>
                 </Button>
                 <Button
                   variant="outline"
                   className="h-auto py-4 flex-col gap-2"
-                  onClick={() => setFundDialogOpen(true)}
+                  onClick={() => setBuyDialogOpen(true)}
                 >
                   <Download className="w-5 h-5" />
                   <span className="text-sm">Buy</span>
@@ -207,11 +224,19 @@ export default function Wallet() {
           assets={walletData.assets}
         />
 
-        {/* Fund Wallet Dialog */}
-        <WalletConnectionDialog
-          open={fundDialogOpen}
-          onOpenChange={setFundDialogOpen}
-          initialStep={4}
+        {/* Send Dialog for Quick Actions */}
+        <SendDialog
+          open={sendDialogOpen}
+          onOpenChange={setSendDialogOpen}
+          selectedAsset={null}
+          assets={walletData.assets}
+        />
+
+        {/* Buy Dialog */}
+        <BuyDialog
+          open={buyDialogOpen}
+          onOpenChange={setBuyDialogOpen}
+          assets={walletData.assets}
         />
       </div>
     </div>
