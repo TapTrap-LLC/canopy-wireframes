@@ -16,9 +16,6 @@ import {
   Check,
   X,
   AlertTriangle,
-  TrendingUp,
-  Users,
-  Shield,
   ChevronDown
 } from 'lucide-react'
 import governanceData from '@/data/governance.json'
@@ -45,15 +42,33 @@ const mockProposals = governanceData.proposals.map(proposal => {
 
 export default function GovernanceTab() {
   const navigate = useNavigate()
-  const { getTotalBalance } = useWallet()
+  const { getTotalBalance, getWalletData } = useWallet()
   const [filter, setFilter] = useState('all') // all, active, passed, failed
   const [selectedChain, setSelectedChain] = useState(null) // null means "All Chains"
-  const [showMoreChains, setShowMoreChains] = useState(false)
   const [showLeftGradient, setShowLeftGradient] = useState(false)
   const [showRightGradient, setShowRightGradient] = useState(true)
   const scrollContainerRef = useRef(null)
 
   const totalBalance = getTotalBalance()
+  const walletData = getWalletData()
+
+  // Get unique chain IDs that have governance proposals
+  const governanceChainIds = [...new Set(mockProposals.map(p => p.chainId))]
+
+  // Calculate voting power distribution for ALL chains with governance (even if balance is 0)
+  const votingPowerByChain = governanceChainIds.map(chainId => {
+    const asset = (walletData?.assets || []).find(a => a.chainId === chainId)
+    const chain = getChainById(chainId)
+    const balance = asset ? asset.value : 0
+
+    return {
+      chainId: chainId,
+      chainName: chain?.name || 'Unknown',
+      chainColor: chain?.brandColor || '#1dd13a',
+      balance: balance,
+      percentage: totalBalance > 0 ? (balance / totalBalance) * 100 : 0
+    }
+  }).sort((a, b) => b.balance - a.balance)
 
   // Get unique chains from proposals
   const uniqueChains = [...new Set(mockProposals.map(p => p.chainId))]
@@ -156,54 +171,36 @@ export default function GovernanceTab() {
   const activeProposalsCount = mockProposals.filter(p => p.status === 'active').length
   const passedProposalsCount = mockProposals.filter(p => p.status === 'passed').length
   const failedProposalsCount = mockProposals.filter(p => p.status === 'failed').length
-  const votedProposalsCount = mockProposals.filter(p => p.userVote !== null).length
 
   return (
     <div className="">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Voting Power</p>
-                <p className="text-2xl font-bold">${totalBalance.toLocaleString()}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Shield className="w-5 h-5 text-primary" />
+      {/* Voting Power Card - Compact */}
+      <Card className="mb-6">
+        <CardContent className="px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-lg font-bold text-white">Total Voting Power</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl font-bold">${totalBalance.toLocaleString()}</p>
+                <span className="text-sm text-muted-foreground">USD</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Proposals</p>
-                <p className="text-2xl font-bold">{activeProposalsCount}</p>
+            {votingPowerByChain.length > 0 && (
+              <div className="flex items-center gap-2">
+                {votingPowerByChain.map((item) => (
+                  <div key={item.chainId} className="flex items-center gap-1.5 text-xs">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: item.chainColor }}
+                    />
+                    <span className="text-muted-foreground">${item.balance.toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
-              <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
-                <TrendingUp className="w-5 h-5 text-orange-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Votes Cast</p>
-                <p className="text-2xl font-bold">{votedProposalsCount}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                <Users className="w-5 h-5 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters Section */}
       <div className="mt-10 mb-5">
