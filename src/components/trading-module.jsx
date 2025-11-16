@@ -59,9 +59,11 @@ export default function TradingModule({
 
   // Token state for swap/liquidity
   const [fromToken, setFromToken] = useState(() => {
-    if (variant === 'trade' && defaultTokenPair?.to) {
-      return tokensData.find(t => t.symbol === defaultTokenPair.to) || tokensData.find(t => t.symbol === 'CNPY')
+    // For trade variant, always start with no token selected (user must select)
+    if (variant === 'trade') {
+      return null
     }
+    // For chain variant, default to CNPY
     if (variant === 'chain') {
       return tokensData.find(t => t.symbol === 'CNPY')
     }
@@ -69,9 +71,11 @@ export default function TradingModule({
   })
 
   const [toToken, setToToken] = useState(() => {
-    if (variant === 'trade' && defaultTokenPair?.from) {
-      return tokensData.find(t => t.symbol === defaultTokenPair.from) || null
+    // For trade variant, default to CNPY as receiving token
+    if (variant === 'trade') {
+      return tokensData.find(t => t.symbol === 'CNPY')
     }
+    // For chain variant, use the chain's token
     if (variant === 'chain' && chainData) {
       return {
         symbol: chainData.ticker,
@@ -81,6 +85,7 @@ export default function TradingModule({
         ...chainData
       }
     }
+    // Default fallback to CNPY
     return tokensData.find(t => t.symbol === 'CNPY')
   })
 
