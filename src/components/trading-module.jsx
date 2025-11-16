@@ -124,6 +124,13 @@ export default function TradingModule({
     setTokenDialogMode(null)
   }
 
+  const handleSwapTokens = () => {
+    // Swap fromToken and toToken
+    const temp = fromToken
+    setFromToken(toToken)
+    setToToken(temp)
+  }
+
   const renderTabButtons = () => {
     const getTabIcon = (tab) => {
       switch (tab) {
@@ -189,6 +196,7 @@ export default function TradingModule({
             toToken={toToken}
             isPreview={isPreview}
             onSelectToken={handleSelectToken}
+            onSwapTokens={handleSwapTokens}
           />
         )
       case 'liquidity':

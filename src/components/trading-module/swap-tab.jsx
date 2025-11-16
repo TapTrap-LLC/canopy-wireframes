@@ -7,7 +7,8 @@ export default function SwapTab({
   fromToken = null, 
   toToken = null, 
   isPreview = false, 
-  onSelectToken 
+  onSelectToken,
+  onSwapTokens
 }) {
   const [amount, setAmount] = useState('')
 
@@ -41,9 +42,9 @@ export default function SwapTab({
   }
 
   const handleSwapDirection = () => {
-    // Swap the tokens
-    if (onSelectToken && fromToken && toToken) {
-      // TODO: Implement token swap
+    // Swap the sell and buy tokens
+    if (onSwapTokens) {
+      onSwapTokens()
     }
   }
 
