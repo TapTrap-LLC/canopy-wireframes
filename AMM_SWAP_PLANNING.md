@@ -73,31 +73,30 @@ Cross-chain token conversion.
 ### Pages
 
 #### Trade Page (`/src/pages/trade/index.jsx`)
-Route: `/trade/:tokenPair`
+Route: `/trade/:tokenPair?`
 
 **Layout:**
 - Sidebar navigation
-- Trading module (left column, 1/3 width)
-- Statistics and info cards (right columns, 2/3 width)
+- Sticky header bar with page title and Share button
+- Centered trading module (max-width: 480px)
 
 **Features:**
-- 24h volume, total liquidity, active pairs stats
-- Top trading pairs list
-- About DEX information
+- Clean navigation header
+- Share functionality
+- Focused trading interface
 
 #### Liquidity Page (`/src/pages/liquidity/index.jsx`)
-Route: `/liquidity/:tokenPair`
+Route: `/liquidity/:tokenPair?`
 
 **Layout:**
 - Sidebar navigation
-- Trading module (left column, 1/3 width)
-- Pool statistics and info (right columns, 2/3 width)
+- Sticky header bar with page title and Share button
+- Centered trading module (max-width: 480px)
 
 **Features:**
-- Total liquidity, avg APR, 24h fees stats
-- Top liquidity pools list
-- About liquidity providing information
-- Impermanent loss warning
+- Clean navigation header
+- Share functionality
+- Focused liquidity management interface
 
 ### Data Structures
 
