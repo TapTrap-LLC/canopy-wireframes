@@ -157,13 +157,16 @@ Updated `/src/pages/chain-detail/index.jsx`:
 
 ### Trade Flow
 1. User clicks "Trade" in sidebar
-2. Navigates to `/trade/cnpy-select`
-3. Default: CNPY is pre-selected as "to" token
-4. User clicks "Select token" to choose "from" token
+2. Navigates to `/trade`
+3. Default state:
+   - First token (selling): "Select token" state (null)
+   - Second token (receiving): CNPY pre-selected
+4. User clicks "Select token" to choose selling token
 5. Token selection dialog opens
 6. User searches/selects token
-7. Swap interface shows with both tokens
-8. User enters amount and connects wallet to trade
+7. Swap interface shows with both tokens selected
+8. User enters amount in large input field
+9. User connects wallet to execute trade
 
 ### Liquidity Flow
 1. User navigates to Liquidity page or clicks pool from Trade page
