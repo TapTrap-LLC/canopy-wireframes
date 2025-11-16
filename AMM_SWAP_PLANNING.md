@@ -264,7 +264,7 @@ The system is designed for easy extension:
 ## Future Enhancements
 
 ### Phase 2 Potential Features
-1. **Slippage Settings**: Allow users to set max slippage tolerance
+1. ~~**Slippage Settings**: Allow users to set max slippage tolerance~~ ✅ **Implemented**
 2. **Price Impact Warning**: Show price impact for large trades
 3. **Chart Integration**: Add price charts to trade page
 4. **Transaction History**: Show user's past trades
