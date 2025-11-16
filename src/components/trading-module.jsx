@@ -101,9 +101,17 @@ export default function TradingModule({
     switch (tokenDialogMode) {
       case 'from':
         setFromToken(token)
+        // For trade variant, if a non-CNPY token is selected, ensure toToken is CNPY
+        if (variant === 'trade' && token.symbol !== 'CNPY') {
+          setToToken(tokensData.find(t => t.symbol === 'CNPY'))
+        }
         break
       case 'to':
         setToToken(token)
+        // For trade variant, if a non-CNPY token is selected, ensure fromToken is CNPY
+        if (variant === 'trade' && token.symbol !== 'CNPY') {
+          setFromToken(tokensData.find(t => t.symbol === 'CNPY'))
+        }
         break
       case 'tokenA':
         setTokenA(token)
@@ -207,6 +215,19 @@ export default function TradingModule({
 
   // Get excluded token for dialog
   const getExcludedToken = () => {
+    // For trade variant, enforce CNPY pairing
+    if (variant === 'trade') {
+      // If selecting 'from' and 'to' is not CNPY, exclude it
+      if (tokenDialogMode === 'from' && toToken && toToken.symbol !== 'CNPY') {
+        return toToken.symbol
+      }
+      // If selecting 'to' and 'from' is not CNPY, exclude it
+      if (tokenDialogMode === 'to' && fromToken && fromToken.symbol !== 'CNPY') {
+        return fromToken.symbol
+      }
+    }
+    
+    // Standard exclusion for same token
     if (tokenDialogMode === 'from' && toToken) return toToken.symbol
     if (tokenDialogMode === 'to' && fromToken) return fromToken.symbol
     if (tokenDialogMode === 'tokenA' && tokenB) return tokenB.symbol
