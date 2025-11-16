@@ -192,32 +192,50 @@ Updated `/src/pages/chain-detail/index.jsx`:
 
 ## Design Decisions
 
-### 1. Flexible Variant System
+### 1. CNPY Pairing Constraint
+All trades must be CNPY paired with another token. This architectural decision:
+- **No direct token-to-token trading**: You cannot trade OENS directly for MGC
+- **All pairs go through CNPY**: OENS → CNPY or CNPY → MGC
+- **Simplifies liquidity pools**: All pools are CNPY-based pairs
+- **Automatic correction**: System automatically ensures one side is always CNPY
+
+**Valid Trading Pairs:**
+- CNPY ↔ OENS ✓
+- CNPY ↔ MGC ✓
+- CNPY ↔ SOCN ✓
+- CNPY ↔ Any Token ✓
+
+**Invalid Trading Pairs (Auto-corrected):**
+- OENS ↔ MGC ✗ (becomes OENS → CNPY or CNPY → MGC)
+- Token A ↔ Token B ✗ (one side becomes CNPY)
+
+### 2. Flexible Variant System
 The TradingModule uses a `variant` prop rather than separate components for each context. This:
 - Reduces code duplication
 - Ensures consistent behavior across contexts
 - Makes maintenance easier
 - Allows easy addition of new variants
 
-### 2. Token Pair URL Parameters
+### 3. Token Pair URL Parameters
 Using `:tokenPair` in URLs allows:
 - Deep linking to specific trading pairs
 - Bookmarking favorite pairs
 - Sharing specific swap configurations
+- Format: `cnpy-oens` (always CNPY paired with another token)
 
-### 3. Automatic Ratio Calculation
+### 4. Automatic Ratio Calculation
 In liquidity pools, when user enters amount for one token, the other auto-calculates:
 - Ensures correct pool ratios
 - Prevents invalid deposits
 - Improves UX
 
-### 4. Recent Tokens in localStorage
+### 5. Recent Tokens in localStorage
 Token selection dialog stores recent selections:
 - Quick access to frequently used tokens
 - Persists across sessions
 - User-specific preferences
 
-### 5. Toggle Button for Deposit/Withdraw
+### 6. Toggle Button for Deposit/Withdraw
 Single toggle button (instead of separate tabs):
 - Cleaner UI
 - Less visual clutter
