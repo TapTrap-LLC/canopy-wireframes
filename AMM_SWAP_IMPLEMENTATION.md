@@ -102,6 +102,7 @@ This architectural constraint:
   toToken={tokenObject}
   isPreview={false}
   onSelectToken={(mode) => {...}}
+  onSwapTokens={() => {...}}
 />
 ```
 
@@ -110,6 +111,7 @@ This architectural constraint:
 - `toToken`: Destination token object (or null)
 - `isPreview`: Disables interactive features
 - `onSelectToken`: Callback with 'from' or 'to' mode
+- `onSwapTokens`: Callback to swap the positions of fromToken and toToken
 
 **Features:**
 - Token selection cards (shows "Select token" when null)
@@ -117,6 +119,7 @@ This architectural constraint:
 - Automatic conversion calculation
 - Exchange rate display
 - "Use max" button
+- **Arrow down button**: Swaps sell and buy tokens (e.g., OENS → CNPY becomes CNPY → OENS)
 
 ### LiquidityTab
 
@@ -439,6 +442,23 @@ const handleTokenSelected = (token) => {
 2. User tries to change "to" to MGC → System changes "from" to CNPY (CNPY → MGC) ✓
 3. User selects CNPY for "from" → Can select any token for "to" ✓
 4. Result: One side is always CNPY, preventing invalid token-to-token pairs
+
+### Token Swap Functionality
+
+```javascript
+const handleSwapTokens = () => {
+  // Swap fromToken and toToken
+  const temp = fromToken
+  setFromToken(toToken)
+  setToToken(temp)
+}
+```
+
+The arrow down button between token cards swaps their positions:
+- **Before**: OENS → CNPY (selling OENS for CNPY)
+- **After**: CNPY → OENS (buying OENS with CNPY)
+
+This allows users to quickly reverse their trading direction without reselecting tokens. Since all trades must maintain CNPY pairing, swapping always results in a valid pair.
 
 ### Recent Tokens (localStorage)
 
