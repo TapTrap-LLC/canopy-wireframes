@@ -4,6 +4,18 @@
 
 This document provides technical implementation details for the AMM/DEX trading system. All planned features have been successfully implemented.
 
+### Key Constraint: CNPY Pairing
+
+**All trades must be CNPY ↔ Token pairs only.** Direct token-to-token trading is not supported.
+
+This architectural constraint:
+- Simplifies liquidity pool management (all pools are CNPY-based)
+- Reduces fragmentation of liquidity
+- Ensures CNPY remains the central trading token
+- Matches common AMM patterns (like Uniswap v1 with ETH)
+
+**Implementation:** The TradingModule automatically enforces this constraint by adjusting token selection to ensure one side is always CNPY.
+
 ## Files Created
 
 ### Data Files
@@ -395,6 +407,38 @@ const [toToken, setToToken] = useState(() => {
 - `toToken`: Chain's token
 
 This creates an intuitive flow where users on the Trade page must actively select what token they want to sell/swap.
+
+### Token Selection with CNPY Pairing Enforcement
+
+```javascript
+const handleTokenSelected = (token) => {
+  switch (tokenDialogMode) {
+    case 'from':
+      setFromToken(token)
+      // For trade variant, if a non-CNPY token is selected, ensure toToken is CNPY
+      if (variant === 'trade' && token.symbol !== 'CNPY') {
+        setToToken(tokensData.find(t => t.symbol === 'CNPY'))
+      }
+      break
+    case 'to':
+      setToToken(token)
+      // For trade variant, if a non-CNPY token is selected, ensure fromToken is CNPY
+      if (variant === 'trade' && token.symbol !== 'CNPY') {
+        setFromToken(tokensData.find(t => t.symbol === 'CNPY'))
+      }
+      break
+    // ... other cases
+  }
+  setShowTokenDialog(false)
+  setTokenDialogMode(null)
+}
+```
+
+**How it works:**
+1. User selects OENS for "from" → System keeps CNPY in "to" (OENS → CNPY) ✓
+2. User tries to change "to" to MGC → System changes "from" to CNPY (CNPY → MGC) ✓
+3. User selects CNPY for "from" → Can select any token for "to" ✓
+4. Result: One side is always CNPY, preventing invalid token-to-token pairs
 
 ### Recent Tokens (localStorage)
 
