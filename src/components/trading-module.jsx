@@ -7,6 +7,8 @@ import LiquidityTab from '@/components/trading-module/liquidity-tab'
 import BuySellTab from '@/components/trading-module/buy-sell-tab'
 import ConvertTab from '@/components/trading-module/convert-tab'
 import TokenSelectionDialog from '@/components/token-selection-dialog'
+import SwapConfirmationDialog from '@/components/trading-module/swap-confirmation-dialog'
+import TransactionPendingDialog from '@/components/trading-module/transaction-pending-dialog'
 import tokensData from '@/data/tokens.json'
 
 /**
@@ -56,6 +58,9 @@ export default function TradingModule({
   const [activeTab, setActiveTab] = useState(tabsConfig.defaultTab)
   const [showTokenDialog, setShowTokenDialog] = useState(false)
   const [tokenDialogMode, setTokenDialogMode] = useState(null) // 'from', 'to', 'tokenA', 'tokenB'
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [confirmationData, setConfirmationData] = useState(null)
+  const [showPending, setShowPending] = useState(false)
 
   // Token state for swap/liquidity
   const [fromToken, setFromToken] = useState(() => {
@@ -131,6 +136,30 @@ export default function TradingModule({
     setToToken(temp)
   }
 
+  const handleShowConfirmation = (data) => {
+    setConfirmationData(data)
+    setShowConfirmation(true)
+  }
+
+  const handleCloseConfirmation = () => {
+    setShowConfirmation(false)
+    setConfirmationData(null)
+  }
+
+  const handleConfirmSwap = () => {
+    // Execute swap transaction
+    console.log('Swap confirmed:', confirmationData)
+    // Close confirmation dialog
+    handleCloseConfirmation()
+    // Show pending state
+    setShowPending(true)
+  }
+
+  const handleClosePending = () => {
+    setShowPending(false)
+    setConfirmationData(null)
+  }
+
   const renderTabButtons = () => {
     const getTabIcon = (tab) => {
       switch (tab) {
@@ -197,6 +226,7 @@ export default function TradingModule({
             isPreview={isPreview}
             onSelectToken={handleSelectToken}
             onSwapTokens={handleSwapTokens}
+            onShowConfirmation={handleShowConfirmation}
           />
         )
       case 'liquidity':
@@ -252,8 +282,31 @@ export default function TradingModule({
             {renderTabButtons()}
           </div>
 
-          {/* Tab Content */}
-          {renderTabContent()}
+          {/* Tab Content - with relative positioning for overlay */}
+          <div className="relative">
+            {renderTabContent()}
+            
+            {/* Swap Confirmation Overlay */}
+            {showConfirmation && confirmationData && (
+              <SwapConfirmationDialog
+                open={showConfirmation}
+                onClose={handleCloseConfirmation}
+                onConfirm={handleConfirmSwap}
+                {...confirmationData}
+              />
+            )}
+
+            {/* Transaction Pending/Success Overlay */}
+            {showPending && confirmationData && (
+              <TransactionPendingDialog
+                open={showPending}
+                onClose={handleClosePending}
+                toToken={confirmationData.toToken}
+                amount={confirmationData.fromAmount}
+                price={confirmationData.toToken?.currentPrice}
+              />
+            )}
+          </div>
         </div>
       </Card>
 
