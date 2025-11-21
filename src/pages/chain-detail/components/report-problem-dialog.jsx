@@ -120,9 +120,9 @@ export default function ReportProblemDialog({ open, onOpenChange, chainData }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Report {chainData?.name}</DialogTitle>
+          <DialogTitle>Flag {chainData?.name}</DialogTitle>
           <DialogDescription>
-            Help us keep the Canopy ecosystem safe by reporting chains that violate our policies.
+            Help us keep the Canopy ecosystem safe by flagging chains that violate our policies.
           </DialogDescription>
         </DialogHeader>
 
@@ -212,7 +212,7 @@ export default function ReportProblemDialog({ open, onOpenChange, chainData }) {
             onClick={handleSubmit}
             disabled={!mainReason || !specificReason || isSubmitting}
           >
-            {isSubmitting ? 'Submitting...' : 'Send Report'}
+            {isSubmitting ? 'Submitting...' : 'Submit Flag'}
           </Button>
         </div>
       </DialogContent>
