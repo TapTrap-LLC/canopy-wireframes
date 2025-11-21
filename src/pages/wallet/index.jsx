@@ -97,18 +97,14 @@ export default function Wallet() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-sm text-muted-foreground">{currentWallet?.nickname || 'My Wallet'}</div>
-                    {currentUser && currentUser.wallets && currentUser.wallets.length > 1 && (
-                      <>
-                        <span className="text-muted-foreground">•</span>
-                        <Button
-                          variant="link"
-                          className="h-auto p-0 text-sm text-primary hover:text-primary/80"
-                          onClick={() => setSwitchWalletDialogOpen(true)}
-                        >
-                          Switch Wallet
-                        </Button>
-                      </>
-                    )}
+                    <span className="text-muted-foreground">•</span>
+                    <Button
+                      variant="link"
+                      className="h-auto p-0 text-sm text-primary hover:text-primary/80"
+                      onClick={() => setSwitchWalletDialogOpen(true)}
+                    >
+                      Switch Wallet
+                    </Button>
                   </div>
                 </div>
               </div>

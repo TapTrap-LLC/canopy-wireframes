@@ -94,12 +94,19 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
       if (storedEmail) {
         setEmail(storedEmail)
         const user = getUserByEmail(storedEmail)
+
+        // Build wallet list from user.wallets or currentWallet
+        let wallets = []
         if (user && user.wallets && user.wallets.length > 0) {
-          setAvailableWallets(user.wallets)
+          wallets = user.wallets
+        } else if (currentWallet) {
+          // New user with first wallet - use currentWallet from context
+          wallets = [currentWallet]
         }
+        setAvailableWallets(wallets)
       }
     }
-  }, [open, initialStep, getUserByEmail])
+  }, [open, initialStep, getUserByEmail, currentWallet])
 
   // Set the first connected wallet as selected when navigating to step 5
   useEffect(() => {
@@ -279,17 +286,13 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
 
     // Simulate wallet creation delay
     setTimeout(() => {
-      const phrase = generateSeedPhrase()
-      setSeedPhrase(phrase)
-      setVerificationQuestions(generateVerificationQuestions(phrase))
-      setWalletAddress('0x' + Math.random().toString(16).substr(2, 40))
       setIsCreatingWallet(false)
       setWalletCreated(true)
 
-      // Wait a moment to show "Wallet Created" then navigate
+      // Wait a moment to show "Wallet Created" then navigate to wallet name step
       setTimeout(() => {
         setWalletCreated(false)
-        setStep(3.1)
+        setStep(3.05) // Go to wallet name step for new users
       }, 1500)
     }, 3000)
   }
@@ -961,6 +964,85 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                 ) : (
                   'Create Wallet'
                 )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3.05: Wallet Name for New Users */}
+        {step === 3.05 && (
+          <div className="flex flex-col">
+            {/* Header */}
+            <div className="relative px-6 py-12 flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-2 rounded-full"
+                onClick={() => setStep(3)}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2 rounded-full"
+                onClick={handleClose}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <WalletIcon className="w-8 h-8 text-primary" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-center mb-2">Name Your Wallet</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                Choose a name to easily identify this wallet
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="px-6 pb-6 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="new-user-wallet-name" className="block text-sm font-medium">Wallet Name</Label>
+                <Input
+                  id="new-user-wallet-name"
+                  type="text"
+                  placeholder="e.g., Main Wallet, Trading, Savings"
+                  value={newWalletName}
+                  onChange={(e) => setNewWalletName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newWalletName.trim()) {
+                      // Generate seed phrase and go to step 3.1
+                      const phrase = generateSeedPhrase()
+                      setSeedPhrase(phrase)
+                      setVerificationQuestions(generateVerificationQuestions(phrase))
+                      setWalletAddress('0x' + Math.random().toString(16).substr(2, 40))
+                      setStep(3.1)
+                    }
+                  }}
+                  autoFocus
+                  className="h-11 rounded-xl"
+                  maxLength={30}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {newWalletName.length}/30 characters
+                </p>
+              </div>
+
+              <Button
+                className="w-full h-11 rounded-xl bg-primary"
+                onClick={() => {
+                  // Generate seed phrase and go to step 3.1
+                  const phrase = generateSeedPhrase()
+                  setSeedPhrase(phrase)
+                  setVerificationQuestions(generateVerificationQuestions(phrase))
+                  setWalletAddress('0x' + Math.random().toString(16).substr(2, 40))
+                  setStep(3.1)
+                }}
+                disabled={!newWalletName.trim()}
+              >
+                Continue
               </Button>
             </div>
           </div>
