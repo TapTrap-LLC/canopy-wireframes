@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   X,
   ArrowLeft,
@@ -18,7 +19,8 @@ import {
   Shield,
   Loader2,
   RotateCcw,
-  ChevronDown
+  ChevronDown,
+  CheckCircle2
 } from 'lucide-react'
 import { useWallet } from '@/contexts/wallet-context'
 import { toast } from 'sonner'
@@ -54,7 +56,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [selectedWallet, setSelectedWallet] = useState(null)
   const [availableWallets, setAvailableWallets] = useState([])
-  const { connectWallet: connectWalletContext, getUserByEmail, updateWalletData } = useWallet()
+  const { connectWallet: connectWalletContext, getUserByEmail, updateWalletData, currentWallet } = useWallet()
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -676,30 +678,46 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
 
             {/* Wallet List */}
             <div className="px-6 pb-6 space-y-3">
-              {availableWallets.map((wallet, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setSelectedWallet(wallet)
-                    // Always go to password step for security
-                    setStep(2.5)
-                  }}
-                  className="w-full p-4 bg-muted hover:bg-muted/70 rounded-xl flex items-center justify-between transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <WalletIcon className="w-5 h-5 text-primary" />
+              {availableWallets.map((wallet, index) => {
+                const isCurrentWallet = currentWallet && currentWallet.address === wallet.address
+                return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedWallet(wallet)
+                      // Always go to password step for security
+                      setStep(2.5)
+                    }}
+                    className={`w-full p-4 rounded-xl flex items-center justify-between transition-colors ${
+                      isCurrentWallet
+                        ? 'bg-primary/10 border-2 border-primary'
+                        : 'bg-muted hover:bg-muted/70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        isCurrentWallet ? 'bg-primary/20' : 'bg-primary/10'
+                      }`}>
+                        <WalletIcon className={`w-5 h-5 ${isCurrentWallet ? 'text-primary' : 'text-primary'}`} />
+                      </div>
+                      <div className="text-left">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{wallet.nickname}</p>
+                          {isCurrentWallet && (
+                            <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-0">
+                              Connected
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="font-medium">{wallet.nickname}</p>
-                      <p className="text-sm text-muted-foreground font-mono">
-                        {wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              ))}
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
