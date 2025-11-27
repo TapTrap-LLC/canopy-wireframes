@@ -1142,7 +1142,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                 variant="ghost"
                 size="icon"
                 className="absolute left-2 top-2 rounded-full"
-                onClick={() => setStep(3.3)}
+                onClick={() => initialStep === 5 ? handleClose() : setStep(3.3)}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
