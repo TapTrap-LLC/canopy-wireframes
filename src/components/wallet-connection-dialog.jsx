@@ -27,9 +27,8 @@ import { toast } from 'sonner'
 
 export default function WalletConnectionDialog({ open, onOpenChange, initialStep = 1 }) {
   const [step, setStep] = useState(initialStep)
-  const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState(['', '', '', ''])
-  const [otpError, setOtpError] = useState(false)
+  const [connectedEvmAddress, setConnectedEvmAddress] = useState('')
+  const [evmProvider, setEvmProvider] = useState('')
   const [seedPhrase, setSeedPhrase] = useState([])
   const [verificationAnswers, setVerificationAnswers] = useState({})
   const [verificationQuestions, setVerificationQuestions] = useState([])
@@ -48,26 +47,27 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const [selectedToken, setSelectedToken] = useState(null) // { walletType, token, amount }
   const [isConverting, setIsConverting] = useState(false)
   const [conversionSuccess, setConversionSuccess] = useState(false)
-  const [loginSeedPhrase, setLoginSeedPhrase] = useState(Array(12).fill(''))
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [verifySuccess, setVerifySuccess] = useState(false)
-  const [emailError, setEmailError] = useState('')
+  const [connectionStep, setConnectionStep] = useState(0) // 0: not started, 1: requesting, 2: signature, 3: approved
   const [password, setPassword] = useState('')
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [selectedWallet, setSelectedWallet] = useState(null)
   const [availableWallets, setAvailableWallets] = useState([])
   const [newWalletName, setNewWalletName] = useState('')
-  const { connectWallet: connectWalletContext, getUserByEmail, updateWalletData, currentWallet } = useWallet()
+  const { connectWallet: connectWalletContext, getUserByEvmAddress, updateWalletData, currentWallet, evmAddress: storedEvmAddress } = useWallet()
+
+  // Demo EVM addresses for prototype
+  const DEMO_EVM_ADDRESSES = {
+    withFunds: '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
+    noFunds: '0x742d35Cc6634C0532925a3b844Bc9e7595f00000'
+  }
 
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
       setTimeout(() => {
         setStep(initialStep)
-        setEmail('')
-        setOtp(['', '', '', ''])
-        setOtpError(false)
-        setEmailError('')
+        setConnectedEvmAddress('')
+        setEvmProvider('')
         setConnectedWallets({ evm: null, canopy: null })
         setConvertAmount('')
         setSelectedWalletForConversion(null)
@@ -75,9 +75,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         setSelectedToken(null)
         setIsConverting(false)
         setConversionSuccess(false)
-        setLoginSeedPhrase(Array(12).fill(''))
-        setIsVerifying(false)
-        setVerifySuccess(false)
+        setConnectionStep(0)
         setPassword('')
         setIsLoggingIn(false)
         setSelectedWallet(null)
@@ -90,10 +88,10 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   // When opening at step 2.3 (wallet switching), load user from localStorage
   useEffect(() => {
     if (open && initialStep === 2.3) {
-      const storedEmail = localStorage.getItem('userEmail')
-      if (storedEmail) {
-        setEmail(storedEmail)
-        const user = getUserByEmail(storedEmail)
+      const storedEvm = localStorage.getItem('evmAddress')
+      if (storedEvm) {
+        setConnectedEvmAddress(storedEvm)
+        const user = getUserByEvmAddress(storedEvm)
 
         // Build wallet list from user.wallets or currentWallet
         let wallets = []
@@ -106,7 +104,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         setAvailableWallets(wallets)
       }
     }
-  }, [open, initialStep, getUserByEmail, currentWallet])
+  }, [open, initialStep, getUserByEvmAddress, currentWallet])
 
   // Set the first connected wallet as selected when navigating to step 5
   useEffect(() => {
@@ -138,90 +136,67 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1)
-      setOtpError(false)
     }
   }
 
-  // Step 1: Email submission
-  const handleEmailContinue = () => {
-    if (email && email.includes('@')) {
-      // Validate that email is one of the demo emails
-      const validEmails = ['withfunds@email.com', 'nofunds@email.com']
-      if (!validEmails.includes(email.toLowerCase())) {
-        setEmailError('Please use a valid email for the demo: withfunds@email.com or nofunds@email.com')
-        return
-      }
-      setEmailError('')
-      setStep(2)
-    }
-  }
+  // Step 1: Connect EVM Wallet - starts the 3-step connection sequence
+  const handleConnectEvmWallet = (provider) => {
+    setEvmProvider(provider)
+    setStep(2) // Move to connection flow step
+    setConnectionStep(1) // Start with "Requesting connection..."
 
-  // Step 2: OTP verification
-  const handleOtpChange = (index, value) => {
-    if (value.length <= 1 && /^\d*$/.test(value)) {
-      const newOtp = [...otp]
-      newOtp[index] = value
-      setOtp(newOtp)
-      setOtpError(false)
+    // MetaMask = account with funds, WalletConnect = account without funds
+    const demoAddress = provider === 'MetaMask'
+      ? DEMO_EVM_ADDRESSES.withFunds
+      : DEMO_EVM_ADDRESSES.noFunds
+    setConnectedEvmAddress(demoAddress)
 
-      // Auto-focus next input
-      if (value && index < 3) {
-        document.getElementById(`otp-${index + 1}`)?.focus()
-      }
-    }
-  }
-
-  const handleVerify = () => {
-    const otpCode = otp.join('')
-    setIsVerifying(true)
-    setVerifySuccess(false)
-
-    // Simulate verification delay (2 seconds)
+    // Step 1: Requesting connection (2 seconds)
     setTimeout(() => {
-      if (otpCode === '1111') {
-        setIsVerifying(false)
-        setVerifySuccess(true)
-        setOtpError(false)
+      setConnectionStep(2) // Move to "Signature requested"
 
-        // Check if user has wallet
-        const user = getUserByEmail(email)
+      // Step 2: Signature requested (2 seconds)
+      setTimeout(() => {
+        setConnectionStep(3) // Move to "Connection Approved"
 
-        // Wait a moment to show "Verified" then navigate
+        // Step 3: Connection Approved (1.5 seconds then navigate)
         setTimeout(() => {
-          setVerifySuccess(false)
+          // Check if user has Canopy wallet
+          const user = getUserByEvmAddress(demoAddress)
 
           if (user && user.hasWallet) {
-            // User has wallet - check if they have multiple wallets
+            // User has Canopy wallet - check if they have multiple wallets
             if (user.wallets && user.wallets.length > 1) {
               // Multiple wallets - show wallet selection
               setAvailableWallets(user.wallets)
+              setConnectionStep(0)
               setStep(2.3)
             } else if (user.wallets && user.wallets.length === 1) {
               // Single wallet - auto-select and go to password
               setSelectedWallet(user.wallets[0])
+              setConnectionStep(0)
               setStep(2.5)
             } else {
-              // Old format - go to password step
+              // Go to password step
+              setConnectionStep(0)
               setStep(2.5)
             }
           } else {
-            // User doesn't have wallet - go to Step 3 (create wallet)
+            // User doesn't have Canopy wallet - go to Step 3 (create wallet)
+            setConnectionStep(0)
             setStep(3)
           }
         }, 1500)
-      } else {
-        setIsVerifying(false)
-        setVerifySuccess(false)
-        setOtpError(true)
-      }
+      }, 2000)
     }, 2000)
   }
 
-  const handleResendCode = () => {
-    toast.success('Verification code resent')
-    setOtp(['', '', '', ''])
-    setOtpError(false)
-    document.getElementById('otp-0')?.focus()
+  // Cancel connection flow
+  const handleCancelConnection = () => {
+    setConnectionStep(0)
+    setStep(1)
+    setEvmProvider('')
+    setConnectedEvmAddress('')
   }
 
   // Step 2.5: Password verification
@@ -231,10 +206,10 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
 
     // Simulate login delay (2 seconds)
     setTimeout(() => {
-      const user = getUserByEmail(email)
+      const user = getUserByEvmAddress(connectedEvmAddress)
       if (user && user.hasWallet) {
         // Use selected wallet info if available
-        connectWalletContext(email, selectedWallet?.address, selectedWallet)
+        connectWalletContext(connectedEvmAddress, selectedWallet?.address, selectedWallet)
         setIsLoggingIn(false)
         handleClose()
       }
@@ -257,26 +232,6 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
       { position: 7, word: phrase[6], options: ['thunder', 'rainbow', 'forest', 'whisper'] }
     ]
     return questions
-  }
-
-  // Step 1.5: Seed phrase login
-  const handleSeedPhraseLogin = () => {
-    // For demo purposes, accept any 12 valid words
-    // In production, this would validate against actual wallet recovery
-    const allFieldsFilled = loginSeedPhrase.every(w => w.trim() !== '')
-
-    if (allFieldsFilled) {
-      // Show success toast
-      toast.success('Wallet restored successfully!')
-
-      // Connect wallet (seed phrase login doesn't require email)
-      connectWalletContext()
-
-      // Close dialog
-      handleClose()
-    } else {
-      toast.error('Please fill in all 12 words')
-    }
   }
 
   // Step 3: Wallet creation
@@ -324,7 +279,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
         icon: 'wallet'
       }
       // Connect wallet immediately so sidebar shows it active
-      connectWalletContext(email, walletAddress, walletInfo)
+      connectWalletContext(connectedEvmAddress, walletAddress, walletInfo)
       // Go to step 3.3 to show funding options
       setStep(3.3)
     } else {
@@ -338,7 +293,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   }
 
   const handleDoItLater = () => {
-    connectWalletContext(email, walletAddress)
+    connectWalletContext(connectedEvmAddress, walletAddress)
     handleClose()
   }
 
@@ -455,7 +410,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
     // Save to localStorage
     updateWalletData(fundedWalletData)
 
-    connectWalletContext(email, walletAddress)
+    connectWalletContext(connectedEvmAddress, walletAddress)
     handleClose()
   }
 
@@ -492,7 +447,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] p-0 gap-0 !rounded-3xl" hideClose noAnimation onInteractOutside={(e) => e.preventDefault()}>
-        {/* Step 1: Email Entry */}
+        {/* Step 1: Connect EVM Wallet */}
         {step === 1 && (
           <div className="flex flex-col">
             {/* Header */}
@@ -513,142 +468,133 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
               />
 
               <h2 className="text-2xl font-bold text-center mb-2">Welcome to Canopy</h2>
-              <p className="text-sm text-muted-foreground text-center">Connect your wallet in a few simple steps</p>
+              <p className="text-sm text-muted-foreground text-center">Connect your EVM wallet to get started</p>
             </div>
 
-            {/* Form */}
-            <div className="px-6 pb-6 space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="block">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                    setEmailError('')
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && handleEmailContinue()}
-                  className={`h-11 rounded-xl ${emailError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
-                />
-                {emailError && (
-                  <p className="text-sm text-red-500">
-                    {emailError}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                className="w-full h-11 rounded-xl bg-primary"
-                onClick={handleEmailContinue}
-                disabled={!email || !email.includes('@')}
+            {/* Wallet Options */}
+            <div className="px-20 pb-6 flex flex-col items-center gap-3">
+              <button
+                onClick={() => handleConnectEvmWallet('MetaMask')}
+                className="w-full h-12 px-5 pr-12 bg-muted hover:bg-muted/70 rounded-xl flex items-center gap-3 transition-colors"
               >
-                Continue
-              </Button>
+                <img src="/svg/metamaskt.svg" alt="MetaMask" className="w-6 h-6" />
+                <p className="flex-1 font-medium">Connect with MetaMask</p>
+              </button>
+
+              <button
+                onClick={() => handleConnectEvmWallet('WalletConnect')}
+                className="w-full h-12 px-5 pr-12 bg-muted hover:bg-muted/70 rounded-xl flex items-center gap-3 transition-colors"
+              >
+                <img src="/svg/walletconnect.svg" alt="WalletConnect" className="w-6 h-6" />
+                <p className="flex-1 font-medium">WalletConnect</p>
+              </button>
+
+              <p className="text-xs text-muted-foreground text-center pt-2">
+                By connecting, you agree to our Terms of Service and Privacy Policy
+              </p>
             </div>
           </div>
         )}
 
-        {/* Step 2: Verification Code */}
+        {/* Step 2: Connection Flow (3 sub-steps) */}
         {step === 2 && (
           <div className="flex flex-col">
-            {/* Header */}
-            <div className="relative px-6 py-12 flex flex-col items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-2 top-2 rounded-full"
-                onClick={handleBack}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-2 rounded-full"
-                onClick={handleClose}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Send className="w-8 h-8 text-primary" />
-              </div>
-
-              <h2 className="text-2xl font-bold text-center mb-2">Verification Code Sent</h2>
-              <p className="text-sm text-muted-foreground text-center max-w-2xs">
-                We have sent a 4-digit verification code to {email}
-              </p>
-            </div>
-
-            {/* OTP Inputs */}
-            <div className="px-6 pb-6 space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-center gap-3">
-                  {otp.map((digit, index) => (
-                    <Input
-                      key={index}
-                      id={`otp-${index}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Backspace' && !digit && index > 0) {
-                          document.getElementById(`otp-${index - 1}`)?.focus()
-                        }
-                      }}
-                      autoFocus={index === 0}
-                      className={`w-16 h-16 text-center !text-2xl font-semibold rounded-xl ${
-                        otpError ? 'border-red-500 focus-visible:ring-red-500' : ''
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                {otpError && (
-                  <p className="text-sm text-red-500 text-center">
-                    Please enter a valid code.
-                  </p>
-                )}
-
-                <div className="text-center">
+            {/* Header with back/close buttons - only show if not on approved step */}
+            <div className="relative px-6 pt-4">
+              {connectionStep !== 3 && (
+                <>
                   <Button
-                    variant="link"
-                    className="text-primary cursor-pointer"
-                    onClick={handleResendCode}
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-2 top-2 rounded-full"
+                    onClick={handleCancelConnection}
                   >
-                    Resend code
+                    <ArrowLeft className="w-5 h-5" />
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-2 rounded-full"
+                    onClick={handleClose}
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Connection Animation */}
+            <div className="px-6 py-16 flex flex-col items-center">
+              {/* Icons Row: Canopy -- status -- Wallet */}
+              <div className="flex items-center gap-2 mb-8">
+                {/* Canopy Logo */}
+                <div className="w-14 h-14 flex items-center justify-center">
+                  <img
+                    src="/svg/logo-compact.svg"
+                    alt="Canopy"
+                    className="h-10"
+                  />
+                </div>
+
+                {/* Dashed line */}
+                <div className="w-8 border-t-2 border-dashed border-muted-foreground/40" />
+
+                {/* Status Icon */}
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {connectionStep === 3 ? (
+                    <div className="w-6 h-6 rounded-full bg-[#1dd13a] flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  ) : (
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+
+                {/* Dashed line */}
+                <div className="w-8 border-t-2 border-dashed border-muted-foreground/40" />
+
+                {/* Wallet Provider Logo */}
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                  evmProvider === 'MetaMask' ? 'bg-[#F5841F]' :
+                  evmProvider === 'WalletConnect' ? 'bg-[#3B99FC]' :
+                  'bg-blue-600'
+                }`}>
+                  {evmProvider === 'MetaMask' ? (
+                    <img src="/svg/metamaskt.svg" alt="MetaMask" className="w-8 h-8" />
+                  ) : evmProvider === 'WalletConnect' ? (
+                    <img src="/svg/walletconnect.svg" alt="WalletConnect" className="w-8 h-8" />
+                  ) : (
+                    <WalletIcon className="w-7 h-7 text-white" />
+                  )}
                 </div>
               </div>
 
-              <Button
-                className={`w-full h-11 rounded-xl cursor-pointer ${
-                  verifySuccess
-                    ? 'bg-green-600 hover:bg-green-600'
-                    : ''
-                }`}
-                onClick={handleVerify}
-                disabled={otp.some(d => !d) || isVerifying}
-              >
-                {isVerifying ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Verifying...
-                  </>
-                ) : verifySuccess ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Verified!
-                  </>
-                ) : (
-                  'Continue'
-                )}
-              </Button>
+              {/* Status Text */}
+              <h2 className="text-xl font-bold text-center mb-2">
+                {connectionStep === 1 && 'Requesting connection...'}
+                {connectionStep === 2 && 'Signature requested'}
+                {connectionStep === 3 && 'Connection Approved'}
+              </h2>
+
+              {connectionStep === 2 && (
+                <p className="text-sm text-muted-foreground text-center max-w-xs">
+                  Please open your wallet and approve the signature request to connect to Canopy.
+                </p>
+              )}
             </div>
+
+            {/* Cancel Button - only show on steps 1 and 2 */}
+            {connectionStep !== 3 && (
+              <div className="px-6 pb-6">
+                <Button
+                  variant="outline"
+                  className="w-full h-11 rounded-xl"
+                  onClick={handleCancelConnection}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -663,7 +609,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                   variant="ghost"
                   size="icon"
                   className="absolute left-2 top-2 rounded-full"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
@@ -937,9 +883,9 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                 <WalletIcon className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold text-center mb-4 max-w-2xs">No Canopy Wallet Found for {email}</h2>
-              <p className="text-sm text-muted-foreground text-center">
-                Create a new wallet to get started.
+              <h2 className="text-2xl font-bold text-center mb-4 max-w-2xs">No Canopy Wallet Found</h2>
+              <p className="text-sm text-muted-foreground text-center max-w-xs">
+                Create a Canopy wallet linked to your EVM address to get started.
               </p>
             </div>
 
@@ -1057,7 +1003,7 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                 variant="ghost"
                 size="icon"
                 className="absolute left-2 top-2 rounded-full"
-                onClick={() => setStep(1)}
+                onClick={() => setStep(3.05)}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
