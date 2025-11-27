@@ -145,6 +145,9 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
     setStep(2) // Move to connection flow step
     setConnectionStep(1) // Start with "Requesting connection..."
 
+    // Save the provider to localStorage for settings page
+    localStorage.setItem('evmProvider', provider)
+
     // MetaMask = account with funds, WalletConnect = account without funds
     const demoAddress = provider === 'MetaMask'
       ? DEMO_EVM_ADDRESSES.withFunds
@@ -1105,10 +1108,14 @@ export default function WalletConnectionDialog({ open, onOpenChange, initialStep
                       <Button
                         key={oIndex}
                         variant={verificationAnswers[qIndex] === option ? 'default' : 'outline'}
-                        className="h-11 rounded-xl"
+                        className="h-11 rounded-xl relative"
                         onClick={() => handleVerificationAnswer(qIndex, option)}
                       >
                         {option}
+                        {/* Testing indicator - shows correct answer */}
+                        {option === question.word && (
+                          <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-red-500" />
+                        )}
                       </Button>
                     ))}
                   </div>
