@@ -20,13 +20,15 @@ import tokensData from '@/data/tokens.json'
  * @param {Object} props.defaultTokenPair - Default token pair { from, to }
  * @param {string} props.defaultTab - Default active tab
  * @param {boolean} props.isPreview - Preview mode flag
+ * @param {Function} props.onOpenWalletDialog - Callback to open wallet dialog
  */
 export default function TradingModule({ 
   variant = 'trade', 
   chainData = null,
   defaultTokenPair = null,
   defaultTab = null,
-  isPreview = false 
+  isPreview = false,
+  onOpenWalletDialog = null
 }) {
   // Determine tabs based on variant
   const getTabsConfig = () => {
@@ -248,6 +250,7 @@ export default function TradingModule({
             chainData={chainData}
             isPreview={isPreview}
             onSelectToken={handleSelectToken}
+            onOpenWalletDialog={onOpenWalletDialog}
           />
         )
       default:
