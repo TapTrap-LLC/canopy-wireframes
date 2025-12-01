@@ -101,6 +101,10 @@ export default function TradingModule({
     return tokensData.find(t => t.symbol === 'CNPY')
   })
 
+  // Convert tab state
+  const [convertAmount, setConvertAmount] = useState(0)
+  const [convertSourceToken, setConvertSourceToken] = useState(null)
+
   const handleSelectToken = (mode) => {
     setTokenDialogMode(mode)
     setShowTokenDialog(true)
@@ -214,6 +218,7 @@ export default function TradingModule({
             mode="buy"
             chainData={chainData}
             isPreview={isPreview}
+            onShowConfirmation={handleShowConfirmation}
           />
         )
       case 'sell':
@@ -222,6 +227,7 @@ export default function TradingModule({
             mode="sell"
             chainData={chainData}
             isPreview={isPreview}
+            onShowConfirmation={handleShowConfirmation}
           />
         )
       case 'swap':
@@ -251,6 +257,8 @@ export default function TradingModule({
             isPreview={isPreview}
             onSelectToken={handleSelectToken}
             onOpenWalletDialog={onOpenWalletDialog}
+            onAmountChange={setConvertAmount}
+            onSourceTokenChange={setConvertSourceToken}
           />
         )
       default:
@@ -320,6 +328,8 @@ export default function TradingModule({
           </div>
         </div>
       </Card>
+
+      {/* Order Book is now integrated into ConvertTab */}
 
       {/* Token Selection Dialog */}
       <TokenSelectionDialog
