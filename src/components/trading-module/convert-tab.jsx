@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, ChevronRight, ArrowDown, Zap } from 'lucide-react'
+import { Plus, ChevronRight, ChevronDown, ArrowDown, Check, Zap } from 'lucide-react'
 import { useWallet } from '@/contexts/wallet-context'
 import BridgeTokenDialog from '@/components/bridge-token-dialog'
+import ConvertTransactionDialog from '@/components/trading-module/convert-transaction-dialog'
+import orderBookData from '@/data/order-book.json'
 
 // CNPY Logo SVG Component
 function CnpyLogo({ className = "w-6 h-6" }) {
@@ -40,21 +42,104 @@ function ChainBadge({ chain, size = 'sm' }) {
   )
 }
 
+// Calculate order selection
+function calculateOrderSelection(orders, inputAmount, sortMode) {
+  if (!inputAmount || inputAmount <= 0) {
+    return { selectedOrders: [], totalSavings: 0, totalCost: 0, cnpyReceived: 0, gap: 0 }
+  }
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (sortMode === 'best_price') return a.price - b.price
+    return b.amount - a.amount
+  })
+
+  let remainingBudget = inputAmount
+  const selectedOrders = []
+  let totalSavings = 0
+  let totalCost = 0
+  let cnpyReceived = 0
+
+  for (const order of sortedOrders) {
+    const orderCost = order.amount * order.price
+    if (orderCost <= remainingBudget) {
+      const savings = order.amount - orderCost
+      selectedOrders.push({ ...order, cost: orderCost, savings })
+      totalSavings += savings
+      totalCost += orderCost
+      cnpyReceived += order.amount
+      remainingBudget -= orderCost
+    }
+  }
+
+  return {
+    selectedOrders,
+    totalSavings,
+    totalCost,
+    cnpyReceived,
+    gap: inputAmount - totalCost,
+    isFullyFilled: (inputAmount - totalCost) < 1
+  }
+}
+
+// Compact Order Row with fill percentage
+function OrderRow({ order, isSelected, index, percentOfBudget }) {
+  return (
+    <div
+      className={`relative flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 overflow-hidden ${
+        isSelected
+          ? 'border border-green-500/20'
+          : 'opacity-40'
+      }`}
+      style={{ transitionDelay: isSelected ? `${index * 30}ms` : '0ms' }}
+    >
+      {/* Background fill showing % of budget */}
+      {isSelected && (
+        <div 
+          className="absolute inset-0 bg-green-500/15 transition-all duration-300 ease-out"
+          style={{ width: `${percentOfBudget}%` }}
+        />
+      )}
+      
+      <div className="relative flex items-center gap-2">
+        <div
+          className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
+            isSelected ? 'bg-green-500 text-white' : 'border border-muted-foreground/30'
+          }`}
+        >
+          {isSelected && <Check className="w-2.5 h-2.5" />}
+        </div>
+        <span className="text-sm font-medium">${order.amount}</span>
+        <span className="text-xs text-green-500">{order.discount}%</span>
+        {isSelected && (
+          <span className="text-xs text-muted-foreground">({Math.round(percentOfBudget)}%)</span>
+        )}
+      </div>
+      {isSelected && (
+        <span className="relative text-xs text-green-500 font-medium">+${order.savings?.toFixed(2)}</span>
+      )}
+    </div>
+  )
+}
+
 export default function ConvertTab({ 
   chainData, 
   isPreview = false, 
   onSelectToken,
-  onOpenWalletDialog 
+  onOpenWalletDialog,
+  onAmountChange,
+  onSourceTokenChange,
+  orderBookSelection
 }) {
   const { isConnected } = useWallet()
   
-  // State
   const [showBridgeDialog, setShowBridgeDialog] = useState(false)
-  const [sourceToken, setSourceToken] = useState(null) // { symbol, chain, balance, color, ... }
+  const [sourceToken, setSourceToken] = useState(null)
   const [amount, setAmount] = useState('')
-  const [inputMode, setInputMode] = useState('token') // 'token' or 'usd'
+  const [sortMode, setSortMode] = useState('best_price')
+  const [showOrders, setShowOrders] = useState(false)
+  const [isShaking, setIsShaking] = useState(false)
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false)
 
-  // Mock connected wallets - in real app this would come from wallet context
   const [connectedWallets, setConnectedWallets] = useState({
     ethereum: {
       connected: true,
@@ -68,11 +153,8 @@ export default function ConvertTab({
     }
   })
 
-  // Handle wallet connection for a chain
   const handleConnectWallet = async (chainId) => {
-    // Simulate wallet connection
     await new Promise(resolve => setTimeout(resolve, 1500))
-    
     setConnectedWallets(prev => ({
       ...prev,
       [chainId]: {
@@ -85,106 +167,60 @@ export default function ConvertTab({
     }))
   }
 
-  // Handle token selection from bridge dialog
   const handleTokenSelected = (token) => {
     setSourceToken(token)
     setAmount('')
-    setInputMode('token')
+    onSourceTokenChange?.(token)
+    onAmountChange?.(0)
   }
 
-  // Calculate input/output values
-  const getInputValues = () => {
-    if (!amount || amount === '' || !sourceToken) {
-      return { tokenAmount: '0', usdAmount: '$0.00' }
-    }
+  // Calculate order selection locally
+  const availableOrders = useMemo(() => {
+    if (!sourceToken) return orderBookData.sellOrders
+    return orderBookData.sellOrders.filter(
+      order => order.token === sourceToken.symbol || !sourceToken.symbol
+    )
+  }, [sourceToken])
 
-    const inputAmount = parseFloat(amount)
-    // Stablecoins are ~$1
-    const price = 1.0
+  const selection = useMemo(
+    () => calculateOrderSelection(availableOrders, parseFloat(amount) || 0, sortMode),
+    [availableOrders, amount, sortMode]
+  )
 
-    if (inputMode === 'token') {
-      const usdValue = inputAmount * price
-      return {
-        tokenAmount: amount,
-        usdAmount: `$${usdValue.toFixed(2)}`
-      }
-    } else {
-      const tokenValue = inputAmount / price
-      return {
-        tokenAmount: tokenValue.toLocaleString('en-US', { maximumFractionDigits: 2 }),
-        usdAmount: `$${inputAmount.toFixed(2)}`
-      }
-    }
-  }
+  const selectedOrderIds = new Set(selection.selectedOrders.map(o => o.id))
 
-  const inputValues = getInputValues()
+  const displayOrders = useMemo(() => {
+    return [...availableOrders].sort((a, b) => {
+      if (sortMode === 'best_price') return a.price - b.price
+      return b.amount - a.amount
+    })
+  }, [availableOrders, sortMode])
 
-  // Calculate CNPY output (1:1 for stablecoins)
-  const getCnpyOutput = () => {
-    if (!amount || amount === '' || !sourceToken) {
-      return { tokens: '0', usd: '$0.00' }
-    }
+  // Notify parent
+  useEffect(() => {
+    onAmountChange?.(parseFloat(amount) || 0)
+  }, [amount])
 
-    const inputAmount = parseFloat(amount)
-    const tokenAmount = inputMode === 'token' ? inputAmount : inputAmount
-    
-    return {
-      tokens: tokenAmount.toLocaleString('en-US', { maximumFractionDigits: 2 }),
-      usd: `$${tokenAmount.toFixed(2)}`
-    }
-  }
-
-  const cnpyOutput = getCnpyOutput()
-
-  // Toggle input mode
-  const toggleInputMode = () => {
-    if (!sourceToken) return
-
-    if (amount && amount !== '') {
-      const currentAmount = parseFloat(amount)
-      if (inputMode === 'token') {
-        setAmount(currentAmount.toFixed(2))
-      } else {
-        setAmount(currentAmount.toString())
-      }
-    }
-    
-    setInputMode(inputMode === 'token' ? 'usd' : 'token')
-  }
-
-  // Use max balance
   const handleUseMax = () => {
     if (sourceToken) {
-      setInputMode('token')
       setAmount(sourceToken.balance.toString())
     }
   }
 
-  // Handle convert
-  const handleConvert = () => {
-    console.log('Converting:', { sourceToken, amount, cnpyOutput })
-    // In real app, this would trigger the bridge transaction
-  }
-
-  // Get button state
   const getButtonState = () => {
-    if (!isConnected) {
-      return { disabled: false, text: 'Connect Wallet', variant: 'connect' }
-    }
-    if (!sourceToken) {
-      return { disabled: true, text: 'Select token', variant: 'disabled' }
-    }
-    if (!amount || parseFloat(amount) <= 0) {
-      return { disabled: true, text: 'Enter amount', variant: 'disabled' }
-    }
-    return { disabled: false, text: 'Convert', variant: 'convert' }
+    if (!isConnected) return { disabled: false, text: 'Connect Wallet', variant: 'connect' }
+    if (!sourceToken) return { disabled: true, text: 'Select token', variant: 'disabled' }
+    if (!amount || parseFloat(amount) <= 0) return { disabled: true, text: 'Enter amount', variant: 'disabled' }
+    if (parseFloat(amount) > sourceToken.balance) return { disabled: true, text: 'Insufficient balance', variant: 'error' }
+    if (selection.selectedOrders.length === 0) return { disabled: true, text: 'No orders available', variant: 'disabled' }
+    return { disabled: false, text: `Convert $${selection.totalCost.toFixed(2)}`, variant: 'convert' }
   }
 
   const buttonState = getButtonState()
 
   return (
     <>
-      {/* Source Token Input Card */}
+      {/* Input Token Card */}
       <div className="px-4">
         {sourceToken ? (
           <Card className="bg-muted/30 p-4 space-y-3">
@@ -197,7 +233,7 @@ export default function ConvertTab({
                 {/* Token Avatar with Chain Badge */}
                 <div className="relative">
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold"
                     style={{ backgroundColor: sourceToken.color }}
                   >
                     {sourceToken.symbol === 'USDC' ? '$' : 'T'}
@@ -207,8 +243,8 @@ export default function ConvertTab({
                 <div className="text-left">
                   <div className="flex items-center gap-2">
                     <p className="text-base font-semibold">{sourceToken.symbol}</p>
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground capitalize">
-                      {sourceToken.chainName}
+                    <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground capitalize">
+                      {sourceToken.chain}
                     </span>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
@@ -227,10 +263,16 @@ export default function ConvertTab({
               </Button>
             </div>
 
-            {/* Amount Input - Centered, Large */}
+            {/* Budget Label */}
+            {amount && parseFloat(amount) > 0 && (
+              <div className="text-center">
+                <span className="text-xs text-muted-foreground tracking-wider">BUDGET</span>
+              </div>
+            )}
+
+            {/* Amount Input - Centered */}
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-1">
-                {inputMode === 'usd' && <span className="text-4xl font-bold text-muted-foreground">$</span>}
                 <input
                   type="text"
                   inputMode="decimal"
@@ -239,28 +281,37 @@ export default function ConvertTab({
                     const value = e.target.value
                     if (value === '' || /^\d*\.?\d*$/.test(value)) {
                       setAmount(value)
+                      // Trigger shake when exceeding balance
+                      if (parseFloat(value) > sourceToken.balance && parseFloat(amount) <= sourceToken.balance) {
+                        setIsShaking(true)
+                        setTimeout(() => setIsShaking(false), 400)
+                      }
                     }
                   }}
                   placeholder="0"
-                  className="text-4xl font-bold bg-transparent border-0 outline-none p-0 h-auto text-center w-full placeholder:text-muted-foreground"
+                  className={`text-4xl font-bold bg-transparent border-0 outline-none p-0 h-auto text-center w-full placeholder:text-muted-foreground ${
+                    isShaking ? 'animate-shake' : ''
+                  }`}
                 />
               </div>
             </div>
 
-            {/* Token Amount / USD Toggle */}
-            <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={toggleInputMode}
-                className="text-base text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-              >
-                {inputMode === 'token' ? (
-                  <span>{inputValues.usdAmount}</span>
-                ) : (
-                  <span>{inputValues.tokenAmount} {sourceToken.symbol}</span>
+            {/* Spending Display */}
+            {selection.totalCost > 0 && parseFloat(amount) > 0 && (
+              <div className="space-y-1 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs text-muted-foreground tracking-wider">SPENDING</span>
+                  <span className="text-lg font-semibold text-green-500">
+                    ${selection.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                {selection.gap > 0.01 && (
+                  <div className="text-sm text-muted-foreground">
+                    ${selection.gap.toFixed(2)} unused
+                  </div>
                 )}
-                <Zap className="w-4 h-4" />
-              </button>
-            </div>
+              </div>
+            )}
           </Card>
         ) : (
           <Card 
@@ -274,7 +325,7 @@ export default function ConvertTab({
                 </div>
                 <div>
                   <p className="text-base font-semibold">Select token</p>
-                  <p className="text-sm text-muted-foreground">Choose source token to bridge</p>
+                  <p className="text-sm text-muted-foreground">Choose USDC or USDT to convert</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -283,7 +334,7 @@ export default function ConvertTab({
         )}
       </div>
 
-      {/* Swap Direction Arrow */}
+      {/* Arrow Divider */}
       <div className="relative flex justify-center">
         <Button
           variant="outline"
@@ -295,30 +346,106 @@ export default function ConvertTab({
         </Button>
       </div>
 
-      {/* CNPY Output Card */}
+      {/* Output Token Card (CNPY) with Orders */}
       <div className="px-4">
         <Card className="bg-muted/30 p-4">
+          {/* CNPY Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* CNPY Token Avatar */}
               <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
                 <CnpyLogo className="w-5 h-5 text-white" />
               </div>
               <div className="text-left">
-                <div className="flex items-center gap-2">
-                  <p className="text-base font-semibold">CNPY</p>
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                    Canopy
-                  </span>
-                </div>
+                <p className="text-base font-semibold">CNPY</p>
                 <p className="text-sm text-muted-foreground">0 CNPY</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-base font-semibold">{cnpyOutput.tokens}</p>
-              <p className="text-sm text-muted-foreground">{cnpyOutput.usd}</p>
+              <p className="text-base font-semibold">
+                {selection.cnpyReceived > 0 ? selection.cnpyReceived.toLocaleString() : '0'}
+              </p>
+              {selection.totalSavings > 0 ? (
+                <p className="text-sm text-green-500">+${selection.totalSavings.toFixed(2)} bonus</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  ${selection.cnpyReceived > 0 ? selection.cnpyReceived.toFixed(2) : '0.00'}
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Collapsible Orders Section */}
+          {sourceToken && (
+            <div className="mt-4 pt-4 border-t border-border">
+              {/* Orders Header */}
+              <div className="flex items-center justify-between mb-3">
+                <button
+                  onClick={() => setShowOrders(!showOrders)}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showOrders ? '' : '-rotate-90'}`} />
+                  <span>Orders</span>
+                  {selection.selectedOrders.length > 0 && (
+                    <span className="text-xs bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded">
+                      {selection.selectedOrders.length} matched
+                    </span>
+                  )}
+                </button>
+                <div className="flex gap-1 p-0.5 bg-muted/50 rounded-md">
+                  <button
+                    onClick={() => setSortMode('best_price')}
+                    className={`px-2 py-1 text-xs font-medium rounded transition-all ${
+                      sortMode === 'best_price'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    Best price
+                  </button>
+                  <button
+                    onClick={() => setSortMode('best_fill')}
+                    className={`px-2 py-1 text-xs font-medium rounded transition-all ${
+                      sortMode === 'best_fill'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    Best fill
+                  </button>
+                </div>
+              </div>
+
+              {/* Order List */}
+              {showOrders && (
+                <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
+                  {displayOrders.slice(0, 6).map((order, index) => {
+                    const selectedOrder = selection.selectedOrders.find(o => o.id === order.id)
+                    const isSelected = selectedOrderIds.has(order.id)
+                    // Calculate what % of the total budget this order's cost represents
+                    const orderCost = order.amount * order.price
+                    const budgetAmount = parseFloat(amount) || 0
+                    const percentOfBudget = budgetAmount > 0 ? (orderCost / budgetAmount) * 100 : 0
+                    return (
+                      <OrderRow
+                        key={order.id}
+                        order={selectedOrder || order}
+                        isSelected={isSelected}
+                        index={index}
+                        percentOfBudget={percentOfBudget}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* No amount state */}
+              {(!amount || parseFloat(amount) <= 0) && showOrders && (
+                <p className="text-center text-xs text-muted-foreground py-3">
+                  Enter an amount to see matched orders
+                </p>
+              )}
+            </div>
+          )}
         </Card>
       </div>
 
@@ -330,6 +457,8 @@ export default function ConvertTab({
               ? 'bg-gradient-to-b from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white' 
               : buttonState.variant === 'connect'
               ? 'bg-gradient-to-b from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800 text-white'
+              : buttonState.variant === 'error'
+              ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15'
               : ''
           }`}
           size="lg" 
@@ -338,7 +467,7 @@ export default function ConvertTab({
             if (buttonState.variant === 'connect' && onOpenWalletDialog) {
               onOpenWalletDialog()
             } else if (buttonState.variant === 'convert') {
-              handleConvert()
+              setShowTransactionDialog(true)
             }
           }}
         >
@@ -346,13 +475,15 @@ export default function ConvertTab({
         </Button>
       </div>
 
-      {/* Exchange Rate */}
-      {sourceToken && (
+      {/* Exchange Rate Info */}
+      {sourceToken && selection.cnpyReceived > 0 && (
         <div className="px-4 pb-4">
           <div className="flex items-center justify-center text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Zap className="w-3.5 h-3.5" />
-              <span>1 {sourceToken.symbol} = 1 CNPY</span>
+              <span>
+                ${selection.totalCost.toFixed(2)} → {selection.cnpyReceived.toLocaleString()} CNPY
+              </span>
             </div>
           </div>
         </div>
@@ -366,6 +497,23 @@ export default function ConvertTab({
         connectedWallets={connectedWallets}
         onConnectWallet={handleConnectWallet}
       />
+
+      {/* Convert Transaction Progress Dialog */}
+      {showTransactionDialog && (
+        <ConvertTransactionDialog
+          open={showTransactionDialog}
+          onClose={() => {
+            setShowTransactionDialog(false)
+            // Reset form after successful transaction
+            setAmount('')
+          }}
+          sourceToken={sourceToken}
+          cnpyReceived={selection.cnpyReceived}
+          totalCost={selection.totalCost}
+          totalSavings={selection.totalSavings}
+          ordersMatched={selection.selectedOrders.length}
+        />
+      )}
     </>
   )
 }
