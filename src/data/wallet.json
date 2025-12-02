@@ -385,6 +385,129 @@
         }
       ]
     }
+  ],
+  "lpPositions": [
+    {
+      "id": 1,
+      "poolId": "pool-1",
+      "tokenA": "CNPY",
+      "tokenB": "OENS",
+      "lpTokens": 125.45,
+      "tokenAAmount": 500,
+      "tokenBAmount": 1000,
+      "valueUSD": 2800.90,
+      "initialValueUSD": 2500.00,
+      "earnings": 300.90,
+      "share": 0.18,
+      "depositDate": "2024-11-10"
+    },
+    {
+      "id": 2,
+      "poolId": "pool-8",
+      "tokenA": "CNPY",
+      "tokenB": "GAME",
+      "lpTokens": 85.20,
+      "tokenAAmount": 300,
+      "tokenBAmount": 450,
+      "valueUSD": 1850.50,
+      "initialValueUSD": 1650.00,
+      "earnings": 200.50,
+      "share": 0.12,
+      "depositDate": "2024-11-15"
+    },
+    {
+      "id": 3,
+      "poolId": "pool-3",
+      "tokenA": "CNPY",
+      "tokenB": "SOCN",
+      "lpTokens": 200.00,
+      "tokenAAmount": 800,
+      "tokenBAmount": 533,
+      "valueUSD": 3200.00,
+      "initialValueUSD": 2800.00,
+      "earnings": 400.00,
+      "share": 0.25,
+      "depositDate": "2024-10-28"
+    }
+  ],
+  "lpWithdrawing": [
+    {
+      "id": 1,
+      "poolId": "pool-2",
+      "tokenA": "CNPY",
+      "tokenB": "MGC",
+      "lpTokens": 50,
+      "tokenAAmount": 150,
+      "tokenBAmount": 300,
+      "valueUSD": 450.50,
+      "hoursRemaining": 12
+    }
+  ],
+  "lpEarningsHistory": [
+    {
+      "date": "Today",
+      "transactions": [
+        {
+          "id": "lp-earn-1",
+          "poolId": "pool-1",
+          "tokenB": "OENS",
+          "amount": 2.45,
+          "amountUSD": 5.49
+        },
+        {
+          "id": "lp-earn-2",
+          "poolId": "pool-8",
+          "tokenB": "GAME",
+          "amount": 1.20,
+          "amountUSD": 8.31
+        }
+      ]
+    },
+    {
+      "date": "Yesterday",
+      "transactions": [
+        {
+          "id": "lp-earn-3",
+          "poolId": "pool-1",
+          "tokenB": "OENS",
+          "amount": 2.38,
+          "amountUSD": 5.33
+        },
+        {
+          "id": "lp-earn-4",
+          "poolId": "pool-8",
+          "tokenB": "GAME",
+          "amount": 1.15,
+          "amountUSD": 7.96
+        },
+        {
+          "id": "lp-earn-5",
+          "poolId": "pool-3",
+          "tokenB": "SOCN",
+          "amount": 3.50,
+          "amountUSD": 7.35
+        }
+      ]
+    },
+    {
+      "date": "Dec 28, 2024",
+      "transactions": [
+        {
+          "id": "lp-earn-6",
+          "poolId": "pool-1",
+          "tokenB": "OENS",
+          "amount": 2.52,
+          "amountUSD": 5.65
+        },
+        {
+          "id": "lp-earn-7",
+          "poolId": "pool-8",
+          "tokenB": "GAME",
+          "amount": 1.28,
+          "amountUSD": 8.87
+        }
+      ]
+    }
   ]
   },
   "nofunds@email.com": {
@@ -394,6 +517,9 @@
     "stakes": [],
     "unstaking": [],
     "transactions": [],
-    "earningsHistory": []
+    "earningsHistory": [],
+    "lpPositions": [],
+    "lpWithdrawing": [],
+    "lpEarningsHistory": []
   }
 }
