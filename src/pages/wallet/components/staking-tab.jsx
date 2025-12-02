@@ -45,8 +45,15 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
   }
 
   const sortedStakes = [...stakes].sort((a, b) => {
+    // Primary sort: owned tokens (with rewards) first
+    const aHasRewards = (a.rewards || 0) > 0
+    const bHasRewards = (b.rewards || 0) > 0
+    
+    if (aHasRewards && !bHasRewards) return -1
+    if (!aHasRewards && bHasRewards) return 1
+    
+    // Secondary sort: by selected column
     let compareA, compareB
-
     switch (sortBy) {
       case 'apy':
         compareA = a.apy
@@ -60,12 +67,10 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
         compareA = a.apy
         compareB = b.apy
     }
-
-    if (sortOrder === 'asc') {
-      return compareA > compareB ? 1 : -1
-    } else {
-      return compareA < compareB ? 1 : -1
-    }
+    
+    return sortOrder === 'asc' 
+      ? (compareA > compareB ? 1 : -1)
+      : (compareA < compareB ? 1 : -1)
   })
 
   const handleStakeClick = (stake) => {
