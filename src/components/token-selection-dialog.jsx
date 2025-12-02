@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Search, TrendingUp, Clock } from 'lucide-react'
+import { Search, TrendingUp, Clock, Wallet } from 'lucide-react'
 import tokensData from '@/data/tokens.json'
 import { getAllChains } from '@/data/db'
+import { useWallet } from '@/contexts/wallet-context'
 
 export default function TokenSelectionDialog({ open, onOpenChange, onSelectToken, excludeToken = null }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [recentTokens, setRecentTokens] = useState([])
+  const { getWalletData, isConnected } = useWallet()
 
   // Load recent tokens from localStorage
   useEffect(() => {
@@ -46,17 +48,58 @@ export default function TokenSelectionDialog({ open, onOpenChange, onSelectToken
 
   const allTokens = getAllTokens()
 
-  // Filter tokens based on search
-  const filteredTokens = allTokens.filter(token => {
-    if (excludeToken && token.symbol === excludeToken) return false
-    
-    const query = searchQuery.toLowerCase()
-    return (
-      token.symbol.toLowerCase().includes(query) ||
-      token.name.toLowerCase().includes(query) ||
-      token.address?.toLowerCase().includes(query)
-    )
-  })
+  // Get wallet assets to identify tokens with balance
+  const walletData = isConnected ? getWalletData() : null
+  const walletAssets = walletData?.assets || []
+
+  // Create a map of token symbols to their balances
+  const tokenBalances = useMemo(() => {
+    const balances = {}
+    walletAssets.forEach(asset => {
+      balances[asset.symbol] = asset.balance
+    })
+    // CNPY is always assumed to have balance for connected users
+    if (isConnected) {
+      balances['CNPY'] = walletData?.cnpyBalance || 5000
+    }
+    return balances
+  }, [walletAssets, isConnected, walletData])
+
+  // Filter and sort tokens based on search and balance
+  const filteredTokens = useMemo(() => {
+    let tokens = allTokens.filter(token => {
+      if (excludeToken && token.symbol === excludeToken) return false
+      
+      const query = searchQuery.toLowerCase()
+      return (
+        token.symbol.toLowerCase().includes(query) ||
+        token.name.toLowerCase().includes(query) ||
+        token.address?.toLowerCase().includes(query)
+      )
+    })
+
+    // Sort: tokens with balance first, then by name
+    tokens.sort((a, b) => {
+      const aBalance = tokenBalances[a.symbol] || 0
+      const bBalance = tokenBalances[b.symbol] || 0
+      
+      // Primary sort: tokens with balance first
+      if (aBalance > 0 && bBalance === 0) return -1
+      if (aBalance === 0 && bBalance > 0) return 1
+      
+      // Secondary sort: by balance value (higher first)
+      if (aBalance > 0 && bBalance > 0) {
+        const aValue = aBalance * (a.currentPrice || 0)
+        const bValue = bBalance * (b.currentPrice || 0)
+        if (aValue !== bValue) return bValue - aValue
+      }
+      
+      // Tertiary sort: alphabetically by name
+      return a.name.localeCompare(b.name)
+    })
+
+    return tokens
+  }, [allTokens, excludeToken, searchQuery, tokenBalances])
 
   // Get recent tokens that are still valid
   const recentTokensList = recentTokens
@@ -107,28 +150,54 @@ export default function TokenSelectionDialog({ open, onOpenChange, onSelectToken
               </div>
               <div className="space-y-1">
                 {recentTokensList.map(token => (
-                  <TokenItem key={token.symbol} token={token} onSelect={handleSelectToken} />
+                  <TokenItem key={token.symbol} token={token} onSelect={handleSelectToken} balance={tokenBalances[token.symbol]} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Popular/All Tokens */}
+          {/* Your Tokens (with balance) */}
+          {!searchQuery && isConnected && (() => {
+            const tokensWithBalance = filteredTokens.filter(t => tokenBalances[t.symbol] > 0)
+            if (tokensWithBalance.length === 0) return null
+            return (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-2">
+                  <Wallet className="w-3 h-3" />
+                  <span>Your Tokens</span>
+                </div>
+                <div className="space-y-1">
+                  {tokensWithBalance.map(token => (
+                    <TokenItem key={token.symbol} token={token} onSelect={handleSelectToken} balance={tokenBalances[token.symbol]} />
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* All Tokens */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-2">
               <TrendingUp className="w-3 h-3" />
-              <span>{searchQuery ? 'Search Results' : 'Popular Tokens'}</span>
+              <span>{searchQuery ? 'Search Results' : 'All Tokens'}</span>
             </div>
             <div className="space-y-1">
-              {filteredTokens.length > 0 ? (
-                filteredTokens.map(token => (
-                  <TokenItem key={token.symbol} token={token} onSelect={handleSelectToken} />
-                ))
-              ) : (
-                <div className="text-center py-8 text-sm text-muted-foreground">
-                  No tokens found
-                </div>
-              )}
+              {(() => {
+                // When not searching, filter out tokens already shown in "Your Tokens"
+                const tokensToShow = !searchQuery && isConnected 
+                  ? filteredTokens.filter(t => !tokenBalances[t.symbol] || tokenBalances[t.symbol] === 0)
+                  : filteredTokens
+                
+                return tokensToShow.length > 0 ? (
+                  tokensToShow.map(token => (
+                    <TokenItem key={token.symbol} token={token} onSelect={handleSelectToken} balance={tokenBalances[token.symbol]} />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    {filteredTokens.length > 0 ? 'All your tokens are shown above' : 'No tokens found'}
+                  </div>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -137,7 +206,14 @@ export default function TokenSelectionDialog({ open, onOpenChange, onSelectToken
   )
 }
 
-function TokenItem({ token, onSelect }) {
+function TokenItem({ token, onSelect, balance }) {
+  const formatBalance = (bal) => {
+    if (!bal) return null
+    if (bal >= 1000000) return `${(bal / 1000000).toFixed(2)}M`
+    if (bal >= 1000) return `${(bal / 1000).toFixed(1)}K`
+    return bal.toLocaleString()
+  }
+
   return (
     <button
       onClick={() => onSelect(token)}
@@ -172,15 +248,26 @@ function TokenItem({ token, onSelect }) {
         </div>
       </div>
 
-      {/* Token Price & Change */}
+      {/* Token Price & Balance */}
       <div className="text-right">
-        <p className="text-sm font-medium">
-          ${token.currentPrice.toFixed(token.currentPrice < 0.01 ? 6 : 4)}
-        </p>
-        {token.priceChange24h !== undefined && (
-          <p className={`text-xs ${token.priceChange24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-            {token.priceChange24h >= 0 ? '+' : ''}{token.priceChange24h.toFixed(2)}%
-          </p>
+        {balance > 0 ? (
+          <>
+            <p className="text-sm font-medium">{formatBalance(balance)}</p>
+            <p className="text-xs text-muted-foreground">
+              ${((balance * token.currentPrice) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-medium">
+              ${token.currentPrice?.toFixed(token.currentPrice < 0.01 ? 6 : 4) || '0.00'}
+            </p>
+            {token.priceChange24h !== undefined && (
+              <p className={`text-xs ${token.priceChange24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {token.priceChange24h >= 0 ? '+' : ''}{token.priceChange24h.toFixed(2)}%
+              </p>
+            )}
+          </>
         )}
       </div>
     </button>
