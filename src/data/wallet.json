@@ -1,8 +1,24 @@
 {
   "withfunds@email.com": {
-    "totalValue": 12458.32,
+    "totalValue": 17055.22,
     "change24h": 5.2,
     "assets": [
+    {
+      "id": 0,
+      "chainId": 0,
+      "symbol": "CNPY",
+      "name": "CANOPY",
+      "balance": 1000,
+      "price": 1.50,
+      "value": 1500.00,
+      "change24h": 2.5,
+      "logo": null,
+      "color": "#1dd13a",
+      "priceHistory": [
+        {"price": 1.20}, {"price": 1.25}, {"price": 1.45}, {"price": 1.48},
+        {"price": 1.30}, {"price": 1.35}, {"price": 1.52}, {"price": 1.50}
+      ]
+    },
     {
       "id": 1,
       "chainId": 1,
@@ -81,6 +97,54 @@
       "priceHistory": [
         {"price": 5.50}, {"price": 5.30}, {"price": 0.50}, {"price": 0.65},
         {"price": 5.80}, {"price": 5.60}, {"price": 0.40}, {"price": 2.745}
+      ]
+    },
+    {
+      "id": 6,
+      "chainId": 14,
+      "symbol": "HLTH",
+      "name": "HealthChain",
+      "balance": 350,
+      "price": 3.25,
+      "value": 1137.50,
+      "change24h": 4.2,
+      "logo": null,
+      "color": "#dc2626",
+      "priceHistory": [
+        {"price": 2.80}, {"price": 2.95}, {"price": 3.10}, {"price": 3.05},
+        {"price": 2.90}, {"price": 3.00}, {"price": 3.30}, {"price": 3.25}
+      ]
+    },
+    {
+      "id": 7,
+      "chainId": 15,
+      "symbol": "DYPRO",
+      "name": "DeFi Yield Pro",
+      "balance": 180,
+      "price": 5.85,
+      "value": 1053.00,
+      "change24h": 6.8,
+      "logo": null,
+      "color": "#3b82f6",
+      "priceHistory": [
+        {"price": 4.50}, {"price": 4.80}, {"price": 5.20}, {"price": 5.40},
+        {"price": 4.90}, {"price": 5.10}, {"price": 5.90}, {"price": 5.85}
+      ]
+    },
+    {
+      "id": 8,
+      "chainId": 16,
+      "symbol": "MLAND",
+      "name": "Metaverse Land",
+      "balance": 220,
+      "price": 4.12,
+      "value": 906.40,
+      "change24h": -1.5,
+      "logo": null,
+      "color": "#a855f7",
+      "priceHistory": [
+        {"price": 3.80}, {"price": 3.95}, {"price": 4.30}, {"price": 4.25},
+        {"price": 3.90}, {"price": 4.00}, {"price": 4.20}, {"price": 4.12}
       ]
     }
   ],

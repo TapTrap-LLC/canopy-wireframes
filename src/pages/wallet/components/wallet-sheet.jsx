@@ -9,14 +9,16 @@ import { useWallet } from '@/contexts/wallet-context.jsx'
 import { toast } from 'sonner'
 import ActivityTab from '@/pages/wallet/components/activity-tab.jsx'
 import StakeDialog from '@/pages/wallet/components/stake-dialog.jsx'
-import WalletConnectionDialog from '@/components/wallet-connection-dialog.jsx'
+import SendDialog from '@/pages/wallet/components/send-dialog.jsx'
+import BuyDialog from '@/pages/wallet/components/buy-dialog.jsx'
 
 export default function WalletSheet({ open, onOpenChange }) {
   const navigate = useNavigate()
   const { walletAddress, formatAddress, getTotalBalance, disconnectWallet, getWalletData } = useWallet()
   const [activeTab, setActiveTab] = useState('balances')
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
-  const [fundDialogOpen, setFundDialogOpen] = useState(false)
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
+  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
 
   const walletData = getWalletData()
 
@@ -104,12 +106,16 @@ export default function WalletSheet({ open, onOpenChange }) {
             <Button
               variant="outline"
               className="flex flex-col gap-1 h-auto py-3 px-2"
-              onClick={() => setFundDialogOpen(true)}
+              onClick={() => setBuyDialogOpen(true)}
             >
               <Download className="w-5 h-5" />
               <span className="text-xs">Buy</span>
             </Button>
-            <Button variant="outline" className="flex flex-col gap-1 h-auto py-3 px-2">
+            <Button
+              variant="outline"
+              className="flex flex-col gap-1 h-auto py-3 px-2"
+              onClick={() => setSendDialogOpen(true)}
+            >
               <Send className="w-5 h-5" />
               <span className="text-xs">Send</span>
             </Button>
@@ -257,7 +263,14 @@ export default function WalletSheet({ open, onOpenChange }) {
 
         {/* Footer - Fixed */}
         <div className="p-5 border-t border-border space-y-3">
-          <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-muted">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 hover:bg-muted"
+            onClick={() => {
+              navigate('/wallet/settings')
+              onOpenChange(false)
+            }}
+          >
             <Settings className="w-5 h-5" />
             <span>Wallet settings</span>
           </Button>
@@ -282,11 +295,19 @@ export default function WalletSheet({ open, onOpenChange }) {
         assets={walletData.assets}
       />
 
-      {/* Fund Wallet Dialog */}
-      <WalletConnectionDialog
-        open={fundDialogOpen}
-        onOpenChange={setFundDialogOpen}
-        initialStep={4}
+      {/* Send Dialog */}
+      <SendDialog
+        open={sendDialogOpen}
+        onOpenChange={setSendDialogOpen}
+        selectedAsset={null}
+        assets={walletData.assets}
+      />
+
+      {/* Buy Dialog */}
+      <BuyDialog
+        open={buyDialogOpen}
+        onOpenChange={setBuyDialogOpen}
+        assets={walletData.assets}
       />
     </Sheet>
   )
