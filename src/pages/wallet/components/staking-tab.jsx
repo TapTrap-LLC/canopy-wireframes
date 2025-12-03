@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -9,16 +10,15 @@ import StakeDialog from './stake-dialog'
 import UnstakeDialog from './unstake-dialog'
 import UnstakingDetailSheet from './unstaking-detail-sheet'
 import CancelUnstakeDialog from './cancel-unstake-dialog'
-import EarningsHistorySheet from './earnings-history-sheet'
 import CnpyStakeDialog from './cnpy-stake-dialog'
 
 export default function StakingTab({ stakes, assets, unstaking, earningsHistory = [] }) {
+  const navigate = useNavigate()
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
   const [cnpyStakeDialogOpen, setCnpyStakeDialogOpen] = useState(false)
   const [unstakeDialogOpen, setUnstakeDialogOpen] = useState(false)
   const [unstakingDetailOpen, setUnstakingDetailOpen] = useState(false)
   const [cancelUnstakeDialogOpen, setCancelUnstakeDialogOpen] = useState(false)
-  const [earningsHistoryOpen, setEarningsHistoryOpen] = useState(false)
   const [selectedStake, setSelectedStake] = useState(null)
   const [selectedUnstaking, setSelectedUnstaking] = useState(null)
   const [sortBy, setSortBy] = useState('apy')
@@ -306,8 +306,8 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
                 </Tooltip>
               </p>
             </div>
-            <Button variant="outline" className="h-10" onClick={() => setEarningsHistoryOpen(true)}>
-              View Earned Balances
+            <Button variant="outline" className="h-10" onClick={() => navigate('/wallet?tab=activity&filter=reward')}>
+              View Reward History
             </Button>
           </div>
         </Card>
@@ -639,14 +639,6 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
         onOpenChange={setCancelUnstakeDialogOpen}
         unstakingItem={selectedUnstaking}
         onConfirm={handleConfirmCancelUnstake}
-      />
-
-      {/* Earnings History Sheet */}
-      <EarningsHistorySheet
-        open={earningsHistoryOpen}
-        onOpenChange={setEarningsHistoryOpen}
-        stakes={stakes}
-        earningsHistory={earningsHistory}
       />
 
       {/* CNPY Multi-Chain Stake Dialog */}

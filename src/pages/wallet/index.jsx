@@ -138,16 +138,16 @@ export default function Wallet() {
                   Assets
                 </TabsTrigger>
                 <TabsTrigger
-                  value="staking"
-                  className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
-                >
-                  Staking
-                </TabsTrigger>
-                <TabsTrigger
                   value="activity"
                   className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
                 >
                   Activity
+                </TabsTrigger>
+                <TabsTrigger
+                  value="staking"
+                  className="py-4 px-0 mr-8 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent bg-transparent"
+                >
+                  Staking
                 </TabsTrigger>
                 <TabsTrigger
                   value="governance"

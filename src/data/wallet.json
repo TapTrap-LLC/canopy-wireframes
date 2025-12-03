@@ -357,16 +357,69 @@
     },
     {
       "id": 6,
-      "type": "claimed",
+      "type": "reward",
       "amount": 2.15,
       "symbol": "OENS",
       "chainId": 1,
       "timestamp": "1 week ago",
       "status": "completed",
-      "hash": "0x998877665544332211009988776655443322110099887766",
-      "from": "0xStakingContract1234567890abcdef1234567890ab",
-      "to": "0xYourWallet1234567890abcdef1234567890abcdef",
-      "fee": 0.0005
+      "source": "CNPY Staking",
+      "sourceSymbol": "CNPY"
+    },
+    {
+      "id": 7,
+      "type": "reward",
+      "amount": 0.82,
+      "symbol": "GAME",
+      "chainId": 2,
+      "timestamp": "1 week ago",
+      "status": "completed",
+      "source": "CNPY Staking",
+      "sourceSymbol": "CNPY"
+    },
+    {
+      "id": 8,
+      "type": "reward",
+      "amount": 12.45,
+      "symbol": "CNPY",
+      "chainId": 0,
+      "timestamp": "Today",
+      "status": "completed",
+      "source": "CNPY Staking",
+      "sourceSymbol": "CNPY"
+    },
+    {
+      "id": 9,
+      "type": "reward",
+      "amount": 3.25,
+      "symbol": "OENS",
+      "chainId": 1,
+      "timestamp": "Yesterday",
+      "status": "completed",
+      "source": "CNPY Staking",
+      "sourceSymbol": "CNPY"
+    },
+    {
+      "id": 10,
+      "type": "reward",
+      "amount": 1.85,
+      "symbol": "GAME",
+      "chainId": 2,
+      "timestamp": "Yesterday",
+      "status": "completed",
+      "source": "CNPY Staking",
+      "sourceSymbol": "CNPY"
+    },
+    {
+      "id": 11,
+      "type": "reward",
+      "amount": 0.45,
+      "symbol": "OENS",
+      "chainId": 1,
+      "timestamp": "2 days ago",
+      "status": "completed",
+      "source": "OENS Staking",
+      "sourceSymbol": "OENS"
     }
   ],
   "earningsHistory": [
