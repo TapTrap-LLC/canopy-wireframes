@@ -150,6 +150,74 @@
   ],
   "stakes": [
     {
+      "id": 0,
+      "chainId": 0,
+      "symbol": "CNPY",
+      "chain": "Canopy",
+      "amount": 5000,
+      "apy": 8.5,
+      "rewards": 12.45,
+      "rewardsUSD": 18.68,
+      "color": "#1dd13a",
+      "restakeRewards": true,
+      "isCnpy": true,
+      "committees": [
+        {
+          "chainId": 1,
+          "symbol": "OENS",
+          "chain": "Onchain ENS",
+          "color": "#10b981",
+          "rewards": 3.25,
+          "rewardsUSD": 7.28
+        },
+        {
+          "chainId": 2,
+          "symbol": "GAME",
+          "chain": "MyGameChain",
+          "color": "#8b5cf6",
+          "rewards": 1.85,
+          "rewardsUSD": 12.81
+        }
+      ],
+      "availableChains": [
+        {
+          "chainId": 3,
+          "symbol": "SOCL",
+          "chain": "Social Connect",
+          "color": "#06b6d4",
+          "estimatedApy": 6.2
+        },
+        {
+          "chainId": 5,
+          "symbol": "STRM",
+          "chain": "StreamVault",
+          "color": "#f59e0b",
+          "estimatedApy": 7.8
+        },
+        {
+          "chainId": 6,
+          "symbol": "DFIM",
+          "chain": "DeFi Masters",
+          "color": "#ec4899",
+          "estimatedApy": 5.5
+        },
+        {
+          "chainId": 14,
+          "symbol": "HLTH",
+          "chain": "HealthChain",
+          "color": "#dc2626",
+          "estimatedApy": 4.9
+        },
+        {
+          "chainId": 15,
+          "symbol": "DYPRO",
+          "chain": "DeFi Yield Pro",
+          "color": "#3b82f6",
+          "estimatedApy": 8.2
+        }
+      ]
+    },
+    {
       "id": 1,
       "chainId": 1,
       "symbol": "OENS",

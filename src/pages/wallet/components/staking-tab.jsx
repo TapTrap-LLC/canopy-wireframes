@@ -4,15 +4,17 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Info, ArrowUpDown, CheckCircle2, RefreshCw, Wallet } from 'lucide-react'
+import { Info, ArrowUpDown, CheckCircle2, RefreshCw, Wallet, Layers } from 'lucide-react'
 import StakeDialog from './stake-dialog'
 import UnstakeDialog from './unstake-dialog'
 import UnstakingDetailSheet from './unstaking-detail-sheet'
 import CancelUnstakeDialog from './cancel-unstake-dialog'
 import EarningsHistorySheet from './earnings-history-sheet'
+import CnpyStakeDialog from './cnpy-stake-dialog'
 
 export default function StakingTab({ stakes, assets, unstaking, earningsHistory = [] }) {
   const [stakeDialogOpen, setStakeDialogOpen] = useState(false)
+  const [cnpyStakeDialogOpen, setCnpyStakeDialogOpen] = useState(false)
   const [unstakeDialogOpen, setUnstakeDialogOpen] = useState(false)
   const [unstakingDetailOpen, setUnstakingDetailOpen] = useState(false)
   const [cancelUnstakeDialogOpen, setCancelUnstakeDialogOpen] = useState(false)
@@ -42,6 +44,10 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
   }
 
   const sortedStakes = [...stakes].sort((a, b) => {
+    // CNPY always comes first
+    if (a.isCnpy) return -1
+    if (b.isCnpy) return 1
+
     let compareA, compareB
 
     switch (sortBy) {
@@ -70,6 +76,13 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
   })
 
   const handleStakeClick = (stake) => {
+    // Check if this is CNPY - open special multi-chain dialog
+    if (stake.isCnpy) {
+      setSelectedStake(stake)
+      setCnpyStakeDialogOpen(true)
+      return
+    }
+
     // Find the corresponding asset to get price and balance
     const asset = assets?.find(a => a.chainId === stake.chainId)
     const enrichedStake = {
@@ -205,6 +218,36 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
   // Render action buttons based on stake status
   const renderActionButtons = (stake) => {
     const isActive = stake.amount > 0
+
+    // Special handling for CNPY
+    if (stake.isCnpy) {
+      if (isActive) {
+        return (
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              size="sm"
+              className="h-7 text-xs w-[72px]"
+              onClick={() => handleStakeClick(stake)}
+            >
+              Manage
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs w-[72px]"
+              onClick={() => handleUnstakeClick(stake)}
+            >
+              Unstake
+            </Button>
+          </div>
+        )
+      }
+      return (
+        <Button size="sm" className="h-7 text-xs w-[72px]" onClick={() => handleStakeClick(stake)}>
+          Stake
+        </Button>
+      )
+    }
 
     if (isActive) {
       return (
@@ -377,6 +420,44 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
                               <div className="font-semibold">{stake.chain}</div>
                               <div className="text-sm text-muted-foreground">{stake.symbol}</div>
                               {renderRestakeBadge(stake)}
+                              {/* Show committees for CNPY */}
+                              {stake.isCnpy && stake.committees && stake.committees.length > 0 && (
+                                <div className="flex items-center gap-1 mt-1.5">
+                                  <Layers className="w-3 h-3 text-muted-foreground" />
+                                  <div className="flex -space-x-1.5">
+                                    {stake.committees.slice(0, 5).map((committee) => (
+                                      <Tooltip key={committee.chainId}>
+                                        <TooltipTrigger asChild>
+                                          <div
+                                            className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-background"
+                                            style={{ backgroundColor: committee.color }}
+                                          >
+                                            <span className="text-[8px] font-bold text-white">
+                                              {committee.symbol.slice(0, 1)}
+                                            </span>
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>Staking for {committee.chain}</p>
+                                          {committee.rewards > 0 && (
+                                            <p className="text-xs text-muted-foreground">
+                                              Earned: {committee.rewards} {committee.symbol}
+                                            </p>
+                                          )}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    ))}
+                                    {stake.committees.length > 5 && (
+                                      <div className="w-5 h-5 rounded-full flex items-center justify-center bg-muted border-2 border-background">
+                                        <span className="text-[8px] font-medium">+{stake.committees.length - 5}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    {stake.committees.length} chain{stake.committees.length !== 1 ? 's' : ''}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -562,6 +643,15 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
         onOpenChange={setEarningsHistoryOpen}
         stakes={stakes}
         earningsHistory={earningsHistory}
+      />
+
+      {/* CNPY Multi-Chain Stake Dialog */}
+      <CnpyStakeDialog
+        open={cnpyStakeDialogOpen}
+        onOpenChange={setCnpyStakeDialogOpen}
+        cnpyStake={selectedStake?.isCnpy ? selectedStake : null}
+        cnpyAsset={assets?.find(a => a.chainId === 0)}
+        allChains={stakes.filter(s => !s.isCnpy)}
       />
     </TooltipProvider>
   )

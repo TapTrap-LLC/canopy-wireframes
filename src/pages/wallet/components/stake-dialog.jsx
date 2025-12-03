@@ -45,6 +45,8 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
 
   // Calculate values (only when we have an active chain)
   const availableBalance = activeChain?.balance || 0
+  const currentStakedAmount = activeChain?.amount || 0
+  const isAddingMore = currentStakedAmount > 0
   const amountNum = parseFloat(amount) || 0
   const amountUSD = activeChain ? amountNum * (activeChain.price || 0) : 0
   const projectedYearlyInterest = activeChain ? amountNum * (activeChain.apy / 100) : 0
@@ -88,7 +90,7 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
           {step === 1 && (
             <>
               {/* Header */}
-              <div className="relative px-6 py-3  border-b">
+              <div className="relative px-6 py-3 border-b">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -98,7 +100,9 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                   <X className="w-5 h-5" />
                 </Button>
                 <div className="space-y-1">
-                  <h2 className="text-xl font-bold">Earn Rewards</h2>
+                  <h2 className="text-xl font-bold">
+                    {isAddingMore ? `Add More ${activeChain?.symbol || ''}` : 'Earn Rewards'}
+                  </h2>
                 </div>
               </div>
 
@@ -172,10 +176,17 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                           <p className="text-sm text-muted-foreground">{activeChain.symbol}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">{activeChain.apy}%</p>
-                        <p className="text-xs text-muted-foreground">APY</p>
-                      </div>
+                      {isAddingMore ? (
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">Currently staked</p>
+                          <p className="font-semibold">{currentStakedAmount.toLocaleString()} {activeChain.symbol}</p>
+                        </div>
+                      ) : (
+                        <div className="text-right">
+                          <p className="text-2xl font-bold">{activeChain.apy}%</p>
+                          <p className="text-xs text-muted-foreground">APY</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -224,7 +235,9 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                   <>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="block text-sm font-medium">Amount</Label>
+                        <Label className="block text-sm font-medium">
+                          {isAddingMore ? 'Amount to add' : 'Amount'}
+                        </Label>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -339,11 +352,24 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                       <span className="text-sm font-medium">{activeChain.apy}%</span>
                     </div>
 
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Amount</span>
+                      <span className="text-sm font-medium">{amountNum.toLocaleString()} {activeChain.symbol}</span>
+                    </div>
+
+                    {isAddingMore && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">New total</span>
+                        <span className="text-sm font-medium">
+                          {(currentStakedAmount + amountNum).toLocaleString()} {activeChain.symbol}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between pt-2 border-t">
-                      <span className="text-sm font-semibold">Total</span>
+                      <span className="text-sm font-semibold">Total value</span>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">{amountNum} {activeChain.symbol}</p>
-                        <p className="text-xs text-muted-foreground">${amountUSD.toFixed(2)} USD</p>
+                        <p className="text-sm font-semibold">${amountUSD.toFixed(2)} USD</p>
                       </div>
                     </div>
                   </div>
@@ -402,11 +428,23 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                   </div>
                   <h2 className="text-2xl font-bold">Success!</h2>
                   <p className="text-center text-muted-foreground">
-                    You will begin earning interest on{' '}
-                    <span className="font-semibold text-foreground">
-                      {amountNum} {activeChain.symbol}
-                    </span>{' '}
-                    after one business day.
+                    {isAddingMore ? (
+                      <>
+                        You are now staking{' '}
+                        <span className="font-semibold text-foreground">
+                          {(currentStakedAmount + amountNum).toLocaleString()} {activeChain.symbol}
+                        </span>{' '}
+                        in total.
+                      </>
+                    ) : (
+                      <>
+                        You will begin earning interest on{' '}
+                        <span className="font-semibold text-foreground">
+                          {amountNum.toLocaleString()} {activeChain.symbol}
+                        </span>{' '}
+                        after one business day.
+                      </>
+                    )}
                   </p>
                 </div>
 

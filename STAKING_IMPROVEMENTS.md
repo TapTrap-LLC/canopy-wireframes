@@ -119,17 +119,17 @@ Add `restakeRewards` boolean field to stake objects in wallet.json:
 
 ---
 
-## Task 4: CNPY Multi-Chain Staking (Future Implementation)
+## Task 4: CNPY Multi-Chain Staking (Implemented)
 
 ### Requirements (from CHANGES_STAKING.md conversation)
-- CNPY should always be at the top of the staking list
-- When staking CNPY, users can select multiple chains
-- Staking CNPY for a chain earns you the native token (baby token) of that chain
+- CNPY should always be at the top of the staking list ✅
+- When staking CNPY, users can select multiple chains ✅
+- Staking CNPY for a chain earns you the native token (baby token) of that chain ✅
 - Example: Stake 1000 CNPY for Chain ID 1 (CNPY), Chain ID 200 (Game), Chain ID 300 (DeFi Masters)
   - You earn CNPY rewards
   - You earn GAME rewards
   - You earn DFIM rewards
-- This is an `editStake` transaction that modifies the committees field
+- This is an `editStake` transaction that modifies the committees field ✅
 
 ### Key Concepts from Conversation
 1. **Single CNPY Stake Applied to Multiple Chains**: Users have one CNPY balance staked, but it applies to up to 15 chains
@@ -137,50 +137,69 @@ Add `restakeRewards` boolean field to stake objects in wallet.json:
 3. **Secondary Staking**: You can then stake those baby tokens on their respective chains for more yield
 4. **editStake Transaction**: Adding chains is done via editStake, modifying the committees array
 
-### UI Requirements (Future)
-- Special CNPY card at top of staking list
-- "Chains I'm staking for" section showing selected chains
-- "Add Chain" button to stake for new chains
-- Show potential earnings per chain
+### Implementation Details
+- CNPY is now the first item in the stakes array with `isCnpy: true` flag
+- CNPY row shows committee chains with stacked avatars and tooltip showing chain details
+- "Manage" button (instead of "Add More") opens the multi-chain staking dialog
+- New `CnpyStakeDialog` component handles:
+  - Amount input for staking CNPY
+  - Multi-chain selection with checkboxes
+  - Display of current committees and available chains
+  - Confirmation flow showing all tokens user will earn
 
-### Files to Create/Modify (Future)
-- New component: `CNPYMultiChainStake.jsx`
-- Modify stake-dialog.jsx for multi-chain selection when CNPY selected
-- Update wallet.json data structure for CNPY multi-chain stakes
+### Files Created/Modified
+- Created: `src/pages/wallet/components/cnpy-stake-dialog.jsx`
+- Modified: `src/pages/wallet/components/staking-tab.jsx`
+  - Added CNPY-first sorting
+  - Added committee avatars display in Chain column
+  - Added special "Manage" button for CNPY
+  - Integrated CnpyStakeDialog
+- Modified: `src/data/wallet.json`
+  - Added CNPY stake with `isCnpy`, `committees`, and `availableChains` fields
 
 ---
 
 ## Implementation Order
 
-1. **Task 1**: Remove Claim functionality (simplest change)
-2. **Task 2**: Add restake preference indicator
-3. **Task 3**: Restructure tabs with pills
-4. **Task 4**: CNPY multi-chain staking (future phase)
+1. **Task 1**: Remove Claim functionality (simplest change) ✅
+2. **Task 2**: Add restake preference indicator ✅
+3. **Task 3**: Restructure tabs with pills ✅
+4. **Task 4**: CNPY multi-chain staking ✅
 
 ---
 
 ## Testing Checklist
 
 ### Task 1
-- [ ] Claim button no longer appears in Rewards tab
-- [ ] ClaimDialog does not open
-- [ ] Rewards are still displayed correctly
-- [ ] No console errors related to claim functionality
+- [x] Claim button no longer appears in Rewards tab
+- [x] ClaimDialog does not open
+- [x] Rewards are still displayed correctly
+- [x] No console errors related to claim functionality
 
 ### Task 2
-- [ ] Restake preference badge appears for each stake
-- [ ] Badge shows correct status (Restaking / To Balance)
-- [ ] Tooltip explains the preference
+- [x] Restake preference badge appears for each stake
+- [x] Badge shows correct status (Auto-compound / Auto-withdraw)
+- [x] Tooltip explains the preference
 
 ### Task 3
-- [ ] Pills render correctly with proper styling
-- [ ] "All Stakes" shows all staking positions
-- [ ] "Active" filters to only positions with amount > 0
-- [ ] "Unstaking Queue" shows pending unstakes
-- [ ] "Add More" button works for active stakes
-- [ ] "Stake" button works for inactive positions
-- [ ] "Unstake" button works for active stakes
-- [ ] Badge counts are accurate
+- [x] Pills render correctly with proper styling
+- [x] "All Stakes" shows all staking positions
+- [x] "Active" filters to only positions with amount > 0
+- [x] "Unstaking Queue" shows pending unstakes
+- [x] "Add More" button works for active stakes
+- [x] "Stake" button works for inactive positions
+- [x] "Unstake" button works for active stakes
+- [x] Badge counts are accurate
+
+### Task 4
+- [ ] CNPY always appears at the top of the staking list
+- [ ] CNPY row shows committee chains with stacked avatars
+- [ ] Clicking "Manage" on CNPY opens the multi-chain dialog
+- [ ] Multi-chain dialog shows amount input
+- [ ] Chain selection allows checking/unchecking chains
+- [ ] Currently active chains show "Active" badge
+- [ ] Confirmation step shows all tokens user will earn
+- [ ] Success message confirms stake for selected chains
 
 ---
 
