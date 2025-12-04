@@ -229,7 +229,7 @@ export default function StakingTab({ stakes, assets, unstaking, earningsHistory 
               className="h-7 text-xs w-[72px]"
               onClick={() => handleStakeClick(stake)}
             >
-              Manage
+              Add More
             </Button>
             <Button
               size="sm"

@@ -3,9 +3,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { X, ArrowLeft, Check, Info, Wallet, Plus } from 'lucide-react'
+import { X, ArrowLeft, Check, Info, Wallet, Plus, RefreshCw } from 'lucide-react'
 
 export default function CnpyStakeDialog({
   open,
@@ -17,6 +18,7 @@ export default function CnpyStakeDialog({
   const [step, setStep] = useState(1)
   const [amount, setAmount] = useState('')
   const [selectedChains, setSelectedChains] = useState([])
+  const [autoCompound, setAutoCompound] = useState(true)
 
   // Initialize selected chains from current committees
   useEffect(() => {
@@ -187,17 +189,30 @@ export default function CnpyStakeDialog({
                   </div>
                 </div>
 
-                {/* Info about multi-chain staking */}
-                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="flex gap-3">
-                    <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Earn tokens from multiple chains</p>
-                      <p className="text-xs text-muted-foreground">
-                        When you stake CNPY, you can choose which chains to stake for.
-                        You'll earn both CNPY and the native token of each chain you select.
-                      </p>
+                {/* Auto-compound Toggle */}
+                <div className={`p-4 bg-muted/30 rounded-lg border ${isAddingMore ? 'opacity-60' : ''}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <RefreshCw className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div className="space-y-1">
+                        <Label htmlFor="cnpy-auto-compound" className={`text-sm font-medium ${isAddingMore ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                          Auto-compound rewards
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {isAddingMore
+                            ? 'This setting cannot be changed while you have an active stake. Unstake first to modify your reward preference.'
+                            : autoCompound
+                              ? 'Rewards will be automatically restaked to maximize your earnings through compound interest.'
+                              : 'Rewards will be transferred to your wallet balance instead of being restaked.'}
+                        </p>
+                      </div>
                     </div>
+                    <Switch
+                      id="cnpy-auto-compound"
+                      checked={isAddingMore ? (cnpyStake?.restakeRewards ?? true) : autoCompound}
+                      onCheckedChange={setAutoCompound}
+                      disabled={isAddingMore}
+                    />
                   </div>
                 </div>
 
@@ -241,9 +256,9 @@ export default function CnpyStakeDialog({
                   <div className="flex gap-3">
                     <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Earn native tokens from other chains</p>
+                      <p className="text-sm font-medium">Earn tokens from multiple chains</p>
                       <p className="text-xs text-muted-foreground">
-                        Select chains to earn their tokens alongside your CNPY rewards. This is optional and can be changed later.
+                        When you stake CNPY, you can choose which chains to stake for. You'll earn both CNPY and the native token of each chain you select. This is optional and can be changed later.
                       </p>
                     </div>
                   </div>
@@ -375,6 +390,13 @@ export default function CnpyStakeDialog({
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Chains</span>
                       <span className="text-sm font-medium">{selectedChains.length} selected</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Auto-compound</span>
+                      <span className="text-sm font-medium">
+                        {isAddingMore ? (cnpyStake?.restakeRewards ? 'Enabled' : 'Disabled') : (autoCompound ? 'Enabled' : 'Disabled')}
+                      </span>
                     </div>
 
                     <div className="pt-2 border-t">

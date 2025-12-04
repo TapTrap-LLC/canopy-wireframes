@@ -11,7 +11,6 @@ import { X, ArrowLeft, Check, Info, Wallet, RefreshCw } from 'lucide-react'
 export default function StakeDialog({ open, onOpenChange, selectedChain, availableChains = [], assets = [], onCnpySelected }) {
   const [step, setStep] = useState(1)
   const [amount, setAmount] = useState('')
-  const [source, setSource] = useState('trading')
   const [autoCompound, setAutoCompound] = useState(true)
   const [internalSelectedChain, setInternalSelectedChain] = useState(null)
 
@@ -25,7 +24,6 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
       setInternalSelectedChain(null)
       setStep(1)
       setAmount('')
-      setSource('trading')
       setAutoCompound(true)
     }
   }, [open])
@@ -83,7 +81,6 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
   const handleClose = () => {
     setStep(1)
     setAmount('')
-    setSource('trading')
     setInternalSelectedChain(null)
     onOpenChange(false)
   }
@@ -205,38 +202,17 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                 {activeChain && (
                   <div className="space-y-2">
                     <Label className="block text-sm font-medium">Source</Label>
-                    <Select value={source} onValueChange={setSource}>
-                      <SelectTrigger className="h-auto py-3 [&>span]:line-clamp-none [&>span]:block">
-                        <SelectValue>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
-                              <Wallet className="w-4 h-4" />
-                            </div>
-                            <div className="flex flex-col items-start">
-                              <span className="font-medium text-sm">Wallet balance</span>
-                              <span className="text-xs text-muted-foreground">
-                                {activeChain.symbol} balance: {availableBalance} {activeChain.symbol}
-                              </span>
-                            </div>
-                          </div>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="trading" className="h-auto py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
-                              <Wallet className="w-4 h-4" />
-                            </div>
-                            <div className="flex flex-col items-start gap-1">
-                              <span className="font-medium">Wallet balance</span>
-                              <span className="text-xs text-muted-foreground">
-                                {activeChain.symbol} balance: {availableBalance} {activeChain.symbol}
-                              </span>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-3 h-auto py-3 px-3 border rounded-md bg-background">
+                      <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
+                        <Wallet className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm">Wallet balance</span>
+                        <span className="text-xs text-muted-foreground">
+                          {activeChain.symbol} balance: {availableBalance} {activeChain.symbol}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -305,25 +281,28 @@ export default function StakeDialog({ open, onOpenChange, selectedChain, availab
                     </div>
 
                     {/* Auto-compound Toggle */}
-                    <div className="p-4 bg-muted/30 rounded-lg border">
+                    <div className={`p-4 bg-muted/30 rounded-lg border ${isAddingMore ? 'opacity-60' : ''}`}>
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3">
                           <RefreshCw className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                           <div className="space-y-1">
-                            <Label htmlFor="auto-compound" className="text-sm font-medium cursor-pointer">
+                            <Label htmlFor="auto-compound" className={`text-sm font-medium ${isAddingMore ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                               Auto-compound rewards
                             </Label>
                             <p className="text-xs text-muted-foreground">
-                              {autoCompound
-                                ? 'Rewards will be automatically restaked to maximize your earnings through compound interest.'
-                                : 'Rewards will be transferred to your wallet balance instead of being restaked.'}
+                              {isAddingMore
+                                ? 'This setting cannot be changed while you have an active stake. Unstake first to modify your reward preference.'
+                                : autoCompound
+                                  ? 'Rewards will be automatically restaked to maximize your earnings through compound interest.'
+                                  : 'Rewards will be transferred to your wallet balance instead of being restaked.'}
                             </p>
                           </div>
                         </div>
                         <Switch
                           id="auto-compound"
-                          checked={autoCompound}
+                          checked={isAddingMore ? (activeChain?.restakeRewards ?? true) : autoCompound}
                           onCheckedChange={setAutoCompound}
+                          disabled={isAddingMore}
                         />
                       </div>
                     </div>
