@@ -159,7 +159,7 @@ export default function ConvertTransactionDialog({
         className={`absolute inset-0 bg-black/80 z-10 transition-opacity duration-300 ${
           isAnimating ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={showSuccess ? onClose : undefined}
+        onClick={showSuccess ? () => onClose(true) : undefined}
       />
 
       {/* Dialog Content */}
@@ -170,7 +170,7 @@ export default function ConvertTransactionDialog({
       >
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={() => onClose(showSuccess)}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none"
         >
           <X className="h-5 w-5" />
@@ -225,7 +225,7 @@ export default function ConvertTransactionDialog({
                 variant="secondary"
                 className="w-full h-11 text-base"
                 size="lg"
-                onClick={onClose}
+                onClick={() => onClose(true)}
               >
                 Close
               </Button>
@@ -324,7 +324,7 @@ export default function ConvertTransactionDialog({
               <Button
                 className="w-full h-11 text-base mb-3 bg-gradient-to-b from-green-500 to-green-700 hover:from-green-600 hover:to-green-800"
                 size="lg"
-                onClick={onClose}
+                onClick={() => onClose(true)}
               >
                 Done
               </Button>
@@ -334,7 +334,7 @@ export default function ConvertTransactionDialog({
                 variant="secondary"
                 className="w-full h-11 text-base"
                 size="lg"
-                onClick={onClose}
+                onClick={() => onClose(true)}
               >
                 View transaction
               </Button>
