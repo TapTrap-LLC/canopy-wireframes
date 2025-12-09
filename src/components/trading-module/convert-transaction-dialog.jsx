@@ -85,15 +85,20 @@ function StepIndicator({ step, currentStep, label, sublabel }) {
 export default function ConvertTransactionDialog({
   open,
   onClose,
+  direction = 'buy', // 'buy' = stablecoin→CNPY, 'sell' = CNPY→stablecoin
   sourceToken,
-  cnpyReceived = 0,
-  totalCost = 0,
+  destinationToken,
+  cnpyAmount = 0,
+  stablecoinAmount = 0,
   totalSavings = 0,
   ordersMatched = 0
 }) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [showSuccess, setShowSuccess] = useState(false)
+  
+  const isBuyDirection = direction === 'buy'
+  const token = isBuyDirection ? sourceToken : destinationToken
 
   // Step timing configuration (realistic 5-8 seconds total)
   const stepDurations = {
@@ -177,9 +182,14 @@ export default function ConvertTransactionDialog({
             <>
               {/* Header */}
               <div className="text-center mb-6">
-                <h2 className="text-lg font-bold mb-1">Converting to CNPY</h2>
+                <h2 className="text-lg font-bold mb-1">
+                  {isBuyDirection ? 'Converting to CNPY' : 'Converting CNPY'}
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                  ${totalCost.toFixed(2)} → {cnpyReceived.toLocaleString()} CNPY
+                  {isBuyDirection 
+                    ? `$${stablecoinAmount.toFixed(2)} → ${cnpyAmount.toLocaleString()} CNPY`
+                    : `${cnpyAmount.toLocaleString()} CNPY → $${stablecoinAmount.toFixed(2)} ${token?.symbol || 'USDC'}`
+                  }
                 </p>
               </div>
 
@@ -225,15 +235,21 @@ export default function ConvertTransactionDialog({
               {/* Success State */}
               {/* Token Exchange Icons */}
               <div className="flex items-center justify-center gap-3 mb-4">
-                {/* Source Token */}
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 animate-in zoom-in-50 duration-300"
-                  style={{ backgroundColor: sourceToken?.color || '#2563eb' }}
-                >
-                  <span className="text-lg font-bold text-white">
-                    {sourceToken?.symbol === 'USDC' ? '$' : 'T'}
-                  </span>
-                </div>
+                {/* First Token (depends on direction) */}
+                {isBuyDirection ? (
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 animate-in zoom-in-50 duration-300"
+                    style={{ backgroundColor: token?.color || '#2563eb' }}
+                  >
+                    <span className="text-lg font-bold text-white">
+                      {token?.symbol === 'USDC' ? '$' : 'T'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 animate-in zoom-in-50 duration-300">
+                    <CnpyLogo className="w-6 h-6 text-white" />
+                  </div>
+                )}
 
                 {/* Arrow Dots */}
                 <div className="flex items-center gap-1">
@@ -242,21 +258,38 @@ export default function ConvertTransactionDialog({
                   <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-in fade-in duration-300 delay-200" />
                 </div>
 
-                {/* CNPY Token */}
-                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 animate-in zoom-in-50 duration-300 delay-100">
-                  <CnpyLogo className="w-6 h-6 text-white" />
-                </div>
+                {/* Second Token (depends on direction) */}
+                {isBuyDirection ? (
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 animate-in zoom-in-50 duration-300 delay-100">
+                    <CnpyLogo className="w-6 h-6 text-white" />
+                  </div>
+                ) : (
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 animate-in zoom-in-50 duration-300 delay-100"
+                    style={{ backgroundColor: token?.color || '#2563eb' }}
+                  >
+                    <span className="text-lg font-bold text-white">
+                      {token?.symbol === 'USDC' ? '$' : 'T'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Success Message */}
               <h2 className="text-xl font-bold text-center mb-1 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-150">
-                Converted to{' '}
-                <span className="text-green-500">{cnpyReceived.toLocaleString()} CNPY</span>
+                {isBuyDirection ? (
+                  <>Converted to <span className="text-green-500">{cnpyAmount.toLocaleString()} CNPY</span></>
+                ) : (
+                  <>Received <span className="text-green-500">${stablecoinAmount.toFixed(2)} {token?.symbol || 'USDC'}</span></>
+                )}
               </h2>
 
               {/* Transaction Details */}
               <p className="text-sm text-muted-foreground text-center mb-4 animate-in fade-in duration-300 delay-200">
-                ${totalCost.toFixed(2)} {sourceToken?.symbol || 'USDC'} → {cnpyReceived.toLocaleString()} CNPY
+                {isBuyDirection 
+                  ? `$${stablecoinAmount.toFixed(2)} ${token?.symbol || 'USDC'} → ${cnpyAmount.toLocaleString()} CNPY`
+                  : `${cnpyAmount.toLocaleString()} CNPY → $${stablecoinAmount.toFixed(2)} ${token?.symbol || 'USDC'}`
+                }
               </p>
 
               {/* Stats */}
@@ -265,11 +298,19 @@ export default function ConvertTransactionDialog({
                   <span className="text-sm text-muted-foreground">Orders Matched</span>
                   <span className="text-sm font-semibold">{ordersMatched}</span>
                 </div>
-                {totalSavings > 0 && (
+                {isBuyDirection && totalSavings > 0 && (
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm text-muted-foreground">Bonus Earned</span>
                     <span className="text-sm font-semibold text-green-500">
                       +${totalSavings.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {!isBuyDirection && cnpyAmount > 0 && stablecoinAmount > 0 && (
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-muted-foreground">Avg. Rate</span>
+                    <span className="text-sm font-semibold">
+                      ${(stablecoinAmount / cnpyAmount).toFixed(4)}/CNPY
                     </span>
                   </div>
                 )}
