@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, ChevronRight, ArrowDown, Zap, Settings } from 'lucide-react'
+import { Plus, ChevronRight, ArrowDown, Zap, Settings, Wallet } from 'lucide-react'
 import { useWallet } from '@/contexts/wallet-context'
 import SlippageSettings from './slippage-settings'
 
@@ -13,8 +13,10 @@ export default function SwapTab({
   onSwapTokens,
   onShowConfirmation
 }) {
-  const { isConnected } = useWallet()
+  const { isConnected, getTokenBalance } = useWallet()
   const [amount, setAmount] = useState('')
+  const [outputAmount, setOutputAmount] = useState('')
+  const [activeInput, setActiveInput] = useState('from') // 'from' or 'to' - which input is being edited
   const [slippage, setSlippage] = useState(1.0) // Default 1% slippage
   const [showSlippageSettings, setShowSlippageSettings] = useState(false)
   const [inputMode, setInputMode] = useState('token') // 'token' or 'usd'
@@ -60,25 +62,45 @@ export default function SwapTab({
     }
   }
 
-  // Calculate conversion based on token prices
+  // Calculate conversion based on token prices (bidirectional)
   const calculateConversion = () => {
-    const tokenAmount = getTokenAmountForConversion()
-    if (!tokenAmount || tokenAmount === 0 || !fromToken || !toToken) {
-      return { tokens: '0', usd: '$0.00' }
+    if (!fromToken || !toToken) {
+      return { fromTokens: '0', toTokens: '0', usd: '$0.00' }
     }
 
     const fromPrice = fromToken.currentPrice || 0
     const toPrice = toToken.currentPrice || 0
 
-    if (toPrice === 0) return { tokens: '0', usd: '$0.00' }
+    if (fromPrice === 0 || toPrice === 0) {
+      return { fromTokens: '0', toTokens: '0', usd: '$0.00' }
+    }
 
-    // Calculate value in USD then convert to output token
-    const usdValue = tokenAmount * fromPrice
-    const tokensReceived = usdValue / toPrice
-
-    return {
-      tokens: tokensReceived.toLocaleString('en-US', { maximumFractionDigits: 6 }),
-      usd: `$${usdValue.toFixed(2)}`
+    // If user is editing the "from" input, calculate "to" output
+    if (activeInput === 'from') {
+      const tokenAmount = getTokenAmountForConversion()
+      if (!tokenAmount || tokenAmount === 0) {
+        return { fromTokens: amount || '0', toTokens: '0', usd: '$0.00' }
+      }
+      const usdValue = tokenAmount * fromPrice
+      const tokensReceived = usdValue / toPrice
+      return {
+        fromTokens: amount,
+        toTokens: tokensReceived.toLocaleString('en-US', { maximumFractionDigits: 6 }),
+        usd: `$${usdValue.toFixed(2)}`
+      }
+    } else {
+      // User is editing the "to" input, calculate "from" input
+      const outputTokenAmount = parseFloat(outputAmount) || 0
+      if (outputTokenAmount === 0) {
+        return { fromTokens: '0', toTokens: outputAmount || '0', usd: '$0.00' }
+      }
+      const usdValue = outputTokenAmount * toPrice
+      const tokensNeeded = usdValue / fromPrice
+      return {
+        fromTokens: tokensNeeded.toLocaleString('en-US', { maximumFractionDigits: 6 }),
+        toTokens: outputAmount,
+        usd: `$${usdValue.toFixed(2)}`
+      }
     }
   }
 
@@ -109,8 +131,19 @@ export default function SwapTab({
   }
 
   const handleUseMax = () => {
-    // TODO: Set to max balance
-    setAmount('100')
+    if (fromToken) {
+      const balance = getTokenBalance(fromToken.symbol)
+      setAmount(balance.toString())
+      setActiveInput('from')
+    }
+  }
+
+  const handleUseMaxOutput = () => {
+    if (toToken) {
+      const balance = getTokenBalance(toToken.symbol)
+      setOutputAmount(balance.toString())
+      setActiveInput('to')
+    }
   }
 
   const handleSwapDirection = () => {
@@ -121,14 +154,20 @@ export default function SwapTab({
   }
 
   const handleContinue = () => {
-    if (isConnected && fromToken && toToken && amount && onShowConfirmation) {
-      // Always pass the token amount, not USD
-      const tokenAmount = inputMode === 'token' ? amount : inputValues.tokenAmount
+    if (isConnected && fromToken && toToken && onShowConfirmation) {
+      // Always pass the token amounts
+      const fromAmount = activeInput === 'from' 
+        ? (inputMode === 'token' ? amount : inputValues.tokenAmount)
+        : conversion.fromTokens
+      const toAmount = activeInput === 'to' ? outputAmount : conversion.toTokens
+      
+      if (!fromAmount || parseFloat(fromAmount) <= 0) return
+      
       onShowConfirmation({
         fromToken,
         toToken,
-        fromAmount: tokenAmount,
-        toAmount: conversion.tokens
+        fromAmount,
+        toAmount
       })
     }
   }
@@ -163,7 +202,10 @@ export default function SwapTab({
                     <p className="text-base font-semibold">{fromToken.symbol}</p>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
-                  <p className="text-sm text-muted-foreground">0 {fromToken.symbol}</p>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Wallet className="w-3 h-3" />
+                    {getTokenBalance(fromToken.symbol).toLocaleString()} {fromToken.symbol}
+                  </p>
                 </div>
               </button>
               <Button
@@ -183,14 +225,16 @@ export default function SwapTab({
                 <input
                   type="text"
                   inputMode="decimal"
-                  value={amount}
+                  value={activeInput === 'from' ? amount : conversion.fromTokens}
                   onChange={(e) => {
                     const value = e.target.value
                     // Only allow numbers and decimal point
                     if (value === '' || /^\d*\.?\d*$/.test(value)) {
                       setAmount(value)
+                      setActiveInput('from')
                     }
                   }}
+                  onFocus={() => setActiveInput('from')}
                   placeholder="0"
                   className="text-4xl font-bold bg-transparent border-0 outline-none p-0 h-auto text-center w-full placeholder:text-muted-foreground"
                 />
@@ -275,11 +319,31 @@ export default function SwapTab({
                     <p className="text-base font-semibold">{toToken.symbol}</p>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
-                  <p className="text-sm text-muted-foreground">0 {toToken.symbol}</p>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleUseMaxOutput(); }}
+                    className="text-sm text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <Wallet className="w-3 h-3" />
+                    {getTokenBalance(toToken.symbol).toLocaleString()} {toToken.symbol}
+                  </button>
                 </div>
               </button>
-              <div className="text-right">
-                <p className="text-base font-semibold">{conversion.tokens}</p>
+              <div className="text-right flex flex-col items-end">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={activeInput === 'to' ? outputAmount : conversion.toTokens}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      setOutputAmount(value)
+                      setActiveInput('to')
+                    }
+                  }}
+                  onFocus={() => setActiveInput('to')}
+                  placeholder="0"
+                  className="text-base font-semibold bg-transparent border-none outline-none text-right w-full max-w-[120px]"
+                />
                 <p className="text-sm text-muted-foreground">{conversion.usd}</p>
               </div>
             </div>

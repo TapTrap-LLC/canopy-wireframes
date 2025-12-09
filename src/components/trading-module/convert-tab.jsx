@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, ChevronRight, ChevronDown, ArrowDown, Check, Zap } from 'lucide-react'
+import { Plus, ChevronRight, ChevronDown, ArrowDown, Check, Zap, Wallet } from 'lucide-react'
 import { useWallet } from '@/contexts/wallet-context'
 import BridgeTokenDialog from '@/components/bridge-token-dialog'
 import ConvertTransactionDialog from '@/components/trading-module/convert-transaction-dialog'
@@ -395,7 +395,8 @@ export default function ConvertTab({
                       </span>
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Wallet className="w-3 h-3" />
                       {sourceToken.balance.toLocaleString()} {sourceToken.symbol}
                     </p>
                   </div>
@@ -411,11 +412,6 @@ export default function ConvertTab({
               </div>
 
               {/* Budget Label */}
-              {amount && parseFloat(amount) > 0 && (
-                <div className="text-center">
-                  <span className="text-xs text-muted-foreground tracking-wider">BUDGET</span>
-                </div>
-              )}
 
               {/* Amount Input - Centered */}
               <div className="flex items-center justify-center">
@@ -490,7 +486,8 @@ export default function ConvertTab({
                 </div>
                 <div className="text-left">
                   <p className="text-base font-semibold">CNPY</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Wallet className="w-3 h-3" />
                     {cnpyBalance.toLocaleString()} CNPY
                   </p>
                 </div>
@@ -504,13 +501,6 @@ export default function ConvertTab({
                 Use max
               </Button>
             </div>
-
-            {/* Selling Label */}
-            {amount && parseFloat(amount) > 0 && (
-              <div className="text-center">
-                <span className="text-xs text-muted-foreground tracking-wider">SELLING</span>
-              </div>
-            )}
 
             {/* Amount Input - Centered */}
             <div className="flex items-center justify-center">
@@ -542,14 +532,14 @@ export default function ConvertTab({
             {selection.cnpySold > 0 && parseFloat(amount) > 0 && (
               <div className="space-y-1 text-center">
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-xs text-muted-foreground tracking-wider">MATCHED</span>
+                  <span className="text-xs text-muted-foreground tracking-wider">SELLING</span>
                   <span className="text-lg font-semibold text-green-500">
                     {selection.cnpySold.toLocaleString()} CNPY
                   </span>
                 </div>
                 {selection.gap > 0.5 && (
                   <div className="text-sm text-muted-foreground">
-                    {selection.gap.toFixed(0)} CNPY unmatched
+                    {selection.gap.toFixed(0)} CNPY unused
                   </div>
                 )}
               </div>
@@ -584,19 +574,25 @@ export default function ConvertTab({
                   </div>
                   <div className="text-left">
                     <p className="text-base font-semibold">CNPY</p>
-                    <p className="text-sm text-muted-foreground">{cnpyBalance.toLocaleString()} CNPY</p>
+                    <button 
+                      onClick={handleUseMax}
+                      className="text-sm text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      <Wallet className="w-3 h-3" />
+                      {cnpyBalance.toLocaleString()} CNPY
+                    </button>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-base font-semibold">
                     {selection.cnpyReceived > 0 ? selection.cnpyReceived.toLocaleString() : '0'}
                   </p>
-                  {selection.totalSavings > 0 ? (
-                    <p className="text-sm text-green-500">+${selection.totalSavings.toFixed(2)} bonus</p>
-                  ) : (
+                  {selection.cnpyReceived > 0 && selection.totalCost > 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      ${selection.cnpyReceived > 0 ? selection.cnpyReceived.toFixed(2) : '0.00'}
+                      ~${selection.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({(((selection.totalCost / selection.cnpyReceived) - 1) * 100).toFixed(1)}%)
                     </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">$0.00</p>
                   )}
                 </div>
               </div>
@@ -604,6 +600,22 @@ export default function ConvertTab({
               {/* Collapsible Orders Section */}
               {sourceToken && (
                 <div className="mt-4 pt-4 border-t border-border">
+                  {/* Progress Summary - Always visible */}
+                  {selection.totalCost > 0 && parseFloat(amount) > 0 && (
+                    <div className="bg-muted/30 rounded-lg p-3 mb-3">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                        <span>{((selection.totalCost / parseFloat(amount)) * 100).toFixed(0)}% filled</span>
+                        <span>${selection.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} of ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-foreground/40 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((selection.totalCost / parseFloat(amount)) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Orders Header */}
                   <div className="flex items-center justify-between mb-3">
                     <button
@@ -702,9 +714,13 @@ export default function ConvertTab({
                           </span>
                           <ChevronRight className="w-4 h-4 text-muted-foreground" />
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleUseMax(); }}
+                          className="text-sm text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          <Wallet className="w-3 h-3" />
                           {destinationToken.balance.toLocaleString()} {destinationToken.symbol}
-                        </p>
+                        </button>
                       </div>
                     </button>
                     <div className="text-right">
@@ -738,6 +754,22 @@ export default function ConvertTab({
               {/* Collapsible Orders Section for sell direction */}
               {destinationToken && (
                 <div className="mt-4 pt-4 border-t border-border">
+                  {/* Progress Summary - Always visible */}
+                  {selection.cnpySold > 0 && parseFloat(amount) > 0 && (
+                    <div className="bg-muted/30 rounded-lg p-3 mb-3">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                        <span>{((selection.cnpySold / parseFloat(amount)) * 100).toFixed(0)}% filled</span>
+                        <span>{selection.cnpySold.toLocaleString()} of {parseFloat(amount).toLocaleString()} CNPY</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-foreground/40 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min((selection.cnpySold / parseFloat(amount)) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Orders Header */}
                   <div className="flex items-center justify-between mb-3">
                     <button

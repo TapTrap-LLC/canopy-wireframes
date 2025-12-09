@@ -3,7 +3,7 @@
     {
       "id": "buy-1",
       "maker": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
-      "amount": 500,
+      "amount": 247,
       "price": 0.98,
       "premium": -2,
       "token": "USDC",
@@ -14,7 +14,7 @@
     {
       "id": "buy-2",
       "maker": "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
-      "amount": 1200,
+      "amount": 512,
       "price": 0.97,
       "premium": -3,
       "token": "USDC",
@@ -25,7 +25,7 @@
     {
       "id": "buy-3",
       "maker": "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
-      "amount": 800,
+      "amount": 183,
       "price": 0.96,
       "premium": -4,
       "token": "USDT",
@@ -36,7 +36,7 @@
     {
       "id": "buy-4",
       "maker": "0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f",
-      "amount": 2000,
+      "amount": 875,
       "price": 0.95,
       "premium": -5,
       "token": "USDC",
@@ -47,7 +47,7 @@
     {
       "id": "buy-5",
       "maker": "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
-      "amount": 350,
+      "amount": 156,
       "price": 0.99,
       "premium": -1,
       "token": "USDT",
@@ -58,7 +58,7 @@
     {
       "id": "buy-6",
       "maker": "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
-      "amount": 1500,
+      "amount": 89,
       "price": 0.94,
       "premium": -6,
       "token": "USDC",
@@ -69,7 +69,7 @@
     {
       "id": "buy-7",
       "maker": "0x71bE63f3384f5fb98995898A86B02Fb2426c5788",
-      "amount": 600,
+      "amount": 324,
       "price": 0.97,
       "premium": -3,
       "token": "USDT",
@@ -80,7 +80,7 @@
     {
       "id": "buy-8",
       "maker": "0xFABB0ac9d68B0B445fB7357272Ff202C5651694a",
-      "amount": 900,
+      "amount": 418,
       "price": 0.96,
       "premium": -4,
       "token": "USDC",
@@ -93,7 +93,7 @@
     {
       "id": "order-1",
       "maker": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-      "amount": 100,
+      "amount": 127,
       "price": 0.98,
       "discount": -2,
       "token": "USDC",
@@ -104,7 +104,7 @@
     {
       "id": "order-2",
       "maker": "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
-      "amount": 850,
+      "amount": 483,
       "price": 0.95,
       "discount": -5,
       "token": "USDC",
@@ -115,7 +115,7 @@
     {
       "id": "order-3",
       "maker": "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
-      "amount": 500,
+      "amount": 256,
       "price": 0.94,
       "discount": -6,
       "token": "USDT",
@@ -126,7 +126,7 @@
     {
       "id": "order-4",
       "maker": "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
-      "amount": 100,
+      "amount": 94,
       "price": 0.98,
       "discount": -2,
       "token": "USDT",
@@ -137,7 +137,7 @@
     {
       "id": "order-5",
       "maker": "0x2546BcD3c84621e976D8185a91A922aE77ECEc30",
-      "amount": 2500,
+      "amount": 712,
       "price": 0.97,
       "discount": -3,
       "token": "USDC",
@@ -148,7 +148,7 @@
     {
       "id": "order-6",
       "maker": "0xcd3B766CCDd6AE721141F452C550Ca635964ce71",
-      "amount": 1200,
+      "amount": 341,
       "price": 0.96,
       "discount": -4,
       "token": "USDC",
@@ -159,7 +159,7 @@
     {
       "id": "order-7",
       "maker": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-      "amount": 750,
+      "amount": 189,
       "price": 0.93,
       "discount": -7,
       "token": "USDT",
@@ -170,7 +170,7 @@
     {
       "id": "order-8",
       "maker": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-      "amount": 300,
+      "amount": 68,
       "price": 0.99,
       "discount": -1,
       "token": "USDC",

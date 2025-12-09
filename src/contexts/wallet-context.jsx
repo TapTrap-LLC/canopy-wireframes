@@ -206,6 +206,20 @@ export function WalletProvider({ children }) {
     })
   }
 
+  // Get balance for a specific token by symbol
+  const getTokenBalance = (symbol) => {
+    if (symbol === 'CNPY') {
+      return getCnpyBalance()
+    }
+    // Check wallet assets
+    const walletData = getWalletData()
+    if (walletData && walletData.assets) {
+      const asset = walletData.assets.find(a => a.symbol === symbol)
+      return asset ? asset.balance : 0
+    }
+    return 0
+  }
+
   // Get external wallet balances
   const getExternalBalances = () => externalBalances
 
@@ -263,6 +277,8 @@ export function WalletProvider({ children }) {
         // CNPY balance functions
         getCnpyBalance,
         updateCnpyBalance,
+        // Token balance function
+        getTokenBalance,
         // External wallet functions
         getExternalBalances,
         updateExternalBalance,
