@@ -226,7 +226,14 @@ export default function ConvertTab({
   onSourceTokenChange,
   orderBookSelection
 }) {
-  const { isConnected } = useWallet()
+  const { 
+    isConnected, 
+    getCnpyBalance, 
+    updateCnpyBalance, 
+    getExternalBalances, 
+    updateExternalBalance,
+    connectExternalWallet 
+  } = useWallet()
   
   const [showBridgeDialog, setShowBridgeDialog] = useState(false)
   const [sourceToken, setSourceToken] = useState(null)
@@ -238,36 +245,14 @@ export default function ConvertTab({
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [direction, setDirection] = useState('buy') // 'buy' = stablecoin→CNPY, 'sell' = CNPY→stablecoin
   
-  // Mock CNPY balance for sell direction
-  const cnpyBalance = 5000
-
-  const [connectedWallets, setConnectedWallets] = useState({
-    ethereum: {
-      connected: true,
-      address: '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
-      balances: { USDC: 1500.50, USDT: 850.25 }
-    },
-    solana: {
-      connected: false,
-      address: null,
-      balances: { USDC: 0, USDT: 0 }
-    }
-  })
+  // Get CNPY balance from context
+  const cnpyBalance = getCnpyBalance()
+  
+  // Get external wallet balances from context
+  const connectedWallets = getExternalBalances()
 
   const handleConnectWallet = async (chainId) => {
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setConnectedWallets(prev => ({
-      ...prev,
-      [chainId]: {
-        connected: true,
-        address: chainId === 'solana' 
-          ? '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU'
-          : '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
-        balances: chainId === 'solana' 
-          ? { USDC: 0, USDT: 500.75 }  // Solana USDC has 0 balance
-          : { USDC: 2100.00, USDT: 500.75 }
-      }
-    }))
+    await connectExternalWallet(chainId)
   }
 
   const handleTokenSelected = (token) => {
@@ -599,7 +584,7 @@ export default function ConvertTab({
                   </div>
                   <div className="text-left">
                     <p className="text-base font-semibold">CNPY</p>
-                    <p className="text-sm text-muted-foreground">0 CNPY</p>
+                    <p className="text-sm text-muted-foreground">{cnpyBalance.toLocaleString()} CNPY</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -893,9 +878,27 @@ export default function ConvertTab({
       {showTransactionDialog && (
         <ConvertTransactionDialog
           open={showTransactionDialog}
-          onClose={() => {
+          onClose={(wasSuccessful) => {
             setShowTransactionDialog(false)
-            // Reset form after successful transaction
+            
+            // Update balances after successful transaction
+            if (wasSuccessful !== false) {
+              if (direction === 'buy' && sourceToken) {
+                // Buy: spent stablecoin, received CNPY
+                updateExternalBalance(sourceToken.chain, sourceToken.symbol, -selection.totalCost)
+                updateCnpyBalance(selection.cnpyReceived)
+                // Update the sourceToken's balance in local state for immediate UI feedback
+                setSourceToken(prev => prev ? { ...prev, balance: prev.balance - selection.totalCost } : null)
+              } else if (direction === 'sell' && destinationToken) {
+                // Sell: spent CNPY, received stablecoin
+                updateCnpyBalance(-selection.cnpySold)
+                updateExternalBalance(destinationToken.chain, destinationToken.symbol, selection.totalReceived)
+                // Update the destinationToken's balance in local state for immediate UI feedback
+                setDestinationToken(prev => prev ? { ...prev, balance: prev.balance + selection.totalReceived } : null)
+              }
+            }
+            
+            // Reset form after transaction
             setAmount('')
           }}
           direction={direction}
