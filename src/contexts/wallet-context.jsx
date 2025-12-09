@@ -11,6 +11,23 @@ export function WalletProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null)
   const [currentWallet, setCurrentWallet] = useState(null)
   const [fundedWalletData, setFundedWalletData] = useState(null)
+  
+  // CNPY balance override (null means use wallet data)
+  const [cnpyBalanceOverride, setCnpyBalanceOverride] = useState(null)
+  
+  // External wallet balances (Ethereum/Solana stablecoins)
+  const [externalBalances, setExternalBalances] = useState({
+    ethereum: { 
+      connected: true,
+      address: '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
+      balances: { USDC: 1500.50, USDT: 850.25 }
+    },
+    solana: { 
+      connected: false,
+      address: null,
+      balances: { USDC: 0, USDT: 500.75 }
+    }
+  })
 
   // Check localStorage for existing connection
   useEffect(() => {
@@ -118,16 +135,46 @@ export function WalletProvider({ children }) {
   const getTotalBalance = () => {
     // If user has funded wallet data in memory/localStorage, use that
     if (fundedWalletData) {
+      // If CNPY balance was overridden, recalculate total
+      if (cnpyBalanceOverride !== null) {
+        const cnpyAsset = fundedWalletData.assets?.find(a => a.symbol === 'CNPY')
+        const cnpyPrice = cnpyAsset?.price || 1.50
+        const originalCnpyValue = cnpyAsset?.value || 0
+        const newCnpyValue = cnpyBalanceOverride * cnpyPrice
+        return fundedWalletData.totalValue - originalCnpyValue + newCnpyValue
+      }
       return fundedWalletData.totalValue
     }
 
     // Return balance based on current user's EVM address
     if (currentUser && currentUser.evmAddress) {
       const userData = walletDataByUser[currentUser.evmAddress]
-      return userData ? userData.totalValue : 0
+      if (!userData) return 0
+      
+      // If CNPY balance was overridden, recalculate total
+      if (cnpyBalanceOverride !== null) {
+        const cnpyAsset = userData.assets?.find(a => a.symbol === 'CNPY')
+        const cnpyPrice = cnpyAsset?.price || 1.50
+        const originalCnpyValue = cnpyAsset?.value || 0
+        const newCnpyValue = cnpyBalanceOverride * cnpyPrice
+        return userData.totalValue - originalCnpyValue + newCnpyValue
+      }
+      return userData.totalValue
     }
+    
     // Default to demo user with funds
-    return walletDataByUser['0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199']?.totalValue || 0
+    const defaultData = walletDataByUser['0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199']
+    if (!defaultData) return 0
+    
+    // If CNPY balance was overridden, recalculate total
+    if (cnpyBalanceOverride !== null) {
+      const cnpyAsset = defaultData.assets?.find(a => a.symbol === 'CNPY')
+      const cnpyPrice = cnpyAsset?.price || 1.50
+      const originalCnpyValue = cnpyAsset?.value || 0
+      const newCnpyValue = cnpyBalanceOverride * cnpyPrice
+      return defaultData.totalValue - originalCnpyValue + newCnpyValue
+    }
+    return defaultData.totalValue || 0
   }
 
   const getWalletData = () => {
@@ -142,6 +189,54 @@ export function WalletProvider({ children }) {
     }
     // Default to demo user with funds
     return walletDataByUser['0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199']
+  }
+
+  // Get CNPY balance (uses override if set, otherwise from wallet data)
+  const getCnpyBalance = () => {
+    if (cnpyBalanceOverride !== null) return cnpyBalanceOverride
+    const data = getWalletData()
+    return data?.assets?.find(a => a.symbol === 'CNPY')?.balance || 0
+  }
+
+  // Update CNPY balance by delta amount
+  const updateCnpyBalance = (delta) => {
+    setCnpyBalanceOverride(prev => {
+      const currentBalance = prev !== null ? prev : getCnpyBalance()
+      return Math.max(0, currentBalance + delta)
+    })
+  }
+
+  // Get external wallet balances
+  const getExternalBalances = () => externalBalances
+
+  // Update external balance by delta amount
+  const updateExternalBalance = (chain, token, delta) => {
+    setExternalBalances(prev => ({
+      ...prev,
+      [chain]: {
+        ...prev[chain],
+        balances: {
+          ...prev[chain].balances,
+          [token]: Math.max(0, (prev[chain].balances[token] || 0) + delta)
+        }
+      }
+    }))
+  }
+
+  // Connect an external wallet
+  const connectExternalWallet = async (chainId) => {
+    // Simulate wallet connection
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    setExternalBalances(prev => ({
+      ...prev,
+      [chainId]: {
+        connected: true,
+        address: chainId === 'solana'
+          ? '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU'
+          : '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199',
+        balances: prev[chainId].balances
+      }
+    }))
   }
 
   const formatAddress = (address) => {
@@ -164,7 +259,14 @@ export function WalletProvider({ children }) {
         updateWalletData,
         formatAddress,
         getUserByEvmAddress,
-        getUserByEmail // Keep for backwards compatibility
+        getUserByEmail, // Keep for backwards compatibility
+        // CNPY balance functions
+        getCnpyBalance,
+        updateCnpyBalance,
+        // External wallet functions
+        getExternalBalances,
+        updateExternalBalance,
+        connectExternalWallet
       }}
     >
       {children}
