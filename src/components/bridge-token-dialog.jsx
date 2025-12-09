@@ -66,9 +66,12 @@ export default function BridgeTokenDialog({
   onOpenChange, 
   onSelectToken,
   connectedWallets = mockWalletState,
-  onConnectWallet
+  onConnectWallet,
+  mode = 'source' // 'source' = select token to convert FROM, 'destination' = select where to receive
 }) {
   const [connectingChain, setConnectingChain] = useState(null)
+  
+  const isDestinationMode = mode === 'destination'
 
   const handleConnectWallet = async (chainId) => {
     setConnectingChain(chainId)
@@ -109,9 +112,14 @@ export default function BridgeTokenDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 gap-0">
         <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle>Select Source Token</DialogTitle>
+          <DialogTitle>
+            {isDestinationMode ? 'Select Destination' : 'Select Source Token'}
+          </DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Choose a stablecoin from an external chain to convert to CNPY
+            {isDestinationMode 
+              ? 'Choose where to receive your stablecoins'
+              : 'Choose a stablecoin from an external chain to convert to CNPY'
+            }
           </p>
         </DialogHeader>
 
@@ -152,14 +160,16 @@ export default function BridgeTokenDialog({
                     {stablecoins.map((token) => {
                       const balance = wallet.balances[token.symbol] || 0
                       const hasBalance = balance > 0
+                      // In destination mode, allow selection regardless of balance
+                      const canSelect = isDestinationMode || hasBalance
 
                       return (
                         <button
                           key={token.symbol}
                           onClick={() => handleSelectToken(chain.id, token.symbol)}
-                          disabled={!hasBalance}
+                          disabled={!canSelect}
                           className={`w-full p-3 flex items-center justify-between transition-colors ${
-                            hasBalance 
+                            canSelect 
                               ? 'hover:bg-muted/50 cursor-pointer' 
                               : 'opacity-50 cursor-not-allowed'
                           }`}
@@ -211,7 +221,10 @@ export default function BridgeTokenDialog({
           {/* Info Note */}
           <div className="pt-2 border-t">
             <p className="text-xs text-muted-foreground text-center">
-              Bridge USDC or USDT from Ethereum or Solana to receive CNPY on Canopy Network
+              {isDestinationMode
+                ? 'Select where to receive USDC or USDT when converting your CNPY'
+                : 'Bridge USDC or USDT from Ethereum or Solana to receive CNPY on Canopy Network'
+              }
             </p>
           </div>
         </div>
