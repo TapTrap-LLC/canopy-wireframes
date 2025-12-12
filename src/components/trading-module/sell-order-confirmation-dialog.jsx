@@ -25,6 +25,18 @@ export default function SellOrderConfirmationDialog({
     }
   }, [open])
 
+  // Calculate dynamic fill time estimate based on price
+  const getEstimatedFillTime = () => {
+    if (!pricePerCnpy) return '2-4 hours'
+    
+    if (pricePerCnpy >= 1.95) return '4-8 hours'
+    if (pricePerCnpy >= 1.90) return '1-2 hours'
+    if (pricePerCnpy >= 1.84) return '30-60 min'
+    return '< 30 min'
+  }
+
+  const estimatedFillTime = getEstimatedFillTime()
+
   if (!open) return null
 
   return (
@@ -111,7 +123,7 @@ export default function SellOrderConfirmationDialog({
             <div className="flex-1">
               <p className="text-xs font-medium text-yellow-500 mb-1">Order may not fill immediately</p>
               <p className="text-xs text-muted-foreground">
-                Your order will remain active until filled or cancelled. Estimated fill time: 2-4 hours.
+                Your order will remain active until filled or cancelled. Estimated fill time: {estimatedFillTime}.
               </p>
             </div>
           </div>

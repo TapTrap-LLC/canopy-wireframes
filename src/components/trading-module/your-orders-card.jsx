@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,9 +13,16 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ChevronDown, Edit2, X, ExternalLink } from 'lucide-react'
 
-export default function YourOrdersCard({ orders = [], onEdit, onCancel, onViewAll }) {
-  const [isExpanded, setIsExpanded] = useState(false)
+export default function YourOrdersCard({ orders = [], onEdit, onCancel, onViewAll, onQuickLower }) {
+  const [isExpanded, setIsExpanded] = useState(orders.length > 0)
   const [orderToCancel, setOrderToCancel] = useState(null)
+
+  // Auto-expand when orders are added
+  useEffect(() => {
+    if (orders.length > 0 && !isExpanded) {
+      setIsExpanded(true)
+    }
+  }, [orders.length])
 
   if (!orders || orders.length === 0) {
     return null
@@ -78,6 +85,16 @@ export default function YourOrdersCard({ orders = [], onEdit, onCancel, onViewAl
                   </div>
                 </div>
                 <div className="flex items-center gap-2 ml-4">
+                  {onQuickLower && order.status === 'active' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs px-2"
+                      onClick={() => onQuickLower(order)}
+                    >
+                      Lower -2%
+                    </Button>
+                  )}
                   {onEdit && (
                     <Button
                       variant="ghost"
