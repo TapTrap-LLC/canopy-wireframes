@@ -1,10 +1,13 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, ChevronRight, ChevronDown, ArrowDown, Check, Zap, Wallet } from 'lucide-react'
+import { Plus, ChevronRight, ChevronDown, ArrowDown, Check, Zap, Wallet, AlertTriangle, Minus } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useWallet } from '@/contexts/wallet-context'
 import BridgeTokenDialog from '@/components/bridge-token-dialog'
 import ConvertTransactionDialog from '@/components/trading-module/convert-transaction-dialog'
+import SellOrderConfirmationDialog from '@/components/trading-module/sell-order-confirmation-dialog'
+import YourOrdersCard from '@/components/trading-module/your-orders-card'
 import orderBookData from '@/data/order-book.json'
 
 // CNPY Logo SVG Component
@@ -244,12 +247,80 @@ export default function ConvertTab({
   const [isShaking, setIsShaking] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [direction, setDirection] = useState('buy') // 'buy' = stablecoin→CNPY, 'sell' = CNPY→stablecoin
+  const [sellMode, setSellMode] = useState('instant') // 'instant' or 'create'
+  const [orderPrice, setOrderPrice] = useState(null) // null = use preset
+  const [pricePreset, setPricePreset] = useState('normal') // 'fast', 'normal', 'urgent'
+  const [showOrderConfirmation, setShowOrderConfirmation] = useState(false)
+  const [userOrders, setUserOrders] = useState(() => {
+    // Load user orders from localStorage
+    try {
+      const stored = localStorage.getItem('userSellOrders')
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
   
   // Get CNPY balance from context
   const cnpyBalance = getCnpyBalance()
   
   // Get external wallet balances from context
   const connectedWallets = getExternalBalances()
+
+  // Price presets for create order
+  const pricePresets = {
+    fast: 0.98,    // Below market, faster fill
+    normal: 0.99,  // Current market rate
+    urgent: 1.00   // At peg, slower fill
+  }
+
+  // Calculate instant sell values
+  const calculateInstantSell = () => {
+    const cnpyAmount = parseFloat(amount) || 0
+    if (cnpyAmount <= 0) return { received: 0, rate: 0, fee: 0, feeAmount: 0 }
+    
+    const instantSellFee = 0.10 // 10% fee
+    const instantSellRate = 1.0 - instantSellFee // $0.90 per CNPY (10% fee)
+    const received = cnpyAmount * instantSellRate
+    const feeAmount = cnpyAmount * instantSellFee
+    
+    return {
+      received,
+      rate: instantSellRate,
+      fee: instantSellFee,
+      feeAmount
+    }
+  }
+
+  // Calculate create order values
+  const calculateCreateOrder = () => {
+    const cnpyAmount = parseFloat(amount) || 0
+    if (cnpyAmount <= 0) return { received: 0, rate: 0, fee: 0, feeAmount: 0 }
+    
+    let selectedPrice
+    if (orderPrice !== null) {
+      selectedPrice = orderPrice
+    } else if (pricePreset === 'custom') {
+      selectedPrice = pricePresets.normal // Default to normal if custom but no price set
+    } else {
+      selectedPrice = pricePresets[pricePreset]
+    }
+    
+    const createOrderFee = 0.00 // 0% fee (no fees)
+    const received = cnpyAmount * selectedPrice
+    const feeAmount = 0 // No fee
+    
+    return {
+      received: received, // No fee deducted
+      rate: selectedPrice,
+      fee: createOrderFee,
+      feeAmount,
+      grossReceived: received
+    }
+  }
+
+  const instantSell = calculateInstantSell()
+  const createOrder = calculateCreateOrder()
 
   const handleConnectWallet = async (chainId) => {
     await connectExternalWallet(chainId)
@@ -276,6 +347,12 @@ export default function ConvertTab({
       } else if (newDirection === 'buy' && destinationToken) {
         setSourceToken(destinationToken)
         setDestinationToken(null)
+      }
+      // Reset sell mode to instant when switching to sell direction
+      if (newDirection === 'sell') {
+        setSellMode('instant')
+        setPricePreset('normal')
+        setOrderPrice(null)
       }
       return newDirection
     })
@@ -353,8 +430,13 @@ export default function ConvertTab({
       if (!destinationToken) return { disabled: true, text: 'Select destination', variant: 'disabled' }
       if (!amount || parseFloat(amount) <= 0) return { disabled: true, text: 'Enter amount', variant: 'disabled' }
       if (parseFloat(amount) > cnpyBalance) return { disabled: true, text: 'Insufficient CNPY', variant: 'error' }
-      if (selection.selectedOrders.length === 0) return { disabled: true, text: 'No orders available', variant: 'disabled' }
-      return { disabled: false, text: `Convert ${parseFloat(amount).toLocaleString()} CNPY`, variant: 'convert' }
+      
+      // Different button text based on sell mode
+      if (sellMode === 'instant') {
+        return { disabled: false, text: `Sell ${parseFloat(amount).toLocaleString()} CNPY`, variant: 'convert' }
+      } else {
+        return { disabled: false, text: 'Create Order', variant: 'convert' }
+      }
     }
   }
 
@@ -528,20 +610,14 @@ export default function ConvertTab({
               </div>
             </div>
 
-            {/* CNPY being sold display */}
-            {selection.cnpySold > 0 && parseFloat(amount) > 0 && (
+            {/* USD value and market rate display - only show when amount is entered */}
+            {parseFloat(amount) > 0 && direction === 'sell' && (
               <div className="space-y-1 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-xs text-muted-foreground tracking-wider">SELLING</span>
-                  <span className="text-lg font-semibold text-green-500">
-                    {selection.cnpySold.toLocaleString()} CNPY
-                  </span>
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <span>${parseFloat(amount).toFixed(0)}</span>
+                  <span>•</span>
+                  <span>$1.00/CNPY</span>
                 </div>
-                {selection.gap > 0.5 && (
-                  <div className="text-sm text-muted-foreground">
-                    {selection.gap.toFixed(0)} CNPY unused
-                  </div>
-                )}
               </div>
             )}
           </Card>
@@ -556,7 +632,7 @@ export default function ConvertTab({
           className="rounded-full h-8 w-8 bg-background border-2 hover:bg-muted transition-colors"
           onClick={handleSwapDirection}
         >
-          <ArrowDown className={`w-4 h-4 transition-transform duration-200 ${direction === 'sell' ? 'rotate-180' : ''}`} />
+          <ArrowDown className="w-4 h-4" />
         </Button>
       </div>
 
@@ -724,13 +800,35 @@ export default function ConvertTab({
                       </div>
                     </button>
                     <div className="text-right">
-                      <p className="text-base font-semibold">
-                        {selection.totalReceived > 0 ? `$${selection.totalReceived.toFixed(2)}` : '$0.00'}
-                      </p>
-                      {selection.totalReceived > 0 && selection.cnpySold > 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          @${(selection.totalReceived / selection.cnpySold).toFixed(3)}/CNPY
-                        </p>
+                      {sellMode === 'instant' && parseFloat(amount) > 0 ? (
+                        <>
+                          <p className="text-base font-semibold">
+                            ${instantSell.received.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            @${instantSell.rate.toFixed(3)}/CNPY
+                          </p>
+                        </>
+                      ) : sellMode === 'create' && parseFloat(amount) > 0 ? (
+                        <>
+                          <p className="text-base font-semibold">
+                            ${createOrder.received.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            @${createOrder.rate.toFixed(3)}/CNPY
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-base font-semibold">
+                            {selection.totalReceived > 0 ? `$${selection.totalReceived.toFixed(2)}` : '$0.00'}
+                          </p>
+                          {selection.totalReceived > 0 && selection.cnpySold > 0 && (
+                            <p className="text-sm text-muted-foreground">
+                              @${(selection.totalReceived / selection.cnpySold).toFixed(3)}/CNPY
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                   </>
@@ -751,90 +849,208 @@ export default function ConvertTab({
                 )}
               </div>
 
-              {/* Collapsible Orders Section for sell direction */}
+              {/* Sell Mode Toggle and UI */}
               {destinationToken && (
                 <div className="mt-4 pt-4 border-t border-border">
-                  {/* Progress Summary - Always visible */}
-                  {selection.cnpySold > 0 && parseFloat(amount) > 0 && (
-                    <div className="bg-muted/30 rounded-lg p-3 mb-3">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                        <span>{((selection.cnpySold / parseFloat(amount)) * 100).toFixed(0)}% filled</span>
-                        <span>{selection.cnpySold.toLocaleString()} of {parseFloat(amount).toLocaleString()} CNPY</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-foreground/40 rounded-full transition-all duration-300"
-                          style={{ width: `${Math.min((selection.cnpySold / parseFloat(amount)) * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Orders Header */}
-                  <div className="flex items-center justify-between mb-3">
+                  {/* Mode Toggle */}
+                  <div className="flex gap-1 p-1 bg-muted/50 rounded-lg mb-4">
                     <button
-                      onClick={() => setShowOrders(!showOrders)}
-                      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => setSellMode('instant')}
+                      className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${
+                        sellMode === 'instant'
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
                     >
-                      <ChevronDown className={`w-4 h-4 transition-transform ${showOrders ? '' : '-rotate-90'}`} />
-                      <span>Orders</span>
-                      {selection.selectedOrders.length > 0 && (
-                        <span className="text-xs bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded">
-                          {selection.selectedOrders.length} matched
-                        </span>
-                      )}
+                      Instant Sell
                     </button>
-                    <div className="flex gap-1 p-0.5 bg-muted/50 rounded-md">
-                      <button
-                        onClick={() => setSortMode('best_price')}
-                        className={`px-2 py-1 text-xs font-medium rounded transition-all ${
-                          sortMode === 'best_price'
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground'
-                        }`}
-                      >
-                        Best price
-                      </button>
-                      <button
-                        onClick={() => setSortMode('best_fill')}
-                        className={`px-2 py-1 text-xs font-medium rounded transition-all ${
-                          sortMode === 'best_fill'
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground'
-                        }`}
-                      >
-                        Best fill
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setSellMode('create')}
+                      className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${
+                        sellMode === 'create'
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Create Order
+                    </button>
                   </div>
 
-                  {/* Order List for sell direction */}
-                  {showOrders && (
-                    <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
-                      {displayOrders.slice(0, 6).map((order, index) => {
-                        const selectedOrder = selection.selectedOrders.find(o => o.id === order.id)
-                        const isSelected = selectedOrderIds.has(order.id)
-                        // For sell direction, show % of total CNPY being sold
-                        const cnpyAmount = parseFloat(amount) || 0
-                        const percentOfTotal = cnpyAmount > 0 ? ((selectedOrder?.cnpySold || order.amount) / cnpyAmount) * 100 : 0
-                        return (
-                          <SellOrderRow
-                            key={order.id}
-                            order={selectedOrder || order}
-                            isSelected={isSelected}
-                            index={index}
-                            percentOfTotal={Math.min(percentOfTotal, 100)}
-                          />
-                        )
-                      })}
+                  {/* Instant Sell Mode */}
+                  {sellMode === 'instant' && (
+                    <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                      {/* Compact header */}
+                      <div className="flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-green-500" />
+                        <h3 className="text-xs font-semibold">INSTANT SELL</h3>
+                      </div>
+                      
+                      {parseFloat(amount) > 0 ? (
+                        <>
+                          {/* Prominent amount */}
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">You receive</p>
+                            <p className="text-2xl font-bold">
+                              ${instantSell.received.toFixed(2)} {destinationToken.symbol}
+                            </p>
+                          </div>
+                          
+                          {/* Combined details */}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>Rate: <span className="font-medium text-foreground">${instantSell.rate.toFixed(3)}/CNPY</span></span>
+                            <span>•</span>
+                            <span>Fee: <span className="font-medium text-foreground">{(instantSell.fee * 100).toFixed(0)}% (${instantSell.feeAmount.toFixed(2)})</span></span>
+                          </div>
+                          
+                          {/* Compact features */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 border-t border-border">
+                            <span className="flex items-center gap-1">
+                              <Check className="w-3 h-3 text-green-500" />
+                              Instant
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Check className="w-3 h-3 text-green-500" />
+                              Guaranteed
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground text-center py-2">
+                          Enter an amount to see instant sell details
+                        </p>
+                      )}
                     </div>
                   )}
 
-                  {/* No amount state */}
-                  {(!amount || parseFloat(amount) <= 0) && showOrders && (
-                    <p className="text-center text-xs text-muted-foreground py-3">
-                      Enter an amount to see matched orders
-                    </p>
+                  {/* Create Order Mode */}
+                  {sellMode === 'create' && (
+                    <div className="bg-muted/30 rounded-lg p-3 space-y-2.5">
+                      {/* Compact header */}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm">📋</span>
+                        <h3 className="text-xs font-semibold">CREATE SELL ORDER</h3>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1.5">Set your price:</p>
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={pricePreset === 'custom' || orderPrice !== null ? 'custom' : pricePreset}
+                              onValueChange={(value) => {
+                                if (value === 'custom') {
+                                  setPricePreset('custom')
+                                  // Set default price if none exists
+                                  if (orderPrice === null) {
+                                    setOrderPrice(pricePresets.normal)
+                                  }
+                                } else {
+                                  setPricePreset(value)
+                                  setOrderPrice(null)
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="flex-1 h-9 text-xs">
+                                <SelectValue>
+                                  {pricePreset === 'custom' || orderPrice !== null
+                                    ? `Custom${orderPrice !== null ? ` ($${orderPrice.toFixed(3)})` : ''}`
+                                    : pricePreset && pricePresets[pricePreset]
+                                      ? `${pricePreset.charAt(0).toUpperCase() + pricePreset.slice(1)} ($${pricePresets[pricePreset].toFixed(3)})`
+                                      : 'Select...'
+                                  }
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="fast">
+                                  Fast (${pricePresets.fast.toFixed(3)})
+                                </SelectItem>
+                                <SelectItem value="normal">
+                                  Normal (${pricePresets.normal.toFixed(3)})
+                                </SelectItem>
+                                <SelectItem value="urgent">
+                                  Urgent (${pricePresets.urgent.toFixed(3)})
+                                </SelectItem>
+                                <SelectItem value="custom">
+                                  Custom
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {(pricePreset === 'custom' || orderPrice !== null) && (
+                              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                <span className="text-xs text-muted-foreground flex-shrink-0">$</span>
+                                <div className="flex items-center gap-0.5 flex-1 min-w-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const currentPrice = orderPrice !== null ? orderPrice : pricePresets.normal
+                                      const newPrice = Math.max(0.001, currentPrice - 0.001)
+                                      setOrderPrice(newPrice)
+                                    }}
+                                    className="w-6 h-6 flex items-center justify-center rounded border border-border bg-background hover:bg-muted transition-colors flex-shrink-0"
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </button>
+                                  <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={orderPrice !== null ? orderPrice.toString() : ''}
+                                    onChange={(e) => {
+                                      const value = e.target.value
+                                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        const numValue = value === '' ? pricePresets.normal : parseFloat(value)
+                                        setOrderPrice(numValue)
+                                      }
+                                    }}
+                                    placeholder={pricePresets.normal.toFixed(3)}
+                                    className="flex-1 min-w-0 bg-background border border-border rounded-md px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-center overflow-visible"
+                                    style={{ minWidth: '60px' }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const currentPrice = orderPrice !== null ? orderPrice : pricePresets.normal
+                                      const newPrice = Math.min(1.5, currentPrice + 0.001)
+                                      setOrderPrice(newPrice)
+                                    }}
+                                    className="w-6 h-6 flex items-center justify-center rounded border border-border bg-background hover:bg-muted transition-colors flex-shrink-0"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <span className="text-xs text-muted-foreground flex-shrink-0">/CNPY</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {parseFloat(amount) > 0 && (
+                        <>
+                          <div className="pt-1.5 border-t border-border space-y-1.5">
+                            {/* Prominent amount */}
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-0.5">You receive (if filled)</p>
+                              <p className="text-2xl font-bold">
+                                ${createOrder.received.toFixed(2)} {destinationToken.symbol}
+                              </p>
+                            </div>
+                            
+                            {/* Combined details */}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>Fee: <span className="font-medium text-green-500">No fees</span></span>
+                              <span>•</span>
+                              <span>Est: <span className="font-medium text-foreground">~2-4h</span></span>
+                            </div>
+                            
+                            {/* Compact warning */}
+                            <div className="flex items-center gap-1.5 pt-1 border-t border-border">
+                              <span className="text-xs">⚠️</span>
+                              <span className="text-xs text-muted-foreground">May not fill immediately</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
@@ -861,7 +1077,13 @@ export default function ConvertTab({
             if (buttonState.variant === 'connect' && onOpenWalletDialog) {
               onOpenWalletDialog()
             } else if (buttonState.variant === 'convert') {
-              setShowTransactionDialog(true)
+              if (direction === 'sell' && sellMode === 'create') {
+                // Show order confirmation dialog for create order
+                setShowOrderConfirmation(true)
+              } else {
+                // Show transaction dialog for instant sell or buy
+                setShowTransactionDialog(true)
+              }
             }
           }}
         >
@@ -883,16 +1105,61 @@ export default function ConvertTab({
         </div>
       )}
       
-      {direction === 'sell' && destinationToken && selection.totalReceived > 0 && (
-        <div className="px-4 pb-4">
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5" />
-              <span>
-                {selection.cnpySold.toLocaleString()} CNPY → ${selection.totalReceived.toFixed(2)} {destinationToken.symbol}
-              </span>
+      {direction === 'sell' && destinationToken && (
+        <>
+          {sellMode === 'instant' && instantSell.received > 0 && (
+            <div className="px-4 pb-4">
+              <div className="flex items-center justify-center text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>
+                    {parseFloat(amount).toLocaleString()} CNPY → ${instantSell.received.toFixed(2)} {destinationToken.symbol}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+          {sellMode === 'create' && createOrder.received > 0 && (
+            <div className="px-4 pb-4">
+              <div className="flex items-center justify-center text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>
+                    {parseFloat(amount).toLocaleString()} CNPY → ${createOrder.received.toFixed(2)} {destinationToken.symbol} (if filled)
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Your Orders Card */}
+      {direction === 'sell' && userOrders.length > 0 && (
+        <div className="px-4 pb-4">
+          <YourOrdersCard
+            orders={userOrders.filter(o => o.status === 'active')}
+            onEdit={(order) => {
+              // TODO: Implement edit functionality
+              console.log('Edit order', order)
+            }}
+            onCancel={(order) => {
+              // Remove order
+              const updatedOrders = userOrders.map(o => 
+                o.id === order.id ? { ...o, status: 'cancelled' } : o
+              )
+              setUserOrders(updatedOrders)
+              try {
+                localStorage.setItem('userSellOrders', JSON.stringify(updatedOrders))
+              } catch (e) {
+                console.error('Failed to update orders in localStorage', e)
+              }
+            }}
+            onViewAll={() => {
+              // TODO: Navigate to wallet page orders section
+              console.log('View all orders')
+            }}
+          />
         </div>
       )}
 
@@ -921,12 +1188,13 @@ export default function ConvertTab({
                 updateCnpyBalance(selection.cnpyReceived)
                 // Update the sourceToken's balance in local state for immediate UI feedback
                 setSourceToken(prev => prev ? { ...prev, balance: prev.balance - selection.totalCost } : null)
-              } else if (direction === 'sell' && destinationToken) {
-                // Sell: spent CNPY, received stablecoin
-                updateCnpyBalance(-selection.cnpySold)
-                updateExternalBalance(destinationToken.chain, destinationToken.symbol, selection.totalReceived)
+              } else if (direction === 'sell' && destinationToken && sellMode === 'instant') {
+                // Instant Sell: spent CNPY, received stablecoin
+                const cnpyAmount = parseFloat(amount) || 0
+                updateCnpyBalance(-cnpyAmount)
+                updateExternalBalance(destinationToken.chain, destinationToken.symbol, instantSell.received)
                 // Update the destinationToken's balance in local state for immediate UI feedback
-                setDestinationToken(prev => prev ? { ...prev, balance: prev.balance + selection.totalReceived } : null)
+                setDestinationToken(prev => prev ? { ...prev, balance: prev.balance + instantSell.received } : null)
               }
             }
             
@@ -936,10 +1204,54 @@ export default function ConvertTab({
           direction={direction}
           sourceToken={direction === 'buy' ? sourceToken : null}
           destinationToken={direction === 'sell' ? destinationToken : null}
-          cnpyAmount={direction === 'sell' ? selection.cnpySold : selection.cnpyReceived}
-          stablecoinAmount={direction === 'buy' ? selection.totalCost : selection.totalReceived}
+          cnpyAmount={direction === 'sell' ? parseFloat(amount) || 0 : selection.cnpyReceived}
+          stablecoinAmount={direction === 'buy' ? selection.totalCost : (sellMode === 'instant' ? instantSell.received : createOrder.received)}
           totalSavings={selection.totalSavings || 0}
-          ordersMatched={selection.selectedOrders.length}
+          ordersMatched={direction === 'buy' ? selection.selectedOrders.length : 0}
+        />
+      )}
+
+      {/* Sell Order Confirmation Dialog */}
+      {showOrderConfirmation && destinationToken && (
+        <SellOrderConfirmationDialog
+          open={showOrderConfirmation}
+          onClose={() => setShowOrderConfirmation(false)}
+          onConfirm={() => {
+            // Save order to user orders
+            const newOrder = {
+              id: `order-${Date.now()}`,
+              type: 'sell',
+              cnpyAmount: parseFloat(amount) || 0,
+              pricePerCnpy: orderPrice !== null ? orderPrice : (pricePreset === 'custom' ? pricePresets.normal : pricePresets[pricePreset]),
+              destinationToken: destinationToken.symbol,
+              destinationChain: destinationToken.chain,
+              expectedReceive: createOrder.received,
+              fee: createOrder.fee,
+              feeAmount: createOrder.feeAmount,
+              status: 'active',
+              createdAt: new Date().toISOString()
+            }
+            
+            const updatedOrders = [newOrder, ...userOrders]
+            setUserOrders(updatedOrders)
+            
+            // Save to localStorage
+            try {
+              localStorage.setItem('userSellOrders', JSON.stringify(updatedOrders))
+            } catch (e) {
+              console.error('Failed to save order to localStorage', e)
+            }
+            
+            setShowOrderConfirmation(false)
+            // Reset form
+            setAmount('')
+          }}
+          cnpyAmount={parseFloat(amount) || 0}
+          pricePerCnpy={orderPrice !== null ? orderPrice : (pricePreset === 'custom' ? pricePresets.normal : pricePresets[pricePreset])}
+          destinationToken={destinationToken}
+          expectedReceive={createOrder.received}
+          fee={createOrder.fee}
+          feeAmount={createOrder.feeAmount}
         />
       )}
     </>
