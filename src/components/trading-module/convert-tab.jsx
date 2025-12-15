@@ -412,6 +412,57 @@ export default function ConvertTab({
     onAmountChange?.(parseFloat(amount) || 0)
   }, [amount])
 
+  // Set default sourceToken to the token with highest balance when in buy mode
+  // Only auto-select if wallet is connected AND has at least one token with balance > 0
+  useEffect(() => {
+    if (direction === 'buy' && !sourceToken && isConnected) {
+      // Find token with highest balance across all connected wallets
+      let maxBalance = 0
+      let bestToken = null
+
+      // Stablecoins configuration (matching BridgeTokenDialog)
+      const stablecoins = [
+        { symbol: 'USDC', name: 'USD Coin', color: '#2775CA', icon: '$' },
+        { symbol: 'USDT', name: 'Tether', color: '#26A17B', icon: 'T' }
+      ]
+
+      const chains = [
+        { id: 'ethereum', name: 'Ethereum', color: '#627EEA' },
+        { id: 'solana', name: 'Solana', color: '#9945FF' }
+      ]
+
+      // Check all chains and tokens
+      chains.forEach(chain => {
+        const wallet = connectedWallets[chain.id]
+        if (wallet?.connected) {
+          stablecoins.forEach(token => {
+            const balance = wallet.balances[token.symbol] || 0
+            if (balance > maxBalance) {
+              maxBalance = balance
+              bestToken = {
+                symbol: token.symbol,
+                name: token.name,
+                color: token.color,
+                chain: chain.id,
+                chainName: chain.name,
+                chainColor: chain.color,
+                balance: balance,
+                walletAddress: wallet.address
+              }
+            }
+          })
+        }
+      })
+
+      // Only auto-select if we found a token with balance > 0
+      // If no balance or not connected, leave sourceToken as null to show "Select token" button
+      if (bestToken && maxBalance > 0) {
+        setSourceToken(bestToken)
+        onSourceTokenChange?.(bestToken)
+      }
+    }
+  }, [direction, sourceToken, isConnected, connectedWallets, onSourceTokenChange])
+
   const handleUseMax = () => {
     if (direction === 'buy' && sourceToken) {
       setAmount(sourceToken.balance.toString())
