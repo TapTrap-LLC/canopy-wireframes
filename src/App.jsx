@@ -16,6 +16,7 @@ import TradePage from '@/pages/trade'
 import LiquidityPage from '@/pages/liquidity'
 import WalletSettings from '@/pages/wallet/settings'
 import GovernanceDetail from '@/pages/governance-detail'
+import DesignSystem from '@/pages/design-system'
 import { Toaster } from '@/components/ui/sonner'
 import { LaunchFlowProvider, useLaunchFlow } from '@/contexts/launch-flow-context'
 import { WalletProvider } from '@/contexts/wallet-context'
@@ -60,6 +61,7 @@ function AppContent() {
         <Route path="/launchpad/links" element={<Links />} />
         <Route path="/launchpad/settings" element={<LaunchSettings />} />
         <Route path="/launchpad/review" element={<Review />} />
+        <Route path="/design-system" element={<DesignSystem />} />
       </Routes>
       <Toaster />
     </>
