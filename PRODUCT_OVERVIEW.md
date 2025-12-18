@@ -1348,10 +1348,9 @@ Cross-chain wallet system for managing assets, staking, and transactions across 
 The wallet implementation provides a complete solution for wallet creation, connection, funding, asset management, and staking functionality. It integrates with the launchpad and chain pages to enable seamless token transactions.
 
 **Access Points:**
-- Wallet icon in sidebar (globally accessible)
-- Opens wallet sheet (sidebar overlay)
+- Wallet icon in sidebar (globally accessible) - navigates to `/wallet` page
 - Dedicated `/wallet` page for full view
-- Buy buttons in wallet sheet and full wallet page open funding dialog
+- Buy buttons in wallet page open funding dialog
 
 ---
 
@@ -1613,92 +1612,9 @@ Global context providing wallet state and functions:
 
 ---
 
-### Wallet Sheet (Sidebar)
-
-**Access:** Click wallet icon in sidebar
-
-Side sheet overlay that shows wallet summary and quick actions.
-
-**Layout:**
-- Opens from left side
-- Full height
-- Width: `sm:max-w-[420px]`
-- Three sections: Header (fixed), Tabs (scrollable), Footer (fixed)
-
-**Header Section** (Fixed, non-scrollable):
-
-**Wallet Identity:**
-- Canopy logo avatar (green circle with "C")
-- Wallet address (formatted: "0x8626...1199")
-- Copy button (copies full address to clipboard)
-- Connection status: "Connected" in green text
-
-**Total Balance Display:**
-- Label: "Estimated Balance" with chevron icon
-- Clickable → Navigates to `/wallet` page
-- Large balance display: "$12,458.32" (formatted with 2 decimals)
-
-**Quick Action Buttons:**
-- 4-column grid layout
-- Each button shows icon + label:
-  1. **Swap:** Repeat icon, "Swap" label (no functionality)
-  2. **Buy:** Download icon, "Buy" label → Opens WalletConnectionDialog at step 4
-  3. **Send:** Send icon, "Send" label (no functionality)
-  4. **Stake:** Coins icon, "Stake" label → Opens StakeDialog
-
-**Tabs Section** (Scrollable):
-
-**Two tabs:** Balances, Activity
-
-**Balances Tab:**
-- Empty state (when no assets):
-  - Wallet icon in muted circle
-  - Heading: "No assets yet"
-  - Description: "Start your blockchain journey by creating or investing in chains on the launchpad."
-  - "Go to Launchpad" button → Navigates to `/`
-
-- With assets:
-  - Section header: "TOP ASSETS" with "VIEW ALL" link → Navigates to `/wallet`
-  - Shows top 5 assets only
-  - Each asset card (clickable):
-    - Token avatar (colored circle with symbol initial)
-    - Token name and symbol
-    - Balance: "{amount} {symbol}"
-    - Price: "${price}" (per token)
-    - Value: "${total value}" (balance × price)
-    - Click → Navigates to chain detail page
-
-**Activity Tab:**
-- Empty state (when no transactions):
-  - Activity icon in muted circle
-  - Heading: "No activity yet"
-  - Description: "Start your blockchain journey by creating or investing in chains on the launchpad."
-  - "Go to Launchpad" button → Navigates to `/`
-
-- With transactions:
-  - Shows ActivityTab component in compact mode
-  - No search or filters (compact=true)
-  - Click transaction → Opens TransactionDetailSheet
-
-**Footer Section** (Fixed, non-scrollable):
-
-Two buttons:
-1. **Wallet settings:** Ghost button with Settings icon (no functionality)
-2. **Disconnect wallet:** Ghost button with LogOut icon in red
-   - On click:
-     - Navigates to `/` (home)
-     - After 100ms delay, calls `disconnectWallet()`
-     - Clears all localStorage (walletAddress, isWalletConnected, userEmail, walletData)
-
-**Dialogs:**
-- StakeDialog: Opens when clicking Stake button or asset
-- WalletConnectionDialog: Opens when clicking Buy button (initialStep={4})
-
----
-
 ### Full Wallet Page
 
-**Live Example:** Click "Estimated Balance" in wallet sheet, or navigate to `/wallet`
+**Live Example:** Click wallet icon in sidebar, or navigate to `/wallet`
 
 Full-page wallet view with complete portfolio management.
 
@@ -2123,7 +2039,7 @@ Side sheet showing full transaction details:
 - Amount: With token symbol
 - Transaction Fee: With token symbol (or "< 0.001" if minimal)
 
-**Compact Mode** (used in wallet sheet):
+**Compact Mode** (deprecated - no longer used):
 - No table headers
 - No filter UI
 - Just transaction list
@@ -2499,7 +2415,6 @@ The following features from the wallet PRD are **not implemented**:
 **Main Components:**
 - `/src/components/wallet-connection-dialog.jsx` - 7-step wallet connection/creation flow
 - `/src/pages/wallet/index.jsx` - Full wallet page with tabs
-- `/src/pages/wallet/components/wallet-sheet.jsx` - Sidebar wallet overlay
 - `/src/contexts/wallet-context.jsx` - Global wallet state management
 
 **Wallet Page Components:**
@@ -2529,7 +2444,7 @@ The following features from the wallet PRD are **not implemented**:
 **Sidebar Integration:**
 - Wallet icon in MainSidebar
 - Shows balance when connected
-- Opens wallet sheet on click
+- Navigates to `/wallet` page on click
 
 **Launchpad Integration:**
 - Empty states link to launchpad
